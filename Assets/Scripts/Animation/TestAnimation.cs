@@ -22,29 +22,36 @@ public class TestAnimation : MonoBehaviour
             animator.SetBool("isRun", false);
         }
 
-        // bool
-        // 왼쪽 마우스 공격
+
         if(Input.GetMouseButtonDown(0))
         {
-            animator.SetBool("isLeftAttack", true);
+            animator.SetTrigger("LeftAttack");
         }
-        else
+
+        if (Input.GetMouseButtonDown(1))  // 오른클릭
         {
-            animator.SetBool("isLeftAttack", false);
-            
+            // 현재 상태 체크
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+            // Left 공격 중일 때만 오른공격 가능
+            if (stateInfo.IsName("Left_Mouse_Attack"))
+            {
+                animator.SetTrigger("RightAttack");
+            }
         }
-        
-        // bool
-        // 오른쪽 마우스 공격
-        if(Input.GetMouseButtonDown(1))
-        {
-            animator.SetBool("isRightAttack", true);
-        }
-        else
-        {
-            animator.SetBool("isRightAttack", false);
-            
-        }
+    }
+
+    // 애니메이션 이벤트에서 호출됨
+    void ActivateHitbox()
+    {
+        Debug.Log(">>> Hitbox ON!");
+        // 실제로는 weaponHitbox.EnableHit();
+    }
+    
+    void DeactivateHitbox()
+    {
+        Debug.Log(">>> Hitbox OFF!");
+        // 실제로는 weaponHitbox.DisableHit();
     }
 
 
