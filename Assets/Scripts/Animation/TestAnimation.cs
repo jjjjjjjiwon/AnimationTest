@@ -3,15 +3,23 @@ using UnityEngine;
 public class TestAnimation : MonoBehaviour
 {
     private Animator animator;
+    private HitBox hitBox;
+    private MoveMonent moveMonent;
 
 
     void Start()
     {
         animator = GetComponent<Animator>();
+        hitBox = GetComponentInChildren<HitBox>();
+        moveMonent = GetComponent<MoveMonent>();
     }
 
     void Update()
     {
+
+        float speed = moveMonent.MoveInput.magnitude; // 0~1 정도로 정규화 가능
+        animator.SetFloat("speed", speed);
+
         // W 키 누르면 달리기
         if (Input.GetKey(KeyCode.W))
         {
@@ -23,7 +31,7 @@ public class TestAnimation : MonoBehaviour
         }
 
 
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             animator.SetTrigger("LeftAttack");
         }
@@ -45,14 +53,14 @@ public class TestAnimation : MonoBehaviour
     void ActivateHitbox()
     {
         Debug.Log(">>> Hitbox ON!");
-        // 실제로는 weaponHitbox.EnableHit();
+        hitBox.EnableHit();
     }
     
     void DeactivateHitbox()
     {
         Debug.Log(">>> Hitbox OFF!");
-        // 실제로는 weaponHitbox.DisableHit();
-    }
+        hitBox.DisableHit();
 
+    }
 
 }

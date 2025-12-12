@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveMonent : MonoBehaviour
 {
-   public float Speed = 10f;  // 이동 속도
+        public float Speed = 10f;  // 이동 속도
         public Transform cameraTransform;   // 카메라
         public Vector3 MoveInput => moveInput;
         
@@ -31,7 +31,8 @@ public class MoveMonent : MonoBehaviour
     {
         MovePlayer();
     }
-        void HandleInput()
+
+    void HandleInput()
     {
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
