@@ -1,5 +1,38 @@
 using UnityEngine;
 
+# region // Root Motion
+// public class TestAnimation : MonoBehaviour
+// {
+//     private Animator animator;
+//     private HitBox hitBox;
+
+//     void Awake()
+//     {
+//         animator = GetComponent<Animator>();
+//         hitBox = GetComponentInChildren<HitBox>();
+//     }
+
+//     void Update()
+//     {
+//         // 공격
+//         if (Input.GetMouseButtonDown(0))
+//             animator.SetTrigger("LeftAttack");
+
+//         if (Input.GetMouseButtonDown(1))
+//         {
+//             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+//             if (stateInfo.IsName("Left_Mouse_Attack"))
+//                 animator.SetTrigger("RightAttack");
+//         }
+//     }
+
+//     // 애니메이션 이벤트에서 호출
+//     void ActivateHitbox() => hitBox.EnableHit();
+//     void DeactivateHitbox() => hitBox.DisableHit();
+// }
+#endregion
+
+# region
 public class TestAnimation : MonoBehaviour
 {
     private Animator animator;
@@ -16,20 +49,7 @@ public class TestAnimation : MonoBehaviour
 
     void Update()
     {
-
-        float speed = moveMonent.MoveInput.magnitude; // 0~1 정도로 정규화 가능
-        animator.SetFloat("speed", speed);
-
-        // W 키 누르면 달리기
-        if (Input.GetKey(KeyCode.W))
-        {
-            animator.SetBool("isRun", true);
-        }
-        else
-        {
-            animator.SetBool("isRun", false);
-        }
-
+        animator.SetFloat("speed", moveMonent.AnimatorSpeed);
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -64,3 +84,4 @@ public class TestAnimation : MonoBehaviour
     }
 
 }
+# endregion
