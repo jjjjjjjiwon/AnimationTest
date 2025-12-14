@@ -91,7 +91,6 @@ public class MoveMonent : MonoBehaviour
 {
     public float Speed = 5f;                // 이동 속도
     public Transform cameraTransform;       // 카메라
-    public Vector3 MoveInput => moveInput;  
     public float AnimatorSpeed => animatorSpeed;
 
     private Vector3 moveInput;
@@ -101,8 +100,7 @@ public class MoveMonent : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-
+        // rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
         if (cameraTransform == null)
             cameraTransform = Camera.main.transform;
@@ -111,12 +109,13 @@ public class MoveMonent : MonoBehaviour
     void Update()
     {
         HandleInput();
-        RotatePlayerToMoveDirection();
+        RotatePlayerToMoveDirection();        
     }
 
     void FixedUpdate()
     {
         MovePlayer();
+        UpdateAnimator();
     }
 
     void HandleInput()
@@ -132,25 +131,39 @@ public class MoveMonent : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        Vector3 rawInput = forward * v + right * h;
+        moveInput = (forward * v + right * h);
 
         // 입력 없으면 정지
-        if (rawInput.sqrMagnitude < 0.01f)
+        if (moveInput.sqrMagnitude < 0.01f)
         {
             moveInput = Vector3.zero;
             animatorSpeed = 0f;
             return;
         }
 
-        moveInput = rawInput.normalized;               // 대각선 속도 보정
-        animatorSpeed = Mathf.Clamp01(rawInput.magnitude); // 0~1 애니메이션 speed
+        moveInput = moveInput.normalized;               // 대각선 속도 보정
+        
     }
 
-    void MovePlayer()
-    {
-        // velocity 기반 이동
-        rb.velocity = moveInput * Speed;
-    }
+   void MovePlayer()
+{
+    // Y축 유지
+    rb.velocity = new Vector3(
+        moveInput.x * Speed,
+        rb.velocity.y,
+        moveInput.z * Speed
+    );
+}
+
+void UpdateAnimator()
+{
+    // 수평 속도만 계산
+    Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+    animatorSpeed = horizontalVelocity.magnitude / Speed;
+    animatorSpeed = Mathf.Clamp01(animatorSpeed);  // ← 여기로 이동!
+    
+    Debug.Log($"AnimatorSpeed: {animatorSpeed}");  // 확인용
+}
 
     void RotatePlayerToMoveDirection()
     {

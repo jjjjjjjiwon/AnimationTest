@@ -49,20 +49,18 @@ public class TestAnimation : MonoBehaviour
 
     void Update()
     {
-        animator.SetFloat("speed", moveMonent.AnimatorSpeed);
-
+        animator.SetFloat("SPEED", moveMonent.AnimatorSpeed);
         if (Input.GetMouseButtonDown(0))
         {
             animator.SetTrigger("LeftAttack");
         }
-
         if (Input.GetMouseButtonDown(1))  // 오른클릭
         {
             // 현재 상태 체크
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
             // Left 공격 중일 때만 오른공격 가능
-            if (stateInfo.IsName("Left_Mouse_Attack"))
+            if (stateInfo.IsName("Left_Mouse_Attack"))  
             {
                 animator.SetTrigger("RightAttack");
             }
