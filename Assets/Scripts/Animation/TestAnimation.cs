@@ -1,45 +1,16 @@
 using UnityEngine;
 
-# region // Root Motion
-// public class TestAnimation : MonoBehaviour
-// {
-//     private Animator animator;
-//     private HitBox hitBox;
-
-//     void Awake()
-//     {
-//         animator = GetComponent<Animator>();
-//         hitBox = GetComponentInChildren<HitBox>();
-//     }
-
-//     void Update()
-//     {
-//         // 공격
-//         if (Input.GetMouseButtonDown(0))
-//             animator.SetTrigger("LeftAttack");
-
-//         if (Input.GetMouseButtonDown(1))
-//         {
-//             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-//             if (stateInfo.IsName("Left_Mouse_Attack"))
-//                 animator.SetTrigger("RightAttack");
-//         }
-//     }
-
-//     // 애니메이션 이벤트에서 호출
-//     void ActivateHitbox() => hitBox.EnableHit();
-//     void DeactivateHitbox() => hitBox.DisableHit();
-// }
-#endregion
-
 # region
 public class TestAnimation : MonoBehaviour
 {
+    public bool IsMove => isMove;
+    private bool isMove = true;
+
+
     private Animator animator;
     private HitBox hitBox;
     private MoveMonent moveMonent;
-
-
+    
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -50,6 +21,7 @@ public class TestAnimation : MonoBehaviour
     void Update()
     {
         animator.SetFloat("SPEED", moveMonent.AnimatorSpeed);
+
         if (Input.GetMouseButtonDown(0))
         {
             animator.SetTrigger("LeftAttack");
@@ -65,6 +37,13 @@ public class TestAnimation : MonoBehaviour
                 animator.SetTrigger("RightAttack");
             }
         }
+
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            animator.SetTrigger("Dash");
+        }
+
     }
 
     // 애니메이션 이벤트에서 호출됨
@@ -79,6 +58,17 @@ public class TestAnimation : MonoBehaviour
         Debug.Log(">>> Hitbox OFF!");
         hitBox.DisableHit();
 
+    }
+
+    // 이동 관련
+    void EnableMovement()
+    {
+        isMove = true;
+    }
+
+    void DisableMovement()
+    {
+        isMove = false;
     }
 
 }
