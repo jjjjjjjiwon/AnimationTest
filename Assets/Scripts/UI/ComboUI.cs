@@ -1,39 +1,54 @@
-// using System.Collections;
-// using System.Collections.Generic;
-// using UnityEngine;
-// using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
-// public class ComboUI : MonoBehaviour
-// {
-//     [Header("UI")]
-//     public TextMeshProUGUI comboText;
+public class ComboUI : MonoBehaviour
+{
+    [Header("UI")]
+    [SerializeField] Image panelImage;
+    [SerializeField] Color defaultColor = Color.white;
+    [SerializeField] Color activeColor = Color.yellow;
 
-//     [Header("Target")]
-//     public PlayerCombat playerCombat;
+    [Header("Input")]
+    [SerializeField] KeyCode correctKey = KeyCode.Space;
 
-//     void Start()
-//     {
-//         if(playerCombat == null)
-//         {
-//             PlayerEntity player = FindObjectOfType<PlayerEntity>();
-//             if(player != null)
-//             {
-//                 playerCombat = player.Combat;
-//             } 
+    bool inputWindowOpen = false;
+    bool inputSuccess = false;
 
-//             if (comboText != null)
-//             {
-//                 comboText.text = "";
-//             }
-//         }
-//     }
+    // 🔔 애니메이션 이벤트 시작
+    public void EventStart()
+    {
+        panelImage.color = activeColor;
+        inputWindowOpen = true;
+        inputSuccess = false;
+    }
 
-//     void Update()
-//     {
-//         if (comboText != null && playerCombat != null)
-//         {
-//             string comboDisplay = playerCombat.GetComboDisplay();
-//             comboText.text = comboDisplay;
-//         }
-//     }
-// }
+    // 🔔 애니메이션 이벤트 종료
+    public void EventEnd()
+    {
+        panelImage.color = defaultColor;
+        inputWindowOpen = false;
+
+        if (inputSuccess)
+        {
+            Debug.Log("✅ 올바른 입력!");
+            // 성공 처리 (콤보 증가, 점수 등)
+        }
+        else
+        {
+            Debug.Log("❌ 실패");
+            // 실패 처리
+        }
+    }
+
+    void Update()
+    {
+        if (!inputWindowOpen)
+            return;
+
+        if (Input.GetKeyDown(correctKey))
+        {
+            inputSuccess = true;
+            inputWindowOpen = false; // 한 번만 입력 허용
+        }
+    }
+}
