@@ -32,7 +32,7 @@ public class TestAnimation : MonoBehaviour
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
             // Left 공격 중일 때만 오른공격 가능
-            if (stateInfo.IsName("Left_Mouse_Attack"))  
+            if (stateInfo.IsName("Frist_Attack") || stateInfo.IsName("Three_Attack"))  
             {
                 animator.SetTrigger("RightAttack");
             }
@@ -59,11 +59,13 @@ public class TestAnimation : MonoBehaviour
         hitBox.DisableHit();
 
     }
+int a = 0;
 
     // 이동 관련
     void EnableMovement()
     {
         isMove = true;
+        Debug.Log($"aaaaaaa  {a++}");
     }
 
     void DisableMovement()

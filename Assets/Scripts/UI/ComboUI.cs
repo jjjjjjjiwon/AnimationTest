@@ -45,7 +45,7 @@ public class ComboUI : MonoBehaviour
         if (!inputWindowOpen)
             return;
 
-        if (Input.GetKeyDown(correctKey))
+        if (Input.GetMouseButtonDown(1))
         {
             inputSuccess = true;
             inputWindowOpen = false; // 한 번만 입력 허용
