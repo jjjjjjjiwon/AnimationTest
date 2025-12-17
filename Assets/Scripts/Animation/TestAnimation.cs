@@ -38,7 +38,6 @@ public class TestAnimation : MonoBehaviour
             }
         }
 
-
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             animator.SetTrigger("Dash");
@@ -49,23 +48,21 @@ public class TestAnimation : MonoBehaviour
     // 애니메이션 이벤트에서 호출됨
     void ActivateHitbox()
     {
-        Debug.Log(">>> Hitbox ON!");
+       // Debug.Log(">>> Hitbox ON!");
         hitBox.EnableHit();
     }
     
     void DeactivateHitbox()
     {
-        Debug.Log(">>> Hitbox OFF!");
+       // Debug.Log(">>> Hitbox OFF!");
         hitBox.DisableHit();
 
     }
-int a = 0;
 
     // 이동 관련
     void EnableMovement()
     {
         isMove = true;
-        Debug.Log($"aaaaaaa  {a++}");
     }
 
     void DisableMovement()
