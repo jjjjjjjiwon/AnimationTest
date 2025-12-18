@@ -112,6 +112,5 @@ public class MoveMonent : MonoBehaviour
         animatorSpeed = Mathf.Clamp01(horizontalVelocity.magnitude / Speed);
     }
 
-
 }
 # endregion
