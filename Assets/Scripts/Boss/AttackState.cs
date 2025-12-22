@@ -3,17 +3,17 @@ using UnityEngine;
 public class AttackState : State
 {
     private Animator animator;
-    
+
     // 공격 BlendTree 이름 배열
-    private string[] attackBlendTrees = new string[]
+    private string[] comboTriggers = new string[]
     {
-        "1Attack",
-        "2Attack",
+        "1ATTACK",
+        "2ATTACK"
     };
 
     private string currentAttackBlendTree;  // 현재 선택된 BlendTree
 
-    public AttackState(EnemyController enemy) : base(enemy) 
+    public AttackState(EnemyController enemy) : base(enemy)
     {
         animator = enemy.GetComponent<Animator>();
     }
@@ -22,19 +22,24 @@ public class AttackState : State
     {
         Debug.Log("AttackState Enter - 공격!");
 
-        // 랜덤 BlendTree 선택
-        int randomIndex = Random.Range(0, attackBlendTrees.Length);
-        currentAttackBlendTree = attackBlendTrees[randomIndex];
+        // 랜덤 콤보 Trigger 선택
+        int randomIndex = Random.Range(0, comboTriggers.Length);
+        string selectedTrigger = comboTriggers[randomIndex];
 
-        // Animator에서 BlendTree 실행 (0번 레이어, 0f 시작)
-        animator.Play(currentAttackBlendTree, 0, 0f);
+        // Trigger 발동
+        animator.SetTrigger(selectedTrigger);
     }
 
-    public override void Execute()
+public override void Execute()
+{
+    AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+    
+    // Idle로 돌아왔으면 공격 끝
+    if (stateInfo.IsName("Move"))
     {
-        // BlendTree가 끝났는지 체크
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        enemy.OnAttackFinished();  // ← Controller에게 알림!
     }
+}
 
     public override void Exit()
     {
