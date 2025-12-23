@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class IdleState : State
 {
-    public IdleState(EnemyController enemy) : base(enemy) { }
+    public IdleState(IEnemy enemy) : base(enemy) { }  // ← 수정
 
     public override void Enter()
     {

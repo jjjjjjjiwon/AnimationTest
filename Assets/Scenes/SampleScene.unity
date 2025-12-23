@@ -593,9 +593,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 942670201}
-  attackRange: 2
-  dashRange: 5
-  isLowHP: 0
+  data: {fileID: 11400000, guid: 2b8fce1970fb20a42ac0b09e3d5c0945, type: 2}
   isEnraged: 0
 --- !u!54 &840499745
 Rigidbody:

@@ -4,42 +4,38 @@ public class AttackState : State
 {
     private Animator animator;
 
-    // 공격 BlendTree 이름 배열
     private string[] comboTriggers = new string[]
     {
         "1ATTACK",
         "2ATTACK"
     };
 
-    private string currentAttackBlendTree;  // 현재 선택된 BlendTree
+    private string currentAttackBlendTree;
 
-    public AttackState(EnemyController enemy) : base(enemy)
+    public AttackState(IEnemy enemy) : base(enemy)  // ← 수정 1
     {
-        animator = enemy.GetComponent<Animator>();
+        animator = enemy.Animator;  // ← 수정 2
     }
 
     public override void Enter()
     {
         Debug.Log("AttackState Enter - 공격!");
 
-        // 랜덤 콤보 Trigger 선택
         int randomIndex = Random.Range(0, comboTriggers.Length);
         string selectedTrigger = comboTriggers[randomIndex];
 
-        // Trigger 발동
         animator.SetTrigger(selectedTrigger);
     }
 
-public override void Execute()
-{
-    AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-    
-    // Idle로 돌아왔으면 공격 끝
-    if (stateInfo.IsName("Move"))
+    public override void Execute()
     {
-        enemy.OnAttackFinished();  // ← Controller에게 알림!
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        
+        if (stateInfo.IsName("Move"))
+        {
+            enemy.OnAttackFinished();  // ← 그대로
+        }
     }
-}
 
     public override void Exit()
     {
