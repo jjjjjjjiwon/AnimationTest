@@ -15,7 +15,7 @@ public class EnemyController : MonoBehaviour
     private IdleState idleState;
     private ChaseState chaseState;
     private AttackState attackState;
-    private DashAttackState dashAttackState;
+    //private DashAttackState dashAttackState;
 
     private bool isAttackFinished = false;
     //private DashAttackState dashAttackState;
@@ -28,7 +28,7 @@ public class EnemyController : MonoBehaviour
         idleState = new IdleState(this);
         chaseState = new ChaseState(this);
         attackState = new AttackState(this);
-        dashAttackState = new DashAttackState(this);
+        //dashAttackState = new DashAttackState(this);
 
         // 시작 상태
         stateMachine.ChangeState(idleState);
@@ -46,8 +46,7 @@ public class EnemyController : MonoBehaviour
         State targetState = null;
 
         // 공격 중이면 상태 유지
-        if ((stateMachine.CurrentState == attackState && !isAttackFinished) ||
-            stateMachine.CurrentState == dashAttackState)
+        if ((stateMachine.CurrentState == attackState && !isAttackFinished))
             return;
 
         // 일반 공격 우선
@@ -60,9 +59,9 @@ public class EnemyController : MonoBehaviour
         else if (distance <= dashAttackRange)
         {
             float dashChance = 0.3f; // 30% 확률
-            if (Random.value < dashChance)
-                targetState = dashAttackState;
-            else
+            // if (Random.value < dashChance)
+            //     //targetState = dashAttackState;
+            // else
                 targetState = chaseState;
         }
         else
