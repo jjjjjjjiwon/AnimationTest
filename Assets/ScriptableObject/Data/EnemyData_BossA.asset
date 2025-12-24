@@ -16,6 +16,11 @@ MonoBehaviour:
   moveSpeed: 5
   attackRange: 2
   attackDamage: 10
-  attackCooldown: 1
   dashRange: 5
   canDash: 1
+  dashSpeed: 20
+  dashStopDistance: 1
+  animatorController: {fileID: 9100000, guid: 4284bebcd6d46b9468f52ff2c80840f6, type: 2}
+  enabledAttacks:
+  - 1ATTACK
+  - 2ATTACK

@@ -5,42 +5,59 @@ public class EnemyController : MonoBehaviour, IEnemy
     [Header("References")]
     public Transform player;
     public EnemyData data;
-    
+
     // 컴포넌트 캐싱
     private Animator animator;
     private Rigidbody rb;
-    
+
     // IEnemy 인터페이스 구현
     public Transform Transform => transform;
     public Transform Player => player;
     public Animator Animator => animator;
     public Rigidbody Rigidbody => rb;
     public EnemyData Data => data;
-    
+
     // 기존 변수들
     public bool isEnraged = false;
     private bool isAttackFinished = false;
-    
+    private float dashProbability = 0f;
+
     private StateMachine stateMachine;
     private IdleState idleState;
     private ChaseState chaseState;
     private AttackState attackState;
+    //private DashState dashState;
 
     private void Awake()
     {
-        // 컴포넌트 캐싱
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
-        
+
+        // Animator Controller 교체
+        if (data.animatorController != null)
+        {
+            animator.runtimeAnimatorController = data.animatorController;
+        }
+
         stateMachine = new StateMachine();
         idleState = new IdleState(this);
         chaseState = new ChaseState(this);
         attackState = new AttackState(this);
+        //dashState = new DashState(this);
         stateMachine.ChangeState(idleState);
     }
 
+    private bool justChangedState = false;
+
+
     private void Update()
     {
+            if (justChangedState)
+    {
+        justChangedState = false;
+        stateMachine.Update();
+        return;  // Transition 스킵
+    }
         HandleStateTransitions();
         stateMachine.Update();
     }
@@ -48,33 +65,67 @@ public class EnemyController : MonoBehaviour, IEnemy
     // ← 이 함수 추가!
     public void OnAttackFinished()
     {
+        if (isAttackFinished) return;  // ← 이미 true면 무시
         isAttackFinished = true;
     }
 
     private void HandleStateTransitions()
     {
+        Debug.Log($"[Transitions] Current: {stateMachine.CurrentState?.GetType().Name}");
         float distance = Vector3.Distance(transform.position, player.position);
-        
+
         State targetState = null;
 
-        // 공격 중이면 대기
-        if (stateMachine.CurrentState == attackState && !isAttackFinished)
+        
+
+        // 공격/대시 중이면 대기
+        //if ((stateMachine.CurrentState == attackState || stateMachine.CurrentState == dashState) && !isAttackFinished)
+        if ((stateMachine.CurrentState == attackState) && !isAttackFinished)
             return;
 
-        // data.attackRange 사용 (수정!)
+        // ========== 1. 공격 사거리 ==========
         if (distance <= data.attackRange)
         {
             targetState = attackState;
             isAttackFinished = false;
+            dashProbability = 0f;  // ← 리셋
         }
+
+        // ========== 2. 대쉬 사거리 (누적 확률) ==========
+        // else if (data.canDash && distance <= data.dashRange)
+        // {
+        //     // 확률 증가
+        //     dashProbability += Time.deltaTime * 0.5f;  // ← 초당 50%씩 증가
+
+        //     // 확률 판정
+        //     if (Random.value < dashProbability)
+        //     {
+        //         targetState = dashState;
+        //         isAttackFinished = false;
+        //         dashProbability = 0f;  // ← 리셋
+        //     }
+        //     else
+        //     {
+        //         targetState = chaseState;
+        //     }
+        // }
+
+        // ========== 3. 추적 ==========
         else
         {
             targetState = chaseState;
+            dashProbability = 0f;  // ← 리셋 (멀어지면)
         }
 
         if (stateMachine.CurrentState != targetState)
         {
             stateMachine.ChangeState(targetState);
         }
+            if (stateMachine.CurrentState != targetState)
+    {
+        Debug.Log($"[Transitions] Change: {stateMachine.CurrentState?.GetType().Name} → {targetState?.GetType().Name}");  // ← 추가
+        stateMachine.ChangeState(targetState);
     }
+    }
+
 }

@@ -3,18 +3,12 @@ using UnityEngine;
 public class AttackState : State
 {
     private Animator animator;
+    private string[] comboTriggers;  // ← 초기화 제거
 
-    private string[] comboTriggers = new string[]
+    public AttackState(IEnemy enemy) : base(enemy)
     {
-        "1ATTACK",
-        "2ATTACK"
-    };
-
-    private string currentAttackBlendTree;
-
-    public AttackState(IEnemy enemy) : base(enemy)  // ← 수정 1
-    {
-        animator = enemy.Animator;  // ← 수정 2
+        animator = enemy.Animator;
+        comboTriggers = enemy.Data.enabledAttacks.ToArray();
     }
 
     public override void Enter()
