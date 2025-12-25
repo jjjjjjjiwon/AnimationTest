@@ -16,16 +16,19 @@ public class ChaseState : State
 
     public override void Execute()
     {
-        Vector3 direction = (enemy.Player.position - enemy.Transform.position).normalized;
-        direction.y = 0;
-        
-        float moveSpeed = enemy.Data.moveSpeed;  // ← data에서 가져오기
-        
-        rb.velocity = new Vector3(
-            direction.x * moveSpeed,
-            rb.velocity.y,
-            direction.z * moveSpeed
-        );
+        //Debug.LogError($"CHASE EXECUTE - Distance: {Vector3.Distance(enemy.Transform.position, enemy.Player.position)}");
+    
+    Vector3 direction = (enemy.Player.position - enemy.Transform.position).normalized;
+    direction.y = 0;
+    
+    float moveSpeed = enemy.Data.moveSpeed;
+    
+    rb.velocity = new Vector3(
+        direction.x * moveSpeed,
+        rb.velocity.y,
+        direction.z * moveSpeed
+    );
+
         
         if (direction != Vector3.zero)
         {

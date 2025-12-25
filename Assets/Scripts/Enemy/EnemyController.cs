@@ -52,12 +52,12 @@ public class EnemyController : MonoBehaviour, IEnemy
 
     private void Update()
     {
-            if (justChangedState)
-    {
-        justChangedState = false;
-        stateMachine.Update();
-        return;  // Transition 스킵
-    }
+        if (justChangedState)
+        {
+            justChangedState = false;
+            stateMachine.Update();
+            return;  // Transition 스킵
+        }
         HandleStateTransitions();
         stateMachine.Update();
     }
@@ -76,11 +76,8 @@ public class EnemyController : MonoBehaviour, IEnemy
 
         State targetState = null;
 
-        
-
-        // 공격/대시 중이면 대기
-        //if ((stateMachine.CurrentState == attackState || stateMachine.CurrentState == dashState) && !isAttackFinished)
-        if ((stateMachine.CurrentState == attackState) && !isAttackFinished)
+        // 공격 중이면 대기
+        if (stateMachine.CurrentState == attackState && !isAttackFinished)
             return;
 
         // ========== 1. 공격 사거리 ==========
@@ -88,44 +85,26 @@ public class EnemyController : MonoBehaviour, IEnemy
         {
             targetState = attackState;
             isAttackFinished = false;
-            dashProbability = 0f;  // ← 리셋
+            dashProbability = 0f;
         }
 
-        // ========== 2. 대쉬 사거리 (누적 확률) ==========
-        // else if (data.canDash && distance <= data.dashRange)
-        // {
-        //     // 확률 증가
-        //     dashProbability += Time.deltaTime * 0.5f;  // ← 초당 50%씩 증가
-
-        //     // 확률 판정
-        //     if (Random.value < dashProbability)
-        //     {
-        //         targetState = dashState;
-        //         isAttackFinished = false;
-        //         dashProbability = 0f;  // ← 리셋
-        //     }
-        //     else
-        //     {
-        //         targetState = chaseState;
-        //     }
-        // }
-
-        // ========== 3. 추적 ==========
+        // ========== 2. 추적 ==========
         else
         {
             targetState = chaseState;
-            dashProbability = 0f;  // ← 리셋 (멀어지면)
+            dashProbability = 0f;
         }
 
+        // ========== 상태 변경 (1번만!) ==========
         if (stateMachine.CurrentState != targetState)
         {
+            Debug.Log($"[Transitions] Change: {stateMachine.CurrentState?.GetType().Name} → {targetState?.GetType().Name}");
             stateMachine.ChangeState(targetState);
         }
-            if (stateMachine.CurrentState != targetState)
-    {
-        Debug.Log($"[Transitions] Change: {stateMachine.CurrentState?.GetType().Name} → {targetState?.GetType().Name}");  // ← 추가
-        stateMachine.ChangeState(targetState);
-    }
     }
 
+
 }
+
+
+
