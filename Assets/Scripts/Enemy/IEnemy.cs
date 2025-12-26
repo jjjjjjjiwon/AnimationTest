@@ -11,4 +11,5 @@ public interface IEnemy
     EnemyData Data { get; }
     
     void OnAttackFinished();
+    void OnStunFinished();
 }

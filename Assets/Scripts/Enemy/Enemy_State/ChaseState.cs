@@ -16,6 +16,7 @@ public class ChaseState : State
 
     public override void Execute()
     {
+        Debug.Log("CHASE EXECUTE");
         //Debug.LogError($"CHASE EXECUTE - Distance: {Vector3.Distance(enemy.Transform.position, enemy.Player.position)}");
     
     Vector3 direction = (enemy.Player.position - enemy.Transform.position).normalized;

@@ -4,24 +4,39 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "EnemyData", menuName = "Enemy/EnemyData")]
 public class EnemyData : ScriptableObject
 {
+[Header("Basic Info")]
+    public string enemyName;
+    public RuntimeAnimatorController animatorController;
+
     [Header("Stats")]
-    public float maxHealth = 100f;      // 체력
-    public float moveSpeed = 5f;        // 이동 속도
+    public float maxHealth = 100f;
+    public float moveSpeed = 3f;
 
-    [Header("Combat")]
-    public float attackRange = 2f;      // 공격 사거리
-    public float attackDamage = 10f;    // 데미지
+    [Header("Attack Settings")]
+    public float attackRange = 2f;
+    public List<string> enabledAttacks = new List<string> { "1ATTACK" };
 
-    [Header("Special")]
-    public float dashRange = 5f;    // 대시 공격 사거리
-    public bool canDash = false;    // 대시 공격 여부
-    public float dashSpeed = 15f;   // 대시 속도
-    public float dashStopDistance = 1f; // 대시 종료 거리
+    [Header("Stun Settings")]
+    public float stunDuration = 2f;
 
-    // ========== 여기부터 추가! ==========
-    [Header("Animation")]
-    public RuntimeAnimatorController animatorController;  // Animator Controller
+    [Header("Death Settings")]
+    public float deathDelay = 2f;
 
-    [Header("Attacks")]
-    public List<string> enabledAttacks = new List<string>();  // 사용할 공격 Trigger
+    // ========== Optional States ==========
+    [Header("Optional States")]
+    public bool canDash = false;
+
+
+
+    // ========== Dash (canDash가 true일 때만 보임) ==========
+    [Header("Dash Settings")]
+    [ShowIf("canDash")]
+    public float dashSpeed = 10f;
+    
+    [ShowIf("canDash")]
+    public float dashRange = 5f;
+    
+    [ShowIf("canDash")]
+    public float dashStopDistance = 1f;
+
 }
