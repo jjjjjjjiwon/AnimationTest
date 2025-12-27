@@ -1,66 +1,58 @@
 using UnityEngine;
-using System.Linq;
 
 public class AttackState : State
 {
     private Animator animator;
-    private string[] comboTriggers;
-    private bool hasStarted = false;
+    private bool hasStarted = false;  // ← 다시 추가! (자기 것)
 
     public AttackState(IEnemy enemy) : base(enemy)
     {
         animator = enemy.Animator;
-        comboTriggers = enemy.Data.enabledAttacks.ToArray();
     }
 
     public override void Enter()
     {
-        Debug.Log("AttackState Enter - 공격!");
-        
-        hasStarted = false;
+        IsFinished = false;
+        hasStarted = false;  // ← 자기 변수 리셋
 
-        int randomIndex = Random.Range(0, comboTriggers.Length);
-        string selectedTrigger = comboTriggers[randomIndex];
-        animator.SetTrigger(selectedTrigger);
+        Debug.Log("AttackState Enter - 공격!");
+
+        if (enemy.Data.enabledAttacks.Count > 0)
+        {
+            int randomIndex = Random.Range(0, enemy.Data.enabledAttacks.Count);
+            string attackTrigger = enemy.Data.enabledAttacks[randomIndex];
+
+            animator.SetTrigger(attackTrigger);
+            Debug.Log($"공격 선택: {attackTrigger}");
+        }
+
+        enemy.Rigidbody.velocity = new Vector3(0, enemy.Rigidbody.velocity.y, 0);
     }
 
     public override void Execute()
     {
-            Debug.Log("ATTACK EXECUTE");
-    
-    // ========== velocity 리셋 (추가!) ==========
-    enemy.Rigidbody.velocity = new Vector3(0, enemy.Rigidbody.velocity.y, 0);
-    
-    AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        
-        // Animator 전환 대기
-        if (!hasStarted)
-        {
-            // Movement Tag가 아니면 = 공격 시작
-            if (!stateInfo.IsTag("Movement"))
-            {
-                hasStarted = true;
-                Debug.Log("공격 애니메이션 시작!");
-            }
+        Debug.Log("ATTACK EXECUTE");
+
+        enemy.Rigidbody.velocity = new Vector3(0, enemy.Rigidbody.velocity.y, 0);
+
+        // ========== ref 키워드로 자기 hasStarted 전달 ==========
+        if (!WaitForAnimationStart(animator, ref hasStarted, out AnimatorStateInfo stateInfo))
             return;
-        }
-        
-        // 공격 종료 체크
-        // Movement Tag로 돌아왔으면 = 끝
-        if (stateInfo.IsTag("Movement"))
+
+        if (stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
         {
             Debug.Log("공격 완료!");
-            enemy.OnAttackFinished();
+            Finish();
         }
     }
 
     public override void Exit()
     {
         Debug.Log("AttackState Exit - 공격 종료");
-        
-        foreach (var trigger in comboTriggers)
+
+        foreach (string attackTrigger in enemy.Data.enabledAttacks)
         {
-            animator.ResetTrigger(trigger);
+            animator.ResetTrigger(attackTrigger);
         }
     }
 }

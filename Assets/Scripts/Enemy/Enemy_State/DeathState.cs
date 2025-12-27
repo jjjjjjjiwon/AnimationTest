@@ -21,7 +21,7 @@ public class DeathState : State
         hasDisabledCollision = false;
         
         // 사망 애니메이션 Trigger
-        animator.SetTrigger("DEATH");
+        animator.SetTrigger(AnimationConstants.DEATH_TRIGGER);
         
         // 움직임 정지
         enemy.Rigidbody.velocity = Vector3.zero;
@@ -35,7 +35,7 @@ public class DeathState : State
         // ========== Animator 전환 대기 ==========
         if (!hasStarted)
         {
-            if (!stateInfo.IsTag("Movement"))
+            if (!stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
             {
                 hasStarted = true;
                 Debug.Log("사망 애니메이션 시작!");
