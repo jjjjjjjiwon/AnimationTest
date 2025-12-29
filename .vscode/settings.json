@@ -55,6 +55,9 @@
         "UserSettings/": true,
         "temp/": true,
         "Temp/": true
+        
     },
+    "omnisharp.useModernNet": true,
+    "dotnet.server.useOmnisharp": false,
     "dotnet.defaultSolution": "AnimationTest.sln"
 }
