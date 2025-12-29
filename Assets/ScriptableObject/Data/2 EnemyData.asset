@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b981212a89b6250468b50d4ff5dcf00d, type: 3}
+  m_Name: 2 EnemyData
+  m_EditorClassIdentifier: 
+  enemyName: 
+  animatorController: {fileID: 9100000, guid: a8db689063a4b964f855fd3953bab92d, type: 2}
+  maxHealth: 100
+  moveSpeed: 2
+  attackRange: 5
+  enabledAttacks:
+  - 1ATTACK
+  - 2ATTACK
+  stunDuration: 2
+  deathDelay: 2
+  canDash: 0
+  dashSpeed: 10
+  dashRange: 8
+  dashStopDistance: 4

@@ -1,76 +1,74 @@
-using UnityEngine;
+// using UnityEngine;
 
-public class DashState : State
-{
-    private Animator animator;
-    private Rigidbody rb;
-    private bool hasStarted = false;
+// /// <summary>
+// /// 돌진 상태
+// /// Player 방향으로 빠르게 돌진
+// /// 일정 거리 도달 또는 애니메이션 완료 시 IdleState로 복귀
+// /// </summary>
+// public class DashState : State
+// {
+//     private Animator animator;
+//     private Rigidbody rb;
+//     private bool hasStarted; // 애니메이션 시작 여부
 
-    public DashState(IEnemy enemy) : base(enemy)
-    {
-        animator = enemy.Animator;
-        rb = enemy.Rigidbody;
-    }
+//     public DashState(IEnemy enemy) : base(enemy)
+//     {
+//         animator = enemy.Animator;
+//         rb = enemy.Rigidbody;
+//     }
 
-    public override void Enter()
-    {
-        IsFinished = false;
-        hasStarted = false;
+//     public override void Enter()
+//     {
+//         hasStarted = false; // 애니메이션 시작 플래그 리셋
 
-        Debug.Log("DashState Enter - 돌진!");
-        animator.SetTrigger(AnimationConstants.DASH_TRIGGER);
-    }
+//         // 돌진 애니메이션 시작
+//         animator.SetTrigger(AnimationConstants.DASH_TRIGGER);
+//     }
 
-public override void Execute()
-{
-    // ========== 디버그 추가 ==========
-    Debug.Log($"DashState Execute - hasStarted: {hasStarted}");
-    
-    if (!WaitForAnimationStart(animator, ref hasStarted, out AnimatorStateInfo stateInfo))
-    {
-        Debug.Log($"Waiting for animation start... Tag: {stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG)}");
-        return;
-    }
-    
-    Debug.Log("대시 진행 중!");
+//     public override void Execute()
+//     {
+//         // ========== 1. 애니메이션 시작 대기 ==========
+//         if (!WaitForAnimationStart(animator, ref hasStarted, out AnimatorStateInfo stateInfo))
+//         {
+//             // 아직 돌진 애니메이션 시작 안 됨 (Move 중)
+//             return;
+//         }
 
-    Vector3 direction = (enemy.Player.position - enemy.Transform.position).normalized;
-    direction.y = 0;
+//         // ========== 2. Player 방향으로 돌진 ==========
+//         Vector3 direction = (enemy.Player.position - enemy.Transform.position).normalized;
+//         direction.y = 0; // 수평 방향만
 
-    float speed = enemy.Data.dashSpeed;
+//         float speed = enemy.Data.dashSpeed;
 
-    rb.velocity = new Vector3(
-        direction.x * speed,
-        rb.velocity.y,
-        direction.z * speed
-    );
+//         rb.velocity = new Vector3(
+//             direction.x * speed,
+//             rb.velocity.y, // Y축은 중력 유지
+//             direction.z * speed
+//         );
 
-    float distanceToPlayer = Vector3.Distance(
-        enemy.Transform.position,
-        enemy.Player.position
-    );
+//         // ========== 3. 완료 조건 체크 ==========
+//         float distanceToPlayer = Vector3.Distance(
+//             enemy.Transform.position,
+//             enemy.Player.position
+//         );
 
-    // ========== 디버그 추가 ==========
-    Debug.Log($"Distance: {distanceToPlayer}, dashStopDistance: {enemy.Data.dashStopDistance}");
+//         bool reachedDistance = distanceToPlayer <= enemy.Data.dashStopDistance;
+//         bool animationFinished = stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG);
 
-    bool reachedDistance = distanceToPlayer <= enemy.Data.dashStopDistance;
-    bool animationFinished = stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG);
+//         // 목표 거리 도달 AND 애니메이션 완료 = 돌진 완료
+//         if (reachedDistance && animationFinished)
+//         {
+//             rb.velocity = new Vector3(0, rb.velocity.y, 0);
+//             enemy.ChangeToIdle();
+//         }
+//     }
 
-    Debug.Log($"Reached: {reachedDistance}, AnimFinished: {animationFinished}");
+//     public override void Exit()
+//     {
+//         // 이동 멈춤
+//         rb.velocity = new Vector3(0, rb.velocity.y, 0);
 
-    if (reachedDistance && animationFinished)
-    {
-        Debug.Log("대시 완료!");
-        rb.velocity = new Vector3(0, rb.velocity.y, 0);
-        Finish();
-    }
-}
-
-    public override void Exit()
-    {
-        Debug.Log("DashState Exit - 돌진 종료");
-
-        rb.velocity = new Vector3(0, rb.velocity.y, 0);
-        animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
-    }
-}
+//         // Trigger 리셋
+//         animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
+//     }
+// }

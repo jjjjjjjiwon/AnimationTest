@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b981212a89b6250468b50d4ff5dcf00d, type: 3}
-  m_Name: EnemyData2
+  m_Name: 3 EnemyData
   m_EditorClassIdentifier: 
   enemyName: 
-  animatorController: {fileID: 9100000, guid: a8db689063a4b964f855fd3953bab92d, type: 2}
+  animatorController: {fileID: 9100000, guid: 8e7194c554cd37548bd4ad6e78b1938b, type: 2}
   maxHealth: 100
-  moveSpeed: 2
-  attackRange: 5
+  moveSpeed: 3
+  attackRange: 2
   enabledAttacks:
   - 1ATTACK
   - 2ATTACK
@@ -24,5 +24,5 @@ MonoBehaviour:
   deathDelay: 2
   canDash: 0
   dashSpeed: 10
-  dashRange: 8
-  dashStopDistance: 4
+  dashRange: 5
+  dashStopDistance: 1
