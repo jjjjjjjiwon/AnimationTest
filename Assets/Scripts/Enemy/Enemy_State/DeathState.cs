@@ -1,11 +1,15 @@
 using UnityEngine;
 
+/// <summary>
+/// 사망 상태
+/// 사망 애니메이션 재생 후 이펙트 재생하고 오브젝트 삭제
+/// 이 State에서는 IdleState로 복귀하지 않음 (최종 상태)
+/// </summary>
 public class DeathState : State
 {
     private Animator animator;
-    private float deathTimer;
-    private bool hasStarted = false;
-    private bool hasDisabledCollision = false;
+    private bool hasStarted;
+    private bool deathComplete; // 사망 처리 완료 여부 (중복 호출 방지)
 
     public DeathState(IEnemy enemy) : base(enemy)
     {
@@ -14,63 +18,67 @@ public class DeathState : State
 
     public override void Enter()
     {
-        Debug.Log("DeathState Enter - 사망!");
-        
-        hasStarted = false;
-        deathTimer = 0f;
-        hasDisabledCollision = false;
-        
-        // 사망 애니메이션 Trigger
+        // DeathState는 재진입 없으므로 hasStarted 초기값 false 그대로 사용
+        deathComplete = false;
+
+        // 사망 애니메이션 시작
         animator.SetTrigger(AnimationConstants.DEATH_TRIGGER);
-        
-        // 움직임 정지
+
+        // 움직임 완전 정지
         enemy.Rigidbody.velocity = Vector3.zero;
-        enemy.Rigidbody.isKinematic = true;  // 물리 비활성화
+        
+        // 물리 비활성화 (충돌 무시)
+        enemy.Rigidbody.isKinematic = true;
     }
 
     public override void Execute()
     {
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        
-        // ========== Animator 전환 대기 ==========
-        if (!hasStarted)
+        // 이미 사망 처리 완료되었으면 실행 안 함
+        if (deathComplete)
+            return;
+
+        // ========== 1. 애니메이션 시작 대기 ==========
+        if (!WaitForAnimationStart(animator, ref hasStarted, out AnimatorStateInfo stateInfo))
         {
-            if (!stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
-            {
-                hasStarted = true;
-                Debug.Log("사망 애니메이션 시작!");
-            }
+            // 아직 사망 애니메이션 시작 안 됨 (Move 중)
             return;
         }
-        
-        // ========== Collider 비활성화 (1회만) ==========
-        if (!hasDisabledCollision)
+
+        // ========== 2. 애니메이션 완료 체크 ==========
+        if (stateInfo.normalizedTime >= 0.95f && !stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
         {
-            hasDisabledCollision = true;
-            
-            // 모든 Collider 비활성화
-            Collider[] colliders = enemy.Transform.GetComponentsInChildren<Collider>();
-            foreach (var col in colliders)
-            {
-                col.enabled = false;
-            }
-            
-            Debug.Log("Collider 비활성화!");
+            // 사망 애니메이션 거의 완료 (95%)
+            OnDeathComplete();
+            deathComplete = true; // 중복 호출 방지
         }
-        
-        // ========== 시간 체크 ==========
-        deathTimer += Time.deltaTime;
-        
-        if (deathTimer >= enemy.Data.deathDelay)
-        {
-            Debug.Log("오브젝트 제거!");
-            Object.Destroy(enemy.Transform.gameObject);
-        }
+
+        // 사망 진행 중 (DEATH_TAG)
     }
 
     public override void Exit()
     {
-        Debug.Log("DeathState Exit");
-        // 사망 후엔 Exit 안 될 것 (오브젝트 제거됨)
+        // DeathState는 종료 없음 (최종 상태)
+        // 하지만 만약을 위한 정리
+        animator.ResetTrigger(AnimationConstants.DEATH_TRIGGER);
+    }
+
+    /// <summary>
+    /// 사망 처리 완료 시 호출
+    /// 사망 이펙트 재생 후 오브젝트 삭제
+    /// </summary>
+    private void OnDeathComplete()
+    {
+        // 사망 이펙트 재생 (옵션)
+        // if (enemy.Data.deathEffectPrefab != null)
+        // {
+        //     Object.Instantiate(
+        //         enemy.Data.deathEffectPrefab, 
+        //         enemy.Transform.position, 
+        //         Quaternion.identity
+        //     );
+        // }
+
+        // 2초 후 오브젝트 삭제
+        Object.Destroy(enemy.Transform.gameObject, 2f);
     }
 }
