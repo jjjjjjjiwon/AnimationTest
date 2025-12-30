@@ -12,17 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b981212a89b6250468b50d4ff5dcf00d, type: 3}
   m_Name: 2 EnemyData
   m_EditorClassIdentifier: 
-  enemyName: 
-  animatorController: {fileID: 9100000, guid: a8db689063a4b964f855fd3953bab92d, type: 2}
-  maxHealth: 100
   moveSpeed: 2
-  attackRange: 5
+  attackRange: 3
   enabledAttacks:
   - 1ATTACK
   - 2ATTACK
+  canDash: 1
+  dashSpeed: 20
+  dashRange: 20
+  dashStopDistance: 2
   stunDuration: 2
-  deathDelay: 2
-  canDash: 0
-  dashSpeed: 10
-  dashRange: 8
-  dashStopDistance: 4
+  deathEffectPrefab: {fileID: 0}

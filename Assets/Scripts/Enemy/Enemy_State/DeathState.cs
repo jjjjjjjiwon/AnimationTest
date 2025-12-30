@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 사망 상태
-/// 사망 애니메이션 재생 후 이펙트 재생하고 오브젝트 삭제
+/// 사망 애니메이션 완료 후 이펙트 재생하고 오브젝트 삭제
 /// 이 State에서는 IdleState로 복귀하지 않음 (최종 상태)
 /// </summary>
 public class DeathState : State
@@ -18,7 +18,6 @@ public class DeathState : State
 
     public override void Enter()
     {
-        // DeathState는 재진입 없으므로 hasStarted 초기값 false 그대로 사용
         deathComplete = false;
 
         // 사망 애니메이션 시작
@@ -45,9 +44,11 @@ public class DeathState : State
         }
 
         // ========== 2. 애니메이션 완료 체크 ==========
-        if (stateInfo.normalizedTime >= 0.95f && !stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
+        // normalizedTime >= 1.0: 애니메이션 100% 완료
+        // !IsTag(MOVEMENT_TAG): 여전히 Death 애니메이션 중 (Move 복귀 안 함)
+        if (stateInfo.normalizedTime >= 1.0f && !stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
         {
-            // 사망 애니메이션 거의 완료 (95%)
+            // 사망 애니메이션 완료!
             OnDeathComplete();
             deathComplete = true; // 중복 호출 방지
         }
@@ -64,21 +65,17 @@ public class DeathState : State
 
     /// <summary>
     /// 사망 처리 완료 시 호출
-    /// 사망 이펙트 재생 후 오브젝트 삭제
+    /// 사망 이펙트 재생 후 오브젝트 즉시 삭제
     /// </summary>
     private void OnDeathComplete()
     {
         // 사망 이펙트 재생 (옵션)
-        // if (enemy.Data.deathEffectPrefab != null)
-        // {
-        //     Object.Instantiate(
-        //         enemy.Data.deathEffectPrefab, 
-        //         enemy.Transform.position, 
-        //         Quaternion.identity
-        //     );
-        // }
+        if (enemy.Data.deathEffectPrefab != null)
+        {
+            Object.Instantiate(enemy.Data.deathEffectPrefab, enemy.Transform.position, Quaternion.identity);
+        }
 
-        // 2초 후 오브젝트 삭제
-        Object.Destroy(enemy.Transform.gameObject, 2f);
+        // 애니메이션 완료 후 즉시 삭제
+        Object.Destroy(enemy.Transform.gameObject);
     }
 }

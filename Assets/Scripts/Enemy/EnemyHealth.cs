@@ -27,6 +27,7 @@ public class EnemyHealth : MonoBehaviour
         // 사망 체크
         if (currentHealth <= 0)
         {
+            Debug.Log("죽음");
             Die();
         }
     }

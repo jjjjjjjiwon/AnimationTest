@@ -1,42 +1,55 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
+/// <summary>
+/// Enemy의 설정 데이터
+/// ScriptableObject로 관리하여 Inspector에서 설정 가능
+/// 여러 Enemy가 같은 데이터를 공유하거나 각자 다른 데이터 사용 가능
+/// </summary>
 [CreateAssetMenu(fileName = "EnemyData", menuName = "Enemy/EnemyData")]
 public class EnemyData : ScriptableObject
 {
-[Header("Basic Info")]
-    public string enemyName;
-    public RuntimeAnimatorController animatorController;
+    // ========== 이동 설정 ==========
 
-    [Header("Stats")]
-    public float maxHealth = 100f;
-    public float moveSpeed = 3f;
+    [Header("Movement")]
+    [Tooltip("기본 이동 속도")]
+    public float moveSpeed = 3.5f;
 
-    [Header("Attack Settings")]
+    // ========== 공격 설정 ==========
+
+    [Header("Attack")]
+    [Tooltip("공격 범위 (Player와의 거리)")]
     public float attackRange = 2f;
-    public List<string> enabledAttacks = new List<string> { "1ATTACK" };
 
-    [Header("Stun Settings")]
+    [Tooltip("사용 가능한 공격 Trigger 목록 (랜덤 선택)")]
+    public List<string> enabledAttacks = new List<string> { "1ATTACK", "2ATTACK" };
+
+    // ========== 돌진 설정 ==========
+
+    [Header("Dash")]
+    [Tooltip("돌진 기능 사용 여부")]
+    public bool canDash = true;
+
+    [Tooltip("돌진 속도")]
+    public float dashSpeed = 10f;
+
+    [Tooltip("돌진 범위 (이 거리 안에서 돌진 가능)")]
+    public float dashRange = 8f;
+
+    [Tooltip("돌진 정지 거리 (Player와 이 거리까지 접근)")]
+    public float dashStopDistance = 1f;
+
+    // ========== 기절 설정 ==========
+
+    [Header("Stun")]
+    [Tooltip("기절 지속 시간 (초)")]
     public float stunDuration = 2f;
 
-    [Header("Death Settings")]
-    public float deathDelay = 2f;
+    // ========== 이펙트 설정 (옵션) ==========
 
-    // ========== Optional States ==========
-    [Header("Optional States")]
-    public bool canDash = false;
-
-
-
-    // ========== Dash (canDash가 true일 때만 보임) ==========
-    [Header("Dash Settings")]
-    [ShowIf("canDash")]
-    public float dashSpeed = 10f;
-    
-    [ShowIf("canDash")]
-    public float dashRange = 5f;
-    
-    [ShowIf("canDash")]
-    public float dashStopDistance = 1f;
+    [Header("Effects (Optional)")]
+    [Tooltip("사망 시 생성할 이펙트 Prefab")]
+    public GameObject deathEffectPrefab;
 
 }

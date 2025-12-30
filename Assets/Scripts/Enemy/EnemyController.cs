@@ -1,14 +1,31 @@
+using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Enemy 제어 클래스
+/// State Machine 관리 및 State 전환 조건 판단
+/// IEnemy 인터페이스를 구현하여 State들에게 필요한 기능 제공
+/// </summary>
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Animator))]
 public class EnemyController : MonoBehaviour, IEnemy
 {
-    [SerializeField] private EnemyData data;
-    [SerializeField] private Transform player;
+    // ========== Inspector 설정 ==========
 
-    private Animator animator;
+    [Header("References")]
+    [SerializeField] private Transform player;
+    [SerializeField] private EnemyData data;
+
+    // ========== 컴포넌트 (자동 할당) ==========
+
     private Rigidbody rb;
+    private Animator animator;
+
+    // ========== State Machine ==========
 
     private StateMachine stateMachine;
+
+    // ========== States ==========
 
     private IdleState idleState;
     private ChaseState chaseState;
@@ -17,49 +34,72 @@ public class EnemyController : MonoBehaviour, IEnemy
     private StunState stunState;
     private DeathState deathState;
 
-    private float dashProbability = 0f; // 대시 확률
+    // ========== State 전환 관리 ==========
 
-    // ========== IEnemy 인터페이스 구현 ==========
+    /// <summary>
+    /// State별 탈출 조건 체크 함수를 저장
+    /// Dictionary로 관리하여 확장성 향상
+    /// </summary>
+    private Dictionary<State, System.Action> stateExitCheckers;
+
+    /// <summary>
+    /// 현재 Player와의 거리 (매 프레임 계산, 재사용)
+    /// </summary>
+    private float currentDistanceToPlayer;
+
+    /// <summary>
+    /// Dash 확률 누적값
+    /// dashRange 안에서 시간이 지날수록 증가
+    /// </summary>
+    private float dashProbability = 0f;
+
+    // ========== IEnemy 구현 ==========
+
     public Transform Transform => transform;
     public Transform Player => player;
     public Rigidbody Rigidbody => rb;
     public Animator Animator => animator;
     public EnemyData Data => data;
 
+    public void ChangeToIdle()
+    {
+        stateMachine.ChangeState(idleState);
+    }
+
+    // ========== Unity 생명주기 ==========
+
     void Awake()
     {
-        animator = GetComponent<Animator>();
+        // ========== 컴포넌트 자동 할당 ==========
         rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
 
-        // EnemyData에서 설정한 Animator Controller 적용
-        if (data.animatorController != null)
-        {
-            animator.runtimeAnimatorController = data.animatorController;
-        }
-
+        // ========== State Machine 초기화 ==========
         stateMachine = new StateMachine();
 
-        // 모든 Enemy가 가지는 필수 State 초기화
+        // ========== State 생성 ==========
         idleState = new IdleState(this);
         chaseState = new ChaseState(this);
         attackState = new AttackState(this);
+        dashState = new DashState(this);
         stunState = new StunState(this);
         deathState = new DeathState(this);
 
-        // EnemyData 설정에 따라 선택적으로 활성화되는 State
-        if (data.canDash)
+        // ========== State 탈출 조건 Dictionary 설정 ==========
+        stateExitCheckers = new Dictionary<State, System.Action>
         {
-            dashState = new DashState(this);
-        }
+            { chaseState, CheckChaseExit }
+            // 새 State 추가 시 여기에 등록
+            // 예: { patrolState, CheckPatrolExit }
+        };
 
-        // 초기 상태를 Idle로 설정
+        // ========== 초기 State 설정 ==========
         stateMachine.ChangeState(idleState);
     }
 
     void Update()
     {
-
-        // 테스트용: K키로 기절 테스트
+        // ========== 테스트용 입력 (나중에 제거) ==========
         if (Input.GetKeyDown(KeyCode.K))
         {
             TakeStun();
@@ -69,109 +109,98 @@ public class EnemyController : MonoBehaviour, IEnemy
         {
             Die();
         }
-        if (stateMachine.CurrentState.IsFinished)
-        {
-            HandleStateTransitions();
-        }
 
-        Debug.Log($"[{gameObject.name}] Current State: {stateMachine.CurrentState.GetType().Name}, IsFinished: {stateMachine.CurrentState.IsFinished}");
+        // ========== 거리 계산 (한 번만) ==========
+        currentDistanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        // ========== State별 조건 체크 ==========
+
+        // IdleState: 다음 State 선택
+        if (stateMachine.CurrentState == idleState)
+        {
+            SelectNextState();
+        }
+        // 등록된 State: 탈출 조건 체크
+        else if (stateExitCheckers.TryGetValue(stateMachine.CurrentState, out var exitChecker))
+        {
+            exitChecker();
+        }
+        // 다른 State (Attack, Dash, Stun, Death): 알아서 완료 후 IdleState로
     }
 
     void FixedUpdate()
     {
-        // 물리 업데이트 주기에 맞춰 현재 State의 Execute 실행
+        // ========== State Machine Update (Execute 실행) ==========
         stateMachine.Update();
     }
 
-    private void HandleStateTransitions()
+    // ========== State 선택 로직 ==========
+
+    /// <summary>
+    /// IdleState에서 다음 State 선택
+    /// 거리와 조건에 따라 Attack, Dash, Chase 중 선택
+    /// </summary>
+    private void SelectNextState()
     {
-
-        float distance = Vector3.Distance(transform.position, player.position);
-        State targetState = null;
-        Debug.Log($"[{gameObject.name}] Distance: {distance}, attackRange: {data.attackRange}, dashRange: {data.dashRange}");
-        // 사망 상태에서는 더 이상 전환 없음
-        if (stateMachine.CurrentState == deathState)
-            return;
-
-        // ========== 거리 기반 상태 전환 로직 ==========
-
-        // 공격 범위 안: 공격 상태
-        if (distance <= data.attackRange)
+        // 공격 범위 안: 공격
+        if (currentDistanceToPlayer <= data.attackRange)
         {
-            targetState = attackState;
-            dashProbability = 0f;
+            stateMachine.ChangeState(attackState);
         }
-        // 대시 범위 안: 확률적으로 대시 또는 추적
+        // Dash 범위 안: Dash 또는 Chase
         else if (data.canDash &&
-                 distance > data.attackRange &&
-                 distance <= data.dashRange)
+                 currentDistanceToPlayer > data.attackRange &&
+                 currentDistanceToPlayer <= data.dashRange)
         {
-            // 시간이 지날수록 대시 확률 증가
-            dashProbability += Time.deltaTime * 0.5f;
+            // Dash 확률 증가 (시간에 따라)
+            dashProbability += Time.deltaTime * 10f;
 
+            // 확률적으로 Dash 선택
             if (Random.value < dashProbability)
             {
-                targetState = dashState;
-                dashProbability = 0f;
+                stateMachine.ChangeState(dashState);
+                dashProbability = 0f; // 확률 리셋
             }
             else
             {
-                targetState = chaseState;
+                stateMachine.ChangeState(chaseState);
             }
         }
-        // 그 외: 추적 상태
+        // 그 외: 추격
         else
         {
-            targetState = chaseState;
-            dashProbability = 0f;
-        }
-
-        // 다른 State로 전환하거나, 같은 State여도 완료되었으면 재진입
-        if (stateMachine.CurrentState != targetState)
-        {
-            stateMachine.ChangeState(targetState);
+            stateMachine.ChangeState(chaseState);
+            dashProbability = 0f; // 확률 리셋
         }
     }
 
-    // ========== 외부에서 호출: 기절 상태로 강제 전환 ==========
+    /// <summary>
+    /// ChaseState 탈출 조건 체크
+    /// 공격 범위 진입 시 IdleState로 복귀
+    /// </summary>
+    private void CheckChaseExit()
+    {
+        // 공격 범위 진입: Idle로 (다음 프레임에 SelectNextState에서 Attack 선택됨)
+        if (currentDistanceToPlayer <= data.attackRange)
+        {
+            stateMachine.ChangeState(idleState);
+        }
+    }
+
+    // ========== 외부 호출 메서드 ==========
+
+    /// <summary>
+    /// 기절 효과 적용
+    /// 어떤 State에서든 즉시 StunState로 전환
+    /// </summary>
     public void TakeStun()
     {
-        // 이미 기절 중이면 무시
-        if (stateMachine.CurrentState == stunState)
+        // 사망 상태면 무시
+        if (stateMachine.CurrentState == deathState)
             return;
 
-        // 공격/대시 중이었다면 애니메이션 강제 중단
-        if (stateMachine.CurrentState == attackState ||
-            (data.canDash && stateMachine.CurrentState == dashState))
-        {
-            animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
-        }
-
-        // 설정된 모든 Trigger 리셋
-        foreach (string attackTrigger in data.enabledAttacks)
-        {
-            animator.ResetTrigger(attackTrigger);
-        }
-        animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
-
-        // 기절 상태로 전환
-        stateMachine.ChangeState(stunState);
-    }
-
-    // ========== 외부에서 호출: 사망 상태로 강제 전환 ==========
-    public void Die()
-    {
-        // 진행 중인 애니메이션 강제 중단
-        if (stateMachine.CurrentState == attackState ||
-            (data.canDash && stateMachine.CurrentState == dashState))
-        {
-            animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
-        }
-
-        if (stateMachine.CurrentState == stunState)
-        {
-            animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
-        }
+        // 진행 중인 애니메이션 중단
+        animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
 
         // 모든 Trigger 리셋
         foreach (string attackTrigger in data.enabledAttacks)
@@ -181,7 +210,37 @@ public class EnemyController : MonoBehaviour, IEnemy
         animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
         animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
 
-        // 사망 상태로 전환
+        // 기절 상태로 강제 전환
+        stateMachine.ChangeState(stunState);
+
+        Debug.Log("Enemy Stunned!");
+    }
+
+    /// <summary>
+    /// 사망 처리
+    /// 모든 행동 중단하고 DeathState로 전환
+    /// </summary>
+    public void Die()
+    {
+        // 이미 사망 상태면 무시
+        if (stateMachine.CurrentState == deathState)
+            return;
+
+        // 진행 중인 애니메이션 중단
+        animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
+
+        // 모든 Trigger 리셋
+        foreach (string attackTrigger in data.enabledAttacks)
+        {
+            animator.ResetTrigger(attackTrigger);
+        }
+        animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
+        animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
+        animator.ResetTrigger(AnimationConstants.DEATH_TRIGGER);
+
+        // 사망 상태로 강제 전환
         stateMachine.ChangeState(deathState);
+
+        Debug.Log("Enemy Died!");
     }
 }
