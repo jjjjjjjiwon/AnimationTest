@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 264be37bda4eba14998d23e7e00871f6, type: 3}
+  m_Name: 1_Combo
+  m_EditorClassIdentifier: 
+  comboName: Combo A
+  steps:
+  - inputType: 0
+    animationName: 1
+    perfectTiming: 0.2
+    damage: 1
+    stunDuration: 1
+  - inputType: 0
+    animationName: 2
+    perfectTiming: 0.4
+    damage: 2
+    stunDuration: 2
+  - inputType: 0
+    animationName: 3
+    perfectTiming: 0.6
+    damage: 3
+    stunDuration: 3
+  finisher:
+    animationName: Finisher
+    baseDamage: 50
+    damagePerPerfect: 10
