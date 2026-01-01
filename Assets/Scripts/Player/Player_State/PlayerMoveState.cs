@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Player 이동 상태
 /// WASD로 카메라 기준 이동
+/// Bool Parameter + Transition 사용
 /// </summary>
 public class PlayerMoveState : PlayerState
 {
@@ -10,6 +11,9 @@ public class PlayerMoveState : PlayerState
     private Rigidbody rb;
     private Transform cameraTransform;
     private PlayerData data;
+    
+    // 애니메이션 파라미터 해시 (최적화)
+    private readonly int isMovingHash = Animator.StringToHash("IsMoving");
     
     public PlayerMoveState(PlayerController player) : base(player)
     {
@@ -23,8 +27,8 @@ public class PlayerMoveState : PlayerState
     {
         Debug.Log("PlayerMoveState 진입");
         
-        // Walk 애니메이션 재생
-        animator.Play(AnimationConstants.WALK);
+        // IsMoving = true → Animator가 Run으로 전환
+        animator.SetBool(isMovingHash, true);
     }
     
     public override void Execute()
@@ -53,8 +57,8 @@ public class PlayerMoveState : PlayerState
         // 이동 방향
         Vector3 moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
         
-        // 이동
-        Vector3 moveVelocity = moveDirection * data.walkSpeed;
+        // 이동 (moveSpeed 사용)
+        Vector3 moveVelocity = moveDirection * data.moveSpeed;
         rb.velocity = new Vector3(moveVelocity.x, rb.velocity.y, moveVelocity.z);
         
         // 회전 (이동 방향으로)
@@ -72,5 +76,8 @@ public class PlayerMoveState : PlayerState
     public override void Exit()
     {
         Debug.Log("PlayerMoveState 종료");
+        
+        // IsMoving = false는 IdleState에서 설정
+        // 여기서는 안 해도 됨 (다음 State가 설정할 것)
     }
 }

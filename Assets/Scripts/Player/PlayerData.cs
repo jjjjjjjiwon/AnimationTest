@@ -1,18 +1,11 @@
 using UnityEngine;
 
-/// <summary>
-/// Player 설정 데이터
-/// ScriptableObject로 Inspector에서 편집 가능
-/// </summary>
 [CreateAssetMenu(fileName = "PlayerData", menuName = "Player/Player Data")]
 public class PlayerData : ScriptableObject
 {
     [Header("Movement")]
-    [Tooltip("걷기 속도")]
-    public float walkSpeed = 5f;
-    
-    [Tooltip("달리기 속도")]
-    public float runSpeed = 8f;
+    [Tooltip("이동 속도 (달리기)")]
+    public float moveSpeed = 8f;  // walkSpeed 제거, runSpeed → moveSpeed
     
     [Tooltip("회전 속도")]
     public float rotationSpeed = 10f;

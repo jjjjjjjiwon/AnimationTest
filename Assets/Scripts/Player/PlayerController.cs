@@ -254,6 +254,16 @@ public class PlayerController : MonoBehaviour
         Debug.Log($"HP 회복: {currentHP}/{data.maxHP}");
     }
 
+    /// <summary>
+    /// 스턴 게이지 완전 회복
+    /// HitState 종료 시 호출
+    /// </summary>
+    public void RecoverStunGauge()
+    {
+        currentStunGauge = data.maxStunGauge;
+        Debug.Log($"스턴 게이지 회복: {currentStunGauge}/{data.maxStunGauge}");
+    }
+
     private void Die()
     {
         Debug.Log("Player 사망!");

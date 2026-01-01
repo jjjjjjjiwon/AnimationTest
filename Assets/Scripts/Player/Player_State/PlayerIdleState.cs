@@ -7,6 +7,7 @@ using UnityEngine;
 public class PlayerIdleState : PlayerState
 {
     private Animator animator;
+    private readonly int isMovingHash = Animator.StringToHash("IsMoving");
     
     public PlayerIdleState(PlayerController player) : base(player)
     {
@@ -17,8 +18,8 @@ public class PlayerIdleState : PlayerState
     {
         Debug.Log("PlayerIdleState 진입");
         
-        // Idle 애니메이션 재생
-        animator.Play(AnimationConstants.IDLE);
+        // IsMoving = false → Animator가 Idle로 전환
+        animator.SetBool(isMovingHash, false);
         
         // 이동 정지
         player.Rigidbody.velocity = Vector3.zero;
