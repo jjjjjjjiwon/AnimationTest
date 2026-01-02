@@ -12,21 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 264be37bda4eba14998d23e7e00871f6, type: 3}
   m_Name: 1_Combo
   m_EditorClassIdentifier: 
-  comboName: Combo A
+  comboName: 1_Combo
   steps:
   - inputType: 0
-    animationName: 1
-    perfectTiming: 0.2
+    animationName: Attack1
     damage: 1
     stunDuration: 1
   - inputType: 0
-    animationName: 2
-    perfectTiming: 0.4
+    animationName: Attack2
     damage: 2
     stunDuration: 2
   - inputType: 0
-    animationName: 3
-    perfectTiming: 0.6
+    animationName: Attack3
     damage: 3
     stunDuration: 3
   finisher:

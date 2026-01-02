@@ -16,6 +16,9 @@ public class EnemyData : ScriptableObject
     [Tooltip("기본 이동 속도")]
     public float moveSpeed = 3.5f;
 
+    [Header("체력")]
+    public float maxHealth = 100f;
+
     // ========== 공격 설정 ==========
 
     [Header("Attack")]

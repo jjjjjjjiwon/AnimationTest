@@ -1,33 +1,47 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Player 메인 컨트롤러
-/// 입력 처리, State 관리, 리소스 관리
+/// Player 전체 제어 컨트롤러
 /// </summary>
 public class PlayerController : MonoBehaviour
 {
-    // ========== 컴포넌트 ==========
-
-    public Rigidbody Rigidbody { get; private set; }
-    public Animator Animator { get; private set; }
-    public Transform CameraTransform { get; private set; }
-
-    // ========== 데이터 ==========
-
-    [Header("Data")]
-    [SerializeField] private PlayerData data;
-    [SerializeField] private List<ComboData> comboDatas;
-
-    public PlayerData Data => data;
-
-    // ========== 시스템 ==========
-
-    public PlayerStateMachine StateMachine { get; private set; }
-    public ComboSystem ComboSystem { get; private set; }
-
-    // ========== States ==========
-
+    // ========================================
+    // Components
+    // ========================================
+    
+    [Header("Components")]
+    [Tooltip("Player 데이터 (체력, 속도 등)")]
+    [SerializeField] private PlayerData playerData;
+    
+    /// <summary>애니메이션 제어</summary>
+    private Animator animator;
+    
+    /// <summary>물리 이동 제어</summary>
+    private Rigidbody rb;
+    
+    // ========================================
+    // Camera
+    // ========================================
+    
+    [Header("Camera")]
+    [Tooltip("카메라 Transform (이동 방향 계산용)")]
+    [SerializeField] private Transform cameraTransform;
+    
+    // ========================================
+    // Systems
+    // ========================================
+    
+    [Header("Systems")]
+    /// <summary>State Machine - Player 상태 관리</summary>
+    private PlayerStateMachine stateMachine;
+    
+    /// <summary>Combo System - 콤보 입력 및 판정</summary>
+    private ComboSystem comboSystem;
+    
+    // ========================================
+    // States
+    // ========================================
+    
     public PlayerIdleState IdleState { get; private set; }
     public PlayerMoveState MoveState { get; private set; }
     public PlayerAttackState AttackState { get; private set; }
@@ -35,40 +49,50 @@ public class PlayerController : MonoBehaviour
     public PlayerDodgeState DodgeState { get; private set; }
     public PlayerHitState HitState { get; private set; }
     public PlayerDeadState DeadState { get; private set; }
-
-    // ========== 리소스 ==========
-
-    [Header("Resources")]
-    private float currentHP;
-    private float currentStunGauge;
-
-    public float CurrentHP => currentHP;
-    public float MaxHP => data.maxHP;
-    public float CurrentStunGauge => currentStunGauge;
-    public float MaxStunGauge => data.maxStunGauge;
-
-    // ========== 회피 ==========
-
-    private float lastDodgeTime = -999f;
-
-    public bool CanDodge => Time.time - lastDodgeTime >= data.dodgeCooldown;
-
-    // ========== 초기화 ==========
-
-    void Awake()
+    
+    // ========================================
+    // 전투 설정
+    // ========================================
+    
+    [Header("전투 설정")]
+    [Tooltip("공격 범위 반경 (m)")]
+    [SerializeField] private float attackRange = 2f;
+    
+    [Tooltip("공격 중심점까지의 거리")]
+    [SerializeField] private float attackDistance = 1.5f;
+    
+    // ========================================
+    // Properties
+    // ========================================
+    
+    public PlayerData PlayerData => playerData;
+    public PlayerData Data => playerData;  // MoveState에서 사용
+    public PlayerStateMachine StateMachine => stateMachine;
+    public ComboSystem ComboSystem => comboSystem;
+    public Animator Animator => animator;
+    public Rigidbody Rigidbody => rb;
+    public Transform CameraTransform => cameraTransform;
+    
+    // ========================================
+    // Unity 생명주기
+    // ========================================
+    
+    void Start()
     {
-        // 컴포넌트
-        Rigidbody = GetComponent<Rigidbody>();
-        Animator = GetComponent<Animator>();
-
-        // 카메라 찾기
-        CameraTransform = Camera.main.transform;
-
-        // 시스템
-        StateMachine = new PlayerStateMachine();
-        ComboSystem = new ComboSystem(comboDatas);
-
-        // State 생성
+        // Component 가져오기
+        animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
+        
+        // Rigidbody 설정
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        
+        // System 초기화
+        stateMachine = new PlayerStateMachine();
+        
+        // ========== ComboSystem 생성 (combos 전달) ==========
+        comboSystem = new ComboSystem(playerData.combos);
+        
+        // State 인스턴스 생성
         IdleState = new PlayerIdleState(this);
         MoveState = new PlayerMoveState(this);
         AttackState = new PlayerAttackState(this);
@@ -76,248 +100,194 @@ public class PlayerController : MonoBehaviour
         DodgeState = new PlayerDodgeState(this);
         HitState = new PlayerHitState(this);
         DeadState = new PlayerDeadState(this);
-
-        // 리소스 초기화
-        currentHP = data.maxHP;
-        currentStunGauge = data.maxStunGauge;
+        
+        // 초기 State
+        stateMachine.ChangeState(IdleState);
     }
-
-    void Start()
-    {
-        // 시작 State
-        StateMachine.ChangeState(IdleState);
-    }
-
-    // ========== Update ==========
-
+    
     void Update()
     {
-        // 입력 처리
         HandleInput();
+        
+        // 테스트용: T키로 공격 판정
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            Debug.Log("테스트: 공격 판정!");
+            OnAttackHit();
+        }
     }
-
+    
     void FixedUpdate()
     {
-        // State 실행
-        StateMachine.Update();
+        stateMachine.Update();
     }
-
-    // ========== 입력 처리 ==========
-
-    private void HandleInput()
+    
+    // ========================================
+    // 입력 처리
+    // ========================================
+    
+    void HandleInput()
     {
-        // 죽었으면 입력 무시
-        if (StateMachine.CurrentState == DeadState)
+        // 회피 입력
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TryDodge();
             return;
-
-        // 스턴 중이면 입력 무시
-        if (StateMachine.CurrentState == HitState)
-            return;
-
+        }
+        
         // 공격 입력
         if (Input.GetMouseButtonDown(0))
         {
             TryAttack(InputType.LeftClick);
         }
-
-        if (Input.GetMouseButtonDown(1))
+        else if (Input.GetMouseButtonDown(1))
         {
             TryAttack(InputType.RightClick);
         }
-
-        // 회피 입력
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            TryDodge();
-        }
     }
-
-    // ========== 공격 ==========
-
-    private void TryAttack(InputType input)
+    
+    // ========================================
+    // 공격 시도
+    // ========================================
+    
+    void TryAttack(InputType inputType)
     {
-        // 이미 공격 중
-        if (StateMachine.CurrentState == AttackState)
+        PlayerState currentState = stateMachine.CurrentState;
+        
+        // Idle 또는 Move State
+        if (currentState == IdleState || currentState == MoveState)
         {
-            // 콤보 진행
-            bool success = ComboSystem.ProcessInput(input);
-
+            bool success = comboSystem.StartCombo(inputType);
+            
             if (success)
             {
-                // 성공! AttackState가 다음 타 재생
+                stateMachine.ChangeState(AttackState);
+            }
+            else
+            {
+                Debug.Log("시작 가능한 콤보가 없습니다.");
+            }
+        }
+        // Attack State
+        else if (currentState == AttackState)
+        {
+            bool success = comboSystem.ProcessInput(inputType);
+            
+            if (success)
+            {
                 AttackState.PlayNextStep();
             }
             else
             {
-                // 실패! AttackState가 실패 처리
                 AttackState.OnComboFailed();
             }
         }
-        // 공격 시작 가능
-        else if (StateMachine.CurrentState == IdleState ||
-                 StateMachine.CurrentState == MoveState)
-        {
-            // 새 콤보 시작
-            bool success = ComboSystem.StartCombo(input);
-
-            if (success)
-            {
-                StateMachine.ChangeState(AttackState);
-            }
-        }
     }
-
-    // ========== 회피 ==========
-
-    private void TryDodge()
+    
+    // ========================================
+    // 회피 시도
+    // ========================================
+    
+    void TryDodge()
     {
-        // 쿨타임 체크
-        if (!CanDodge)
+        PlayerState currentState = stateMachine.CurrentState;
+        
+        if (currentState == IdleState || 
+            currentState == MoveState || 
+            currentState == AttackState)
         {
-            Debug.Log("회피 쿨타임 중!");
-            return;
+            stateMachine.ChangeState(DodgeState);
         }
-
-        // 공격 전: 언제든 회피 가능
-        if (StateMachine.CurrentState == IdleState ||
-            StateMachine.CurrentState == MoveState)
+        else
         {
-            StateMachine.ChangeState(DodgeState);
-            lastDodgeTime = Time.time;
-            return;
-        }
-
-        // 공격 중: Perfect 타이밍만 회피 가능
-        if (StateMachine.CurrentState == AttackState)
-        {
-            if (ComboSystem.IsPerfectWindow())
-            {
-                // Perfect 타이밍! 회피 가능
-                StateMachine.ChangeState(DodgeState);
-                lastDodgeTime = Time.time;
-
-                // 콤보 리셋
-                ComboSystem.ResetCombo();
-
-                Debug.Log("Perfect 회피!");
-            }
-            else
-            {
-                Debug.Log("Perfect 타이밍 아님! 회피 불가");
-            }
+            Debug.Log("현재 상태에서는 회피할 수 없습니다.");
         }
     }
-
-    // ========== 리소스 관리 ==========
-
-    public void TakeDamage(float damage)
-    {
-        if (StateMachine.CurrentState == DeadState)
-            return;
-
-        currentHP -= damage;
-        currentHP = Mathf.Max(0, currentHP);
-
-        Debug.Log($"HP: {currentHP}/{data.maxHP}");
-
-        if (currentHP <= 0)
-        {
-            Die();
-        }
-    }
-
-    public void TakeStunDamage(float damage)
-    {
-        if (StateMachine.CurrentState == DeadState)
-            return;
-
-        if (StateMachine.CurrentState == HitState)
-            return;
-
-        currentStunGauge -= damage;
-        currentStunGauge = Mathf.Max(0, currentStunGauge);
-
-        Debug.Log($"스턴 게이지: {currentStunGauge}/{data.maxStunGauge}");
-
-        if (currentStunGauge <= 0)
-        {
-            // 스턴!
-            StateMachine.ChangeState(HitState);
-        }
-    }
-
-    public void Heal(float amount)
-    {
-        currentHP += amount;
-        currentHP = Mathf.Min(currentHP, data.maxHP);
-
-        Debug.Log($"HP 회복: {currentHP}/{data.maxHP}");
-    }
-
+    
+    // ========================================
+    // 전투 시스템 - 공격
+    // ========================================
+    
     /// <summary>
-    /// 스턴 게이지 완전 회복
-    /// HitState 종료 시 호출
-    /// </summary>
-    public void RecoverStunGauge()
-    {
-        currentStunGauge = data.maxStunGauge;
-        Debug.Log($"스턴 게이지 회복: {currentStunGauge}/{data.maxStunGauge}");
-    }
-
-    private void Die()
-    {
-        Debug.Log("Player 사망!");
-        StateMachine.ChangeState(DeadState);
-    }
-
-    // ========== 애니메이션 이벤트 ==========
-
-    /// <summary>
-    /// Perfect 타이밍 구간 시작
-    /// 애니메이션 이벤트에서 호출
-    /// </summary>
-    public void OnPerfectWindowStart()
-    {
-        ComboSystem.OnPerfectWindowStart();
-    }
-
-    /// <summary>
-    /// Perfect 타이밍 구간 종료
-    /// 애니메이션 이벤트에서 호출
-    /// </summary>
-    public void OnPerfectWindowEnd()
-    {
-        ComboSystem.OnPerfectWindowEnd();
-    }
-
-    /// <summary>
-    /// 공격 타격 지점
-    /// 애니메이션 이벤트에서 호출
-    /// Enemy에게 데미지
+    /// 공격 타격 판정
     /// </summary>
     public void OnAttackHit()
     {
-        // TODO: Enemy 감지 및 데미지
-        float damage = ComboSystem.GetCurrentDamage();
-        float stunDuration = ComboSystem.GetCurrentStunDuration();
-
-        Debug.Log($"공격! 데미지: {damage}, 스턴: {stunDuration}초");
-
-        // Enemy 찾기 및 데미지 (나중에 구현)
-        // FindEnemiesInRange()
-        // enemy.TakeDamage(damage)
-        // enemy.TakeStun(stunDuration)
+        // 공격 범위 중심점 계산
+        Vector3 attackPosition = transform.position + transform.forward * attackDistance;
+        
+        // Enemy Collider 감지
+        Collider[] hitColliders = Physics.OverlapSphere(
+            attackPosition,
+            attackRange,
+            LayerMask.GetMask("Enemy")
+        );
+        
+        Debug.Log($"공격 범위 내 Enemy: {hitColliders.Length}명");
+        
+        // 감지된 Enemy들 처리
+        foreach (Collider col in hitColliders)
+        {
+            EnemyController enemy = col.GetComponent<EnemyController>();
+            
+            if (enemy != null)
+            {
+                // 데미지 계산
+                float damage = ComboSystem.GetCurrentDamage();
+                float stunDuration = ComboSystem.GetCurrentStunDuration();
+                
+                Debug.Log($"Enemy 타격! 데미지: {damage}, 스턴: {stunDuration}초");
+                
+                // Enemy에게 적용
+                enemy.TakeDamage(damage);
+                enemy.ApplyStun(stunDuration);
+            }
+        }
     }
-
-    // ========== 디버그 ==========
-
-    void OnGUI()
+    
+    // ========================================
+    // 전투 시스템 - 피격
+    // ========================================
+    
+    /// <summary>
+    /// Player가 데미지 받기
+    /// </summary>
+    public void TakeDamage(float damage)
     {
-        GUILayout.Label($"State: {StateMachine.CurrentState?.GetType().Name}");
-        GUILayout.Label($"HP: {currentHP:F0}/{data.maxHP}");
-        GUILayout.Label($"스턴 게이지: {currentStunGauge:F0}/{data.maxStunGauge}");
-        GUILayout.Label($"콤보 단계: {ComboSystem.GetCurrentStep() + 1}/5");
-        GUILayout.Label($"Perfect: {ComboSystem.GetPerfectCount()}");
-        GUILayout.Label($"회피 쿨타임: {CanDodge}");
+        // TODO: 구현
+        Debug.Log($"Player 피격! 데미지: {damage}");
+    }
+    
+    /// <summary>
+    /// Player가 스턴 데미지 받기
+    /// </summary>
+    public void TakeStunDamage(float stunDamage)
+    {
+        // TODO: 구현
+        Debug.Log($"Player 스턴 데미지: {stunDamage}");
+    }
+    
+    /// <summary>
+    /// 스턴 게이지 회복
+    /// PlayerHitState에서 호출
+    /// </summary>
+    public void RecoverStunGauge(float amount)
+    {
+        // TODO: 구현
+        Debug.Log($"스턴 게이지 회복: {amount}");
+    }
+    
+    // ========================================
+    // 디버그 시각화
+    // ========================================
+    
+    void OnDrawGizmosSelected()
+    {
+        if (transform != null)
+        {
+            Vector3 attackPosition = transform.position + transform.forward * attackDistance;
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(attackPosition, attackRange);
+        }
     }
 }

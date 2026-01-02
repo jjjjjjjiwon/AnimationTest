@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b981212a89b6250468b50d4ff5dcf00d, type: 3}
   m_Name: EnemyData_BossA
   m_EditorClassIdentifier: 
-  moveSpeed: 5
+  moveSpeed: 15
   attackRange: 2
   enabledAttacks:
   - 1ATTACK
   - 2ATTACK
-  canDash: 0
+  canDash: 1
   dashSpeed: 20
   dashRange: 20
   dashStopDistance: 2
