@@ -58,7 +58,7 @@ public class PlayerHitState : PlayerState
             Debug.Log("스턴 종료! Idle로 복귀");
             
             // 스턴 게이지 완전 회복
-            player.RecoverStunGauge();
+            player.RecoverStunGauge(player.Data.stunRecoveryRate * Time.deltaTime);
             
             // Idle로 복귀
             player.StateMachine.ChangeState(player.IdleState);

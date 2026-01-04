@@ -12,10 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 236e961b75d356c43826d846c0a60d4e, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 100
   moveSpeed: 20
   rotationSpeed: 10
-  dodgeCooldown: 1
-  maxHP: 100
+  attackPower: 10
+  defense: 5
   maxStunGauge: 100
-  perfectDamageMultiplier: 1.5
-  perfectStunIncrease: 0.3
+  currentStunGauge: 100
+  stunRecoveryRate: 10
+  dodgeCooldown: 1
+  dodgeDistance: 5
+  dodgeDuration: 0.5
+  combos:
+  - {fileID: 11400000, guid: f092a722e52a6ee49a41fc48d65d3a02, type: 2}
+  - {fileID: 11400000, guid: 0fccdab892aef9c4da928c72b03c4176, type: 2}

@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class ComboSystem
 {
+
+    
+
+    
     private List<ComboData> allCombos;
 
     // 현재 가능한 콤보 후보들!
@@ -177,6 +181,13 @@ public class ComboSystem
         // 예: 3타 콤보면 currentStep >= 2 (steps[0], [1], [2])
         return currentStep >= currentCombo.steps.Length - 1;
     }
+
+
+/// <summary>현재 콤보 데이터 접근</summary>
+public ComboData GetCurrentCombo()
+{
+    return currentCombo;
+}
 
     public int GetCurrentStep()
     {

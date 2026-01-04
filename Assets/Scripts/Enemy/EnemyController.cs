@@ -376,7 +376,7 @@ public class EnemyController : MonoBehaviour, IEnemy
         // ========================================
         // MOVE_STATE로 강제 전환 (기본 상태)
         // normalizedTime: 0 (시작 지점)
-        animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
+        animator.Play(AnimationConstants.HIT, 0, 0);
 
         // ========================================
         // 모든 Trigger 리셋
@@ -423,7 +423,7 @@ public class EnemyController : MonoBehaviour, IEnemy
         // ========================================
         // 진행 중인 애니메이션 중단
         // ========================================
-        animator.Play(AnimationConstants.MOVE_STATE, 0, 0);
+        animator.Play(AnimationConstants.HIT, 0, 0);
 
         // ========================================
         // 모든 Trigger 리셋
