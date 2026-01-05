@@ -12,106 +12,106 @@ public class PlayerAttackState : PlayerState
     // ========================================
     // Components
     // ========================================
-    
+
     private Animator animator;
     private Rigidbody rb;
     private ComboSystem comboSystem;
-    
+
     // ========================================
     // Animation
     // ========================================
-    
+
     /// <summary>IsMoving 파라미터 해시</summary>
     private readonly int isMovingHash = Animator.StringToHash("IsMoving");
-    
+
     /// <summary>애니메이션 시작 플래그</summary>
     private bool animationStarted = false;
-    
+
     // ========================================
     // Timer
     // ========================================
-    
+
     /// <summary>공격 경과 시간</summary>
     private float attackTimer = 0f;
-    
+
     /// <summary>최소 공격 지속 시간</summary>
     private const float MIN_ATTACK_TIME = 0.5f;
-    
+
     // ========================================
     // Combo State
     // ========================================
-    
+
     /// <summary>콤보 완료 플래그 (마지막 타 재생 시 true)</summary>
     private bool isComboFinished = false;
-    
+
     // ========================================
     // Rotation Limit
     // ========================================
-    
+
     /// <summary>공격 시작 시 Y축 회전값 (회전 제한 기준점)</summary>
     private float attackStartY;
-    
+
     /// <summary>최대 회전 각도 (좌우 60도)</summary>
     private const float MAX_ATTACK_ANGLE = 60f;
-    
+
     /// <summary>부드러운 회전을 위한 현재 회전값</summary>
     private float currentRotationY;
-    
+
     // ========================================
     // Constructor
     // ========================================
-    
+
     public PlayerAttackState(PlayerController player) : base(player)
     {
         animator = player.Animator;
         rb = player.Rigidbody;
         comboSystem = player.ComboSystem;
     }
-    
+
     // ========================================
     // State Lifecycle
     // ========================================
-    
+
     public override void Enter()
     {
         Debug.Log("PlayerAttackState 진입");
-        
+
         // 애니메이션 설정
         animator.SetBool(isMovingHash, false);
-        
+
         // 이동 정지
         rb.velocity = Vector3.zero;
-        
+
         // 플래그 초기화
         animationStarted = false;
         isComboFinished = false;
         attackTimer = 0f;
-        
+
         // 회전 초기화
         attackStartY = player.Transform.eulerAngles.y;
         currentRotationY = attackStartY;
-        
+
         // 애니메이션 재생
         string animationName = comboSystem.GetCurrentAnimation();
         animator.Play(animationName);
-        
+
         Debug.Log($"공격 애니메이션 재생: {animationName}");
     }
-    
+
     public override void Execute()
     {
         // 공격 중 회전 처리
         HandleRotationDuringAttack();
-        
+
         // 최소 시간 대기
         attackTimer += Time.fixedDeltaTime;
         if (attackTimer < MIN_ATTACK_TIME)
             return;
-        
+
         // 애니메이션 시작 대기
         if (!WaitForAnimationStart(animator, ref animationStarted, out var stateInfo))
             return;
-        
+
         // 콤보 완료 플래그 체크
         if (isComboFinished)
         {
@@ -123,7 +123,7 @@ public class PlayerAttackState : PlayerState
             }
             return;
         }
-        
+
         // 애니메이션 종료 체크
         if (stateInfo.normalizedTime >= 0.95f)
         {
@@ -140,36 +140,36 @@ public class PlayerAttackState : PlayerState
             }
         }
     }
-    
+
     public override void Exit()
     {
         Debug.Log("PlayerAttackState 종료");
-        
+
         // 회전 정지
         rb.angularVelocity = Vector3.zero;
     }
-    
+
     // ========================================
     // Public Methods
     // ========================================
-    
+
     /// <summary>다음 콤보 타 재생</summary>
     public void PlayNextStep()
     {
         // 플래그 리셋
         animationStarted = false;
         attackTimer = 0f;
-        
+
         // 회전 갱신
         attackStartY = player.Transform.eulerAngles.y;
         currentRotationY = attackStartY;
-        
+
         // 애니메이션 재생
         string animationName = comboSystem.GetCurrentAnimation();
         animator.Play(animationName);
-        
+
         Debug.Log($"다음 타 재생: {animationName}");
-        
+
         // 마지막 타 체크
         if (comboSystem.IsComboComplete())
         {
@@ -177,17 +177,17 @@ public class PlayerAttackState : PlayerState
             isComboFinished = true;
         }
     }
-    
+
     /// <summary>콤보 실패 처리</summary>
     public void OnComboFailed()
     {
         Debug.Log("콤보 실패! 현재 공격 애니메이션은 끝까지 재생");
     }
-    
+
     // ========================================
     // Private Methods
     // ========================================
-    
+
     /// <summary>
     /// 공격 중 제한된 회전 처리
     /// - 입력 방향으로 회전
@@ -200,8 +200,11 @@ public class PlayerAttackState : PlayerState
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
+        // ========== 수정 1: 입력 없으면 회전 멈춤! ==========
         if (horizontal == 0 && vertical == 0)
+        {
             return;
+        }
 
         // 카메라 확인
         Transform cameraTransform = player.CameraTransform;

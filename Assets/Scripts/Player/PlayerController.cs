@@ -62,6 +62,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float attackDistance = 1.5f;
 
     // ========================================
+    // 전투 능력치
+    // ========================================
+    
+    [Header("전투 능력치")]
+    [Tooltip("현재 장착 무기")]
+    public WeaponData currentWeapon;
+    
+    [Tooltip("버프 배율 (1.0 = 기본, 1.5 = 150%)")]
+    private float buffMultiplier = 1.0f;
+
+    // ========================================
     // Properties
     // ========================================
 
@@ -85,7 +96,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
 
         // Rigidbody 설정
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
 
         // System 초기화
         stateMachine = new PlayerStateMachine();
@@ -236,42 +247,69 @@ public class PlayerController : MonoBehaviour
     }
 
     // ========================================
-    // 전투 시스템 - 공격
+    // 데미지 계산
     // ========================================
-
+    
     /// <summary>
-    /// 공격 타격 판정
+    /// 최종 데미지 계산
+    /// 스킬 + 무기 + 아이템 + 버프
     /// </summary>
+    public float CalculateDamage(AttackSkillData skill)
+    {
+        float totalDamage = 0f;
+        
+        // 1. 스킬 기본 데미지
+        totalDamage += skill.baseDamage;
+        
+        // 2. 무기 데미지
+        if (currentWeapon != null)
+            totalDamage += currentWeapon.damage;
+        
+        // 3. 아이템 보너스 (나중에 구현)
+        // totalDamage += GetItemBonusDamage();
+        
+        // 4. 버프 적용
+        totalDamage *= buffMultiplier;
+        
+        // 5. 크리티컬 (나중에 구현)
+        // if (IsCritical())
+        //     totalDamage *= 2.0f;
+        
+        return totalDamage;
+    }
+    
+    // ========================================
+    // 공격 판정
+    // ========================================
+    
     public void OnAttackHit()
     {
-        // 공격 범위 중심점 계산
+        // 현재 스킬 가져오기
+        AttackSkillData skill = comboSocket.GetCurrentSkill();
+        if (skill == null)
+            return;
+        
+        // 데미지 계산
+        float damage = CalculateDamage(skill);
+        float stun = skill.stunDuration;
+        
+        Debug.Log($"공격! 데미지: {damage}, 스턴: {stun}초");
+        
+        // 적 감지 및 데미지 적용
         Vector3 attackPosition = transform.position + transform.forward * attackDistance;
-
-        // Enemy Collider 감지
         Collider[] hitColliders = Physics.OverlapSphere(
             attackPosition,
             attackRange,
             LayerMask.GetMask("Enemy")
         );
-
-        Debug.Log($"공격 범위 내 Enemy: {hitColliders.Length}명");
-
-        // 감지된 Enemy들 처리
+        
         foreach (Collider col in hitColliders)
         {
             EnemyController enemy = col.GetComponent<EnemyController>();
-
             if (enemy != null)
             {
-                // 데미지 계산
-                float damage = ComboSystem.GetCurrentDamage();
-                float stunDuration = ComboSystem.GetCurrentStunDuration();
-
-                Debug.Log($"Enemy 타격! 데미지: {damage}, 스턴: {stunDuration}초");
-
-                // Enemy에게 적용
                 enemy.TakeDamage(damage);
-                enemy.ApplyStun(stunDuration);
+                enemy.ApplyStun(stun);
             }
         }
     }
