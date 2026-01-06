@@ -65,4 +65,7 @@ public static class AnimationConstants
     // Hit/Dead
     public const string HIT = "Hit";
     public const string DEAD = "Dead";
+
+    //FINISHER
+    public const string FINISHER = "Finisher";
 }

@@ -1,189 +1,261 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// 콤보 소켓 시스템
-/// - 플레이어가 공격 스킬을 소켓에 자유롭게 배치
-/// - 배치된 순서대로 콤보 진행
 /// </summary>
 public class ComboSocket
 {
     // ========================================
-    // 소켓 설정
+    // 상수
     // ========================================
     
-    /// <summary>최대 소켓 개수</summary>
     private const int MAX_SOCKETS = 5;
     
-    /// <summary>현재 장착된 스킬들</summary>
-    private AttackSkillData[] equippedSkills = new AttackSkillData[MAX_SOCKETS];
+    // ========================================
+    // 변수
+    // ========================================
     
-    /// <summary>현재 진행 중인 소켓 인덱스 (-1 = 콤보 안 함)</summary>
-    private int currentSocketIndex = -1;
+    private List<ComboSocketSlot> socketSlots;
+    private int currentSocketIndex;
     
     // ========================================
     // 생성자
     // ========================================
     
-    public ComboSocket()
+    public ComboSocket(PlayerData playerData)
     {
-        // 빈 소켓으로 초기화
-        for (int i = 0; i < MAX_SOCKETS; i++)
+        socketSlots = new List<ComboSocketSlot>();
+        currentSocketIndex = -1;
+        
+        // PlayerData에서 복원
+        if (playerData.socketSlots != null && playerData.socketSlots.Count > 0)
         {
-            equippedSkills[i] = null;
+            foreach (var data in playerData.socketSlots)
+            {
+                ComboSocketSlot slot = new ComboSocketSlot(data.assignedInput);
+                slot.equippedSkill = data.equippedSkill;
+                socketSlots.Add(slot);
+            }
+            Debug.Log($"소켓 복원: {socketSlots.Count}개");
+        }
+        else
+        {
+            CreateDefaultSocket();
         }
     }
     
+    private void CreateDefaultSocket()
+    {
+        ComboSocketSlot defaultSocket = new ComboSocketSlot(InputTypes.LeftClick);
+        socketSlots.Add(defaultSocket);
+        Debug.Log("기본 소켓 생성: 좌클릭");
+    }
+    
     // ========================================
-    // 소켓 장착
+    // 소켓 관리
     // ========================================
     
-    /// <summary>
-    /// 소켓에 스킬 장착
-    /// </summary>
+    public ComboSocketSlot AcquireNewSocket()
+    {
+        InputTypes randomInput = GetRandomInput();
+        ComboSocketSlot newSocket = new ComboSocketSlot(randomInput);
+        
+        Debug.Log($"새 소켓 획득! 입력: {randomInput}");
+        
+        if (socketSlots.Count < MAX_SOCKETS)
+        {
+            socketSlots.Add(newSocket);
+            Debug.Log($"소켓 추가됨! ({socketSlots.Count}/{MAX_SOCKETS})");
+        }
+        else
+        {
+            Debug.Log("소켓 최대! UI에서 교체 필요");
+        }
+        
+        return newSocket;
+    }
+    
+    public void ReplaceSocket(int removeIndex, ComboSocketSlot newSocket)
+    {
+        if (removeIndex < 0 || removeIndex >= socketSlots.Count)
+        {
+            Debug.LogWarning($"잘못된 인덱스: {removeIndex}");
+            return;
+        }
+        
+        InputTypes oldInput = socketSlots[removeIndex].assignedInput;
+        socketSlots[removeIndex] = newSocket;
+        
+        Debug.Log($"소켓 교체! {oldInput} → {newSocket.assignedInput}");
+    }
+    
+    public void RemoveSocket(int index)
+    {
+        if (index < 0 || index >= socketSlots.Count)
+        {
+            Debug.LogWarning($"잘못된 인덱스: {index}");
+            return;
+        }
+        
+        InputTypes removed = socketSlots[index].assignedInput;
+        socketSlots.RemoveAt(index);
+        
+        Debug.Log($"소켓 제거! {removed}");
+    }
+    
+    // ========================================
+    // 스킬 장착
+    // ========================================
+    
     public void EquipSkill(int socketIndex, AttackSkillData skill)
     {
-        if (socketIndex < 0 || socketIndex >= MAX_SOCKETS)
+        if (socketIndex < 0 || socketIndex >= socketSlots.Count)
         {
             Debug.LogWarning($"잘못된 소켓 인덱스: {socketIndex}");
             return;
         }
         
-        equippedSkills[socketIndex] = skill;
+        socketSlots[socketIndex].equippedSkill = skill;
         
-        if (skill != null)
-            Debug.Log($"소켓 {socketIndex + 1}에 [{skill.skillName}] 장착");
-        else
-            Debug.Log($"소켓 {socketIndex + 1} 비움");
-    }
-    
-    /// <summary>
-    /// 소켓 해제
-    /// </summary>
-    public void UnequipSkill(int socketIndex)
-    {
-        EquipSkill(socketIndex, null);
+        string skillName = skill != null ? skill.skillName : "없음";
+        Debug.Log($"소켓{socketIndex + 1} ({socketSlots[socketIndex].assignedInput}): [{skillName}]");
     }
     
     // ========================================
     // 콤보 진행
     // ========================================
     
-    /// <summary>
-    /// 콤보 시작
-    /// </summary>
-    public bool StartCombo()
+    public bool StartCombo(InputTypes input)
     {
-        // 1번 소켓이 비어있으면 실패
-        if (equippedSkills[0] == null)
+        if (socketSlots.Count == 0)
         {
-            Debug.Log("1번 소켓이 비어있어 콤보 시작 불가!");
+            Debug.Log("소켓이 없습니다!");
             return false;
         }
         
-        // 콤보 시작
+        if (socketSlots[0].assignedInput != input)
+        {
+            Debug.Log($"틀린 입력! [필요: {socketSlots[0].assignedInput}] [입력: {input}]");
+            return false;
+        }
+        
+        if (socketSlots[0].equippedSkill == null)
+        {
+            Debug.Log("소켓1에 스킬 없음!");
+            return false;
+        }
+        
         currentSocketIndex = 0;
-        Debug.Log($"콤보 시작: [{equippedSkills[0].skillName}]");
+        Debug.Log($"콤보 시작! [{socketSlots[0].equippedSkill.skillName}]");
         return true;
     }
     
-    /// <summary>
-    /// 다음 소켓으로 진행
-    /// </summary>
-    public bool ProcessNext()
+    public bool ProcessNext(InputTypes input)
     {
         int nextIndex = currentSocketIndex + 1;
         
-        // 범위 초과
-        if (nextIndex >= MAX_SOCKETS)
+        if (nextIndex >= socketSlots.Count)
         {
-            Debug.Log("마지막 소켓! 더 이상 진행 불가");
+            Debug.Log("마지막 소켓!");
             return false;
         }
         
-        // 다음 소켓이 비어있음
-        if (equippedSkills[nextIndex] == null)
+        if (socketSlots[nextIndex].assignedInput != input)
         {
-            Debug.Log($"소켓 {nextIndex + 1}이 비어있어 콤보 종료");
+            Debug.Log($"틀린 입력! [필요: {socketSlots[nextIndex].assignedInput}] [입력: {input}]");
             return false;
         }
         
-        // 다음 소켓으로 진행
+        if (socketSlots[nextIndex].equippedSkill == null)
+        {
+            Debug.Log($"소켓{nextIndex + 1}에 스킬 없음!");
+            return false;
+        }
+        
         currentSocketIndex = nextIndex;
-        Debug.Log($"콤보 진행: {currentSocketIndex + 1}타 [{equippedSkills[nextIndex].skillName}]");
+        Debug.Log($"콤보 {currentSocketIndex + 1}타! [{socketSlots[nextIndex].equippedSkill.skillName}]");
         return true;
     }
     
-    /// <summary>
-    /// 콤보 리셋
-    /// </summary>
     public void ResetCombo()
     {
         currentSocketIndex = -1;
-        Debug.Log("콤보 리셋");
     }
     
     // ========================================
-    // 정보 가져오기
+    // 정보 조회
     // ========================================
     
-    /// <summary>
-    /// 현재 스킬 가져오기
-    /// </summary>
     public AttackSkillData GetCurrentSkill()
     {
-        if (currentSocketIndex < 0 || currentSocketIndex >= MAX_SOCKETS)
+        if (currentSocketIndex < 0 || currentSocketIndex >= socketSlots.Count)
             return null;
         
-        return equippedSkills[currentSocketIndex];
+        return socketSlots[currentSocketIndex].equippedSkill;
     }
     
-    /// <summary>
-    /// 특정 소켓의 스킬 가져오기
-    /// </summary>
-    public AttackSkillData GetSkillAt(int socketIndex)
+    public InputTypes GetCurrentInput()
     {
-        if (socketIndex < 0 || socketIndex >= MAX_SOCKETS)
-            return null;
+        if (currentSocketIndex < 0 || currentSocketIndex >= socketSlots.Count)
+            return InputTypes.None;
         
-        return equippedSkills[socketIndex];
+        return socketSlots[currentSocketIndex].assignedInput;
     }
     
-    /// <summary>
-    /// 현재 소켓 인덱스
-    /// </summary>
-    public int GetCurrentSocketIndex()
-    {
-        return currentSocketIndex;
-    }
-    
-    /// <summary>
-    /// 콤보 완료 체크
-    /// </summary>
     public bool IsComboComplete()
     {
-        // 콤보 진행 중이 아님
         if (currentSocketIndex < 0)
             return false;
         
-        int nextIndex = currentSocketIndex + 1;
-        
-        // 마지막 소켓이거나 다음 소켓이 비어있으면 완료
-        return nextIndex >= MAX_SOCKETS || equippedSkills[nextIndex] == null;
+        return currentSocketIndex + 1 >= socketSlots.Count;
     }
     
-    /// <summary>
-    /// 장착된 스킬 개수
-    /// </summary>
-    public int GetEquippedCount()
+    public int GetSocketCount()
     {
-        int count = 0;
-        for (int i = 0; i < MAX_SOCKETS; i++)
+        return socketSlots.Count;
+    }
+    
+    public bool IsFull()
+    {
+        return socketSlots.Count >= MAX_SOCKETS;
+    }
+    
+    public ComboSocketSlot GetSocket(int index)
+    {
+        if (index < 0 || index >= socketSlots.Count)
+            return null;
+        
+        return socketSlots[index];
+    }
+    
+    public List<ComboSocketSlot> GetAllSockets()
+    {
+        return new List<ComboSocketSlot>(socketSlots);
+    }
+    
+    public int GetCurrentStep()
+    {
+        return currentSocketIndex + 1;
+    }
+    
+    // ========================================
+    // Private
+    // ========================================
+    
+    private InputTypes GetRandomInput()
+    {
+        // Random.Range: 0 ~ 4 (5개 중 랜덤)
+        int randomValue = Random.Range(0, 5);
+        
+        switch (randomValue)
         {
-            if (equippedSkills[i] != null)
-                count++;
-            else
-                break; // 빈 칸 나오면 중단 (중간에 빈 칸 있으면 안 됨)
+            case 0: return InputTypes.LeftClick;
+            case 1: return InputTypes.RightClick;
+            case 2: return InputTypes.QKey;
+            case 3: return InputTypes.EKey;
+            case 4: return InputTypes.RKey;
+            default: return InputTypes.LeftClick;
         }
-        return count;
     }
 }

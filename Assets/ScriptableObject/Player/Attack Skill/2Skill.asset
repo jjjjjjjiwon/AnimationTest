@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c7526c2a2da3773458a9099dd4f1515b, type: 3}
-  m_Name: 1BaseSjill
+  m_Name: 2Skill
   m_EditorClassIdentifier: 
-  skillName: 1BaseSkill
-  icon: {fileID: 21300000, guid: 3ee760b1d6564da4980b008e4b98e01e, type: 3}
-  animationName: Attack1
+  skillName: 2Skill
+  icon: {fileID: 21300000, guid: bafe08d1605ea874b8241b8a0d9a35ad, type: 3}
+  animationName: Attack2
   duration: 0.8
   exitTime: 0.2
-  baseDamage: 10
+  baseDamage: 20
   stunDuration: 0.5

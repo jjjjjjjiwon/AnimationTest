@@ -38,6 +38,10 @@ public class PlayerController : MonoBehaviour
     /// <summary>Combo System - 콤보 입력 및 판정</summary>
     private ComboSystem comboSystem;
 
+    // ========== ComboSocket 노출 ==========
+    private ComboSocket comboSocket;
+    public ComboSocket ComboSocket => comboSocket;  // ← 추가!
+
     // ========================================
     // States
     // ========================================
@@ -64,11 +68,11 @@ public class PlayerController : MonoBehaviour
     // ========================================
     // 전투 능력치
     // ========================================
-    
+
     [Header("전투 능력치")]
     [Tooltip("현재 장착 무기")]
     public WeaponData currentWeapon;
-    
+
     [Tooltip("버프 배율 (1.0 = 기본, 1.5 = 150%)")]
     private float buffMultiplier = 1.0f;
 
@@ -91,20 +95,21 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // Component 가져오기
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
 
-        // Rigidbody 설정
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
+        rb.constraints =
+            RigidbodyConstraints.FreezeRotationX |
+            RigidbodyConstraints.FreezeRotationY |
+            RigidbodyConstraints.FreezeRotationZ;
 
-        // System 초기화
         stateMachine = new PlayerStateMachine();
 
-        // ========== ComboSystem 생성 (combos 전달) ==========
-        comboSystem = new ComboSystem(playerData.combos);
+        // ========== ComboSocket 생성 ==========
+        // PlayerData 전달 → 복원 OR 기본 소켓 생성
+        comboSocket = new ComboSocket(playerData);
 
-        // State 인스턴스 생성
+        // State 생성
         IdleState = new PlayerIdleState(this);
         MoveState = new PlayerMoveState(this);
         AttackState = new PlayerAttackState(this);
@@ -113,7 +118,6 @@ public class PlayerController : MonoBehaviour
         HitState = new PlayerHitState(this);
         DeadState = new PlayerDeadState(this);
 
-        // 초기 State
         stateMachine.ChangeState(IdleState);
     }
 
@@ -140,6 +144,10 @@ public class PlayerController : MonoBehaviour
 
     void HandleInput()
     {
+        // ========== UI 열려있으면 게임 입력 차단! ==========
+        if (SocketManagerUI.IsUIOpen)
+            return;
+
         // 회피 입력
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -148,28 +156,52 @@ public class PlayerController : MonoBehaviour
         }
 
         // 공격 입력
-        if (Input.GetMouseButtonDown(0))
+        InputTypes inputType = GetInputType();
+        if (inputType != InputTypes.None)
         {
-            TryAttack(InputType.LeftClick);
-        }
-        else if (Input.GetMouseButtonDown(1))
-        {
-            TryAttack(InputType.RightClick);
+            TryAttack(inputType);
         }
     }
 
-    // ========================================
-    // 공격 시도
-    // ========================================
+    /// <summary>
+    /// 현재 프레임 입력을 InputType으로 변환
+    /// </summary>
+    private InputTypes GetInputType()
+    {
+        // ========== UI 열려있으면 None 반환 ==========
+        if (SocketManagerUI.IsUIOpen)
+            return InputTypes.None;
 
-    void TryAttack(InputType inputType)
+        if (Input.GetMouseButtonDown(0))
+            return InputTypes.LeftClick;
+
+        if (Input.GetMouseButtonDown(1))
+            return InputTypes.RightClick;
+
+        if (Input.GetKeyDown(KeyCode.Q))
+            return InputTypes.QKey;
+
+        if (Input.GetKeyDown(KeyCode.E))
+            return InputTypes.EKey;
+
+        if (Input.GetKeyDown(KeyCode.R))
+            return InputTypes.RKey;
+
+        return InputTypes.None;
+    }
+
+
+    /// <summary>
+    /// 공격 시도
+    /// </summary>
+    void TryAttack(InputTypes inputType)
     {
         PlayerState currentState = stateMachine.CurrentState;
 
-        // Idle 또는 Move State
+        // Idle 또는 Move에서 시작
         if (currentState == IdleState || currentState == MoveState)
         {
-            bool success = comboSystem.StartCombo(inputType);
+            bool success = comboSocket.StartCombo(inputType);
 
             if (success)
             {
@@ -177,13 +209,13 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                Debug.Log("시작 가능한 콤보가 없습니다.");
+                Debug.Log("콤보 시작 실패!");
             }
         }
-        // Attack State
+        // Attack 중
         else if (currentState == AttackState)
         {
-            bool success = comboSystem.ProcessInput(inputType);
+            bool success = comboSocket.ProcessNext(inputType);
 
             if (success)
             {
@@ -249,67 +281,70 @@ public class PlayerController : MonoBehaviour
     // ========================================
     // 데미지 계산
     // ========================================
-    
+
     /// <summary>
     /// 최종 데미지 계산
-    /// 스킬 + 무기 + 아이템 + 버프
     /// </summary>
     public float CalculateDamage(AttackSkillData skill)
     {
         float totalDamage = 0f;
-        
+
         // 1. 스킬 기본 데미지
         totalDamage += skill.baseDamage;
-        
-        // 2. 무기 데미지
-        if (currentWeapon != null)
-            totalDamage += currentWeapon.damage;
-        
-        // 3. 아이템 보너스 (나중에 구현)
+
+        // 2. 무기 데미지 (나중에)
+        // if (currentWeapon != null)
+        //     totalDamage += currentWeapon.damage;
+
+        // 3. 아이템 보너스 (나중에)
         // totalDamage += GetItemBonusDamage();
-        
-        // 4. 버프 적용
-        totalDamage *= buffMultiplier;
-        
-        // 5. 크리티컬 (나중에 구현)
-        // if (IsCritical())
-        //     totalDamage *= 2.0f;
-        
+
+        // 4. 버프 (나중에)
+        // totalDamage *= buffMultiplier;
+
         return totalDamage;
     }
-    
+
     // ========================================
     // 공격 판정
     // ========================================
-    
+
     public void OnAttackHit()
     {
-        // 현재 스킬 가져오기
+        // ========== 현재 스킬 가져오기 ==========
         AttackSkillData skill = comboSocket.GetCurrentSkill();
         if (skill == null)
+        {
+            Debug.Log("공격 스킬이 없습니다!");
             return;
-        
-        // 데미지 계산
-        float damage = CalculateDamage(skill);
-        float stun = skill.stunDuration;
-        
-        Debug.Log($"공격! 데미지: {damage}, 스턴: {stun}초");
-        
-        // 적 감지 및 데미지 적용
+        }
+
+        // ========== 공격 범위 중심점 계산 ==========
         Vector3 attackPosition = transform.position + transform.forward * attackDistance;
+
+        // ========== Enemy 감지 ==========
         Collider[] hitColliders = Physics.OverlapSphere(
             attackPosition,
             attackRange,
             LayerMask.GetMask("Enemy")
         );
-        
+
+        Debug.Log($"공격 범위 내 Enemy: {hitColliders.Length}명");
+
         foreach (Collider col in hitColliders)
         {
             EnemyController enemy = col.GetComponent<EnemyController>();
+
             if (enemy != null)
             {
+                // ========== 데미지 계산 ==========
+                float damage = CalculateDamage(skill);
+                float stunDuration = skill.stunDuration;
+
+                Debug.Log($"Enemy 타격! 데미지: {damage}, 스턴: {stunDuration}초");
+
                 enemy.TakeDamage(damage);
-                enemy.ApplyStun(stun);
+                enemy.ApplyStun(stunDuration);
             }
         }
     }
@@ -387,7 +422,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-/// <summary>
+    /// <summary>
     /// 디버그 정보 표시 (좌측 상단)
     /// - 현재 State
     /// - HP
@@ -402,55 +437,55 @@ public class PlayerController : MonoBehaviour
         boxStyle.alignment = TextAnchor.UpperLeft;
         boxStyle.fontSize = 16;
         boxStyle.normal.textColor = Color.white;
-        
+
         // 텍스트 스타일
         GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
         labelStyle.fontSize = 14;
         labelStyle.normal.textColor = Color.white;
-        
+
         // 배경 박스
         GUI.Box(new Rect(10, 10, 250, 160), "Player Debug Info", boxStyle);
-        
+
         // 정보 표시
         int yPos = 35;
         int lineHeight = 20;
-        
+
         // State
         string stateName = StateMachine?.CurrentState?.GetType().Name ?? "None";
         stateName = stateName.Replace("Player", "").Replace("State", "");
         GUI.Label(new Rect(20, yPos, 230, 20), $"State: {stateName}", labelStyle);
         yPos += lineHeight;
-        
+
         // HP
-        GUI.Label(new Rect(20, yPos, 230, 20), 
+        GUI.Label(new Rect(20, yPos, 230, 20),
             $"HP: {playerData.currentHealth:F0} / {playerData.maxHealth:F0}", labelStyle);
         yPos += lineHeight;
-        
+
         // 스턴 게이지
-        GUI.Label(new Rect(20, yPos, 230, 20), 
+        GUI.Label(new Rect(20, yPos, 230, 20),
             $"Stun: {playerData.currentStunGauge:F0} / {playerData.maxStunGauge:F0}", labelStyle);
         yPos += lineHeight;
-        
+
         // 콤보 단계
         int currentStep = ComboSystem?.GetCurrentStep() ?? -1;
         int totalSteps = ComboSystem?.GetCurrentCombo()?.steps.Length ?? 0;
-        GUI.Label(new Rect(20, yPos, 230, 20), 
+        GUI.Label(new Rect(20, yPos, 230, 20),
             $"Combo: {currentStep + 1} / {totalSteps}", labelStyle);
         yPos += lineHeight;
-        
+
         // Perfect 카운트
         int perfectCount = ComboSystem?.GetPerfectCount() ?? 0;
-        GUI.Label(new Rect(20, yPos, 230, 20), 
+        GUI.Label(new Rect(20, yPos, 230, 20),
             $"Perfect: {perfectCount}", labelStyle);
         yPos += lineHeight;
-        
+
         // 회피 쿨타임
         bool canDodge = CanDodge();
-        float cooldownRemaining = canDodge ? 0f : 
+        float cooldownRemaining = canDodge ? 0f :
             playerData.dodgeCooldown - (Time.time - lastDodgeTime);
-        
+
         string dodgeText = canDodge ? "Ready!" : $"{cooldownRemaining:F1}s";
-        GUI.Label(new Rect(20, yPos, 230, 20), 
+        GUI.Label(new Rect(20, yPos, 230, 20),
             $"Dodge: {dodgeText}", labelStyle);
     }
 }

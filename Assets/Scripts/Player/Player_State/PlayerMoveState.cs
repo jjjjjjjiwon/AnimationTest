@@ -37,6 +37,14 @@ public class PlayerMoveState : PlayerState
     float horizontal = Input.GetAxisRaw("Horizontal");
     float vertical = Input.GetAxisRaw("Vertical");
     
+    // ========== UI 열려있으면 이동 안 함 ==========
+    if (SocketManagerUI.IsUIOpen)
+    {
+        rb.velocity = Vector3.zero;
+        animator.SetBool(isMovingHash, false);
+        return;
+    }
+    
     // 입력 없으면 IdleState로
     if (horizontal == 0 && vertical == 0)
     {

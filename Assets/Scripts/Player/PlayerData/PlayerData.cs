@@ -1,6 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class SocketSlotData
+{
+    public InputTypes assignedInput;
+    public AttackSkillData equippedSkill;
+}
+
 /// <summary>
 /// Player 데이터
 /// ScriptableObject로 관리하여 Inspector에서 설정 가능
@@ -71,4 +78,9 @@ public class PlayerData : ScriptableObject
     [Header("콤보 시스템")]
     [Tooltip("사용 가능한 콤보 리스트")]
     public List<ComboData> combos = new List<ComboData>();
+
+    // 소켓
+    [Header("소켓 시스템")]
+    [Tooltip("저장된 소켓 정보")]
+    public List<SocketSlotData> socketSlots = new List<SocketSlotData>();
 }
