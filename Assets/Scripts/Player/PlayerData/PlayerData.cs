@@ -22,9 +22,8 @@ public class PlayerData : ScriptableObject
     [Header("기본 능력치")]
     [Tooltip("최대 체력")]
     public float maxHealth = 100f;
-    
-    [Tooltip("현재 체력 (런타임 변경)")]
-    public float currentHealth = 100f;
+
+   // currentHealth = maxHealth;
     
     [Tooltip("이동 속도")]
     public float moveSpeed = 5f;

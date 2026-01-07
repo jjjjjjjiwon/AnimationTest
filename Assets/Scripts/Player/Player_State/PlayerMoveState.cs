@@ -33,6 +33,7 @@ public class PlayerMoveState : PlayerState
     
     public override void Execute()
 {
+    
     // 입력 받기
     float horizontal = Input.GetAxisRaw("Horizontal");
     float vertical = Input.GetAxisRaw("Vertical");

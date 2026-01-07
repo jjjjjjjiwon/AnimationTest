@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: PlayerData
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 100
-  moveSpeed: 20
+  moveSpeed: 15
   rotationSpeed: 10
   attackPower: 10
   defense: 5
@@ -24,6 +23,11 @@ MonoBehaviour:
   dodgeCooldown: 1
   dodgeDistance: 5
   dodgeDuration: 0.5
-  combos:
-  - {fileID: 11400000, guid: f092a722e52a6ee49a41fc48d65d3a02, type: 2}
-  - {fileID: 11400000, guid: 0fccdab892aef9c4da928c72b03c4176, type: 2}
+  combos: []
+  socketSlots:
+  - assignedInput: 1
+    equippedSkill: {fileID: 11400000, guid: 20c14697b8157a74db763be4550204b3, type: 2}
+  - assignedInput: 2
+    equippedSkill: {fileID: 11400000, guid: 044ab59dff847cb48bdc439c6361cd90, type: 2}
+  - assignedInput: 1
+    equippedSkill: {fileID: 11400000, guid: c9299f2b7b10ec440a3ba50b57cd4084, type: 2}

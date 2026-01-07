@@ -9,10 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7e963612e8b25644b37e0908a804583, type: 3}
-  m_Name: NewWeapon
+  m_Script: {fileID: 11500000, guid: 276c85cf3009b274288de189273fc406, type: 3}
+  m_Name: Sword
   m_EditorClassIdentifier: 
-  weaponName: Sword
-  damage: 25
-  attackRange: 1.5
-  attackSpeed: 1
+  weaponName: Swrod
+  icon: {fileID: 21300000, guid: 928c9090df8a0524bb95ca72dae9d136, type: 3}
+  damage: 50

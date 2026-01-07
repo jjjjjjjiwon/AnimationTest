@@ -44,7 +44,36 @@ public class ComboSocket
             CreateDefaultSocket();
         }
     }
-    
+
+    /// <summary>
+    /// 시작 소켓 5개 생성
+    /// - 고정 입력키: 좌클릭, 우클릭, Q, E, R
+    /// - 스킬은 비어있음
+    /// </summary>
+    private void CreateStartingSockets()
+    {
+        // 고정 입력키 배열
+        InputTypes[] startInputs = new InputTypes[]
+        {
+            InputTypes.LeftClick,
+            InputTypes.RightClick,
+            InputTypes.QKey,
+            InputTypes.EKey,
+            InputTypes.RKey
+        };
+        
+        // 5개 소켓 생성
+        for (int i = 0; i < startInputs.Length; i++)
+        {
+            ComboSocketSlot slot = new ComboSocketSlot(startInputs[i]);
+            socketSlots.Add(slot);
+            
+            Debug.Log($"시작 소켓 {i + 1} 생성: {startInputs[i]}");
+        }
+        
+        Debug.Log("시작 소켓 5개 생성 완료!");
+    }
+
     private void CreateDefaultSocket()
     {
         ComboSocketSlot defaultSocket = new ComboSocketSlot(InputTypes.LeftClick);
@@ -56,22 +85,25 @@ public class ComboSocket
     // 소켓 관리
     // ========================================
     
+    /// <summary>
+    /// 새 소켓 획득 (랜덤 입력키)
+    /// - 6개 이상은 불가 (시작 5개로 고정)
+    /// </summary>
     public ComboSocketSlot AcquireNewSocket()
     {
+        // 최대 5개로 제한
+        if (socketSlots.Count >= MAX_SOCKETS)
+        {
+            Debug.Log("소켓이 이미 최대입니다! (5/5)");
+            return null;
+        }
+        
+        // 랜덤 입력
         InputTypes randomInput = GetRandomInput();
         ComboSocketSlot newSocket = new ComboSocketSlot(randomInput);
         
-        Debug.Log($"새 소켓 획득! 입력: {randomInput}");
-        
-        if (socketSlots.Count < MAX_SOCKETS)
-        {
-            socketSlots.Add(newSocket);
-            Debug.Log($"소켓 추가됨! ({socketSlots.Count}/{MAX_SOCKETS})");
-        }
-        else
-        {
-            Debug.Log("소켓 최대! UI에서 교체 필요");
-        }
+        socketSlots.Add(newSocket);
+        Debug.Log($"새 소켓 추가! 입력: {randomInput} ({socketSlots.Count}/{MAX_SOCKETS})");
         
         return newSocket;
     }

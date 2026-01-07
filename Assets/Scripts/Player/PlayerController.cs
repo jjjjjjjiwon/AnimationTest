@@ -54,6 +54,13 @@ public class PlayerController : MonoBehaviour
     public PlayerHitState HitState { get; private set; }
     public PlayerDeadState DeadState { get; private set; }
 
+    /// <summary>
+    /// 체력
+    /// </summary>
+    
+    [Header("플레이어 정보")]
+    [SerializeField] private float currentHealth;
+
     // ========================================
     // 전투 설정
     // ========================================
@@ -77,6 +84,13 @@ public class PlayerController : MonoBehaviour
     private float buffMultiplier = 1.0f;
 
     // ========================================
+    // Weapon
+    // ========================================  
+
+    [Header("Hitbox")]
+    [SerializeField] private WeaponHitbox weaponHitbox;
+
+    // ========================================
     // Properties
     // ========================================
 
@@ -93,8 +107,12 @@ public class PlayerController : MonoBehaviour
     // Unity 생명주기
     // ========================================
 
+    public HPBar hPBar;
+
     void Start()
     {
+        currentHealth = playerData.maxHealth;
+
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
 
@@ -119,6 +137,7 @@ public class PlayerController : MonoBehaviour
         DeadState = new PlayerDeadState(this);
 
         stateMachine.ChangeState(IdleState);
+
     }
 
     void Update()
@@ -128,9 +147,10 @@ public class PlayerController : MonoBehaviour
         // 테스트용: T키로 공격 판정
         if (Input.GetKeyDown(KeyCode.T))
         {
-            Debug.Log("테스트: 공격 판정!");
-            OnAttackHit();
+            TakeDamage(10);
+            Debug.Log("데미지 받음");
         }
+
     }
 
     void FixedUpdate()
@@ -305,11 +325,76 @@ public class PlayerController : MonoBehaviour
         return totalDamage;
     }
 
+
+    // ========================================
+    // Hitbox 제어 (애니메이션 이벤트에서 호출)
+    // ========================================
+    
+    /// <summary>
+    /// Hitbox 활성화
+    /// - 애니메이션 이벤트에서 호출
+    /// </summary>
+    public void HitboxOn()
+    {
+        if (weaponHitbox == null)
+        {
+            Debug.LogError("WeaponHitbox가 없습니다!");
+            return;
+        }
+        
+        weaponHitbox.gameObject.SetActive(true);
+        weaponHitbox.ResetHitList();
+        
+        Debug.Log("Hitbox ON");
+    }
+
+    /// <summary>
+    /// Hitbox 비활성화
+    /// - 애니메이션 이벤트에서 호출
+    /// </summary>
+    public void HitboxOff()
+    {
+        if (weaponHitbox == null)
+            return;
+        
+        weaponHitbox.gameObject.SetActive(false);
+        
+        Debug.Log("Hitbox OFF");
+    }
+    
+    /// <summary>
+    /// 무기가 적과 충돌했을 때
+    /// - WeaponHitbox에서 호출
+    /// </summary>
+    public void OnWeaponHit(Collider enemyCollider)
+    {
+        EnemyController enemy = enemyCollider.GetComponent<EnemyController>();
+        
+        if (enemy == null)
+            return;
+        
+        // 현재 스킬 가져오기
+        AttackSkillData skill = ComboSocket.GetCurrentSkill();
+        
+        if (skill == null)
+            return;
+        
+        // 데미지 계산
+        float damage = CalculateDamage(skill);
+        float stun = skill.stunDuration;
+        
+        Debug.Log($"적 타격! 데미지: {damage}, 스턴: {stun}초");
+        
+        // 데미지 적용
+        enemy.TakeDamage(damage);
+    }
+    
+
     // ========================================
     // 공격 판정
     // ========================================
 
-    public void OnAttackHit()
+        public void OnAttackHit()
     {
         // ========== 현재 스킬 가져오기 ==========
         AttackSkillData skill = comboSocket.GetCurrentSkill();
@@ -359,14 +444,15 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float damage)
     {
         // 체력 감소
-        playerData.currentHealth -= damage;
+        currentHealth -= damage;
 
-        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {playerData.currentHealth}");
+        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {currentHealth}");
+        hPBar.SetHP(currentHealth, playerData.maxHealth);
 
         // 사망 체크
-        if (playerData.currentHealth <= 0)
+        if (currentHealth <= 0)
         {
-            playerData.currentHealth = 0;
+            currentHealth = 0;
             Die();
             return;
         }
@@ -458,7 +544,7 @@ public class PlayerController : MonoBehaviour
 
         // HP
         GUI.Label(new Rect(20, yPos, 230, 20),
-            $"HP: {playerData.currentHealth:F0} / {playerData.maxHealth:F0}", labelStyle);
+            $"HP: {currentHealth:F0} / {playerData.maxHealth:F0}", labelStyle);
         yPos += lineHeight;
 
         // 스턴 게이지

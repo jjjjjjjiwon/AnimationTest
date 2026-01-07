@@ -25,7 +25,6 @@ public class SocketManagerUI : MonoBehaviour
     private List<SkillSlotUI> skillSlotUIs = new List<SkillSlotUI>();
     private int selectedSocketIndex = -1;
     
-    // ========== UI 상태 (Static으로 전역 접근) ==========
     public static bool IsUIOpen { get; private set; } = false;
     
     void Start()
@@ -36,7 +35,7 @@ public class SocketManagerUI : MonoBehaviour
             closeButton.onClick.AddListener(CloseUI);
         
         uiPanel.SetActive(false);
-        IsUIOpen = false;  // ← 초기화
+        IsUIOpen = false;
         
         RefreshSkillInventoryUI();
     }
@@ -51,36 +50,58 @@ public class SocketManagerUI : MonoBehaviour
     
     public void ToggleUI()
     {
-        IsUIOpen = !IsUIOpen;  // ← 상태 업데이트
-        uiPanel.SetActive(IsUIOpen);
-        
-        if (IsUIOpen)
+        // ========== UI 열기 ==========
+        if (!IsUIOpen)
         {
-            RefreshSocketUI();
-            Debug.Log("소켓 UI 열림 - 게임 입력 차단");
+            // Idle 또는 Move 상태에서만 열기
+            if (!CanOpenUI())
+            {
+                Debug.Log("전투 중에는 소켓 창을 열 수 없습니다!");
+                return;
+            }
             
-            // ========== 커서 표시 ==========
+            IsUIOpen = true;
+            uiPanel.SetActive(true);
+            
+            RefreshSocketUI();
+            Debug.Log("소켓 UI 열림");
+            
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            
+            // Idle로 전환
+            playerController.StateMachine.ChangeState(playerController.IdleState);
         }
+        // ========== UI 닫기 ==========
         else
         {
-            Debug.Log("소켓 UI 닫힘 - 게임 입력 재개");
-            
-            // ========== 커서 숨김 ==========
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            CloseUI();
         }
+    }
+    
+    /// <summary>
+    /// UI를 열 수 있는 상태인지 체크
+    /// - Idle 또는 Move 상태에서만 가능
+    /// </summary>
+    private bool CanOpenUI()
+    {
+        var currentState = playerController.StateMachine.CurrentState;
+        
+        return currentState is PlayerIdleState or PlayerMoveState;
     }
     
     public void CloseUI()
     {
-        IsUIOpen = false;  // ← 상태 업데이트
+        IsUIOpen = false;
         uiPanel.SetActive(false);
-        Debug.Log("소켓 UI 닫힘 - 게임 입력 재개");
+        
+        Debug.Log("소켓 UI 닫힘");
         
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        
+        // Idle로 전환
+        playerController.StateMachine.ChangeState(playerController.IdleState);
     }
     
     // ... 나머지 함수들 동일 ...
@@ -105,8 +126,6 @@ public class SocketManagerUI : MonoBehaviour
             slotUI.Initialize(i, sockets[i], this);
             socketSlotUIs.Add(slotUI);
         }
-        
-        Debug.Log($"소켓 UI 갱신: {sockets.Count}개");
     }
     
     public void SelectSocket(int index)
@@ -122,8 +141,6 @@ public class SocketManagerUI : MonoBehaviour
         {
             socketSlotUIs[index].SetSelected(true);
         }
-        
-        Debug.Log($"소켓 {index + 1} 선택됨!");
     }
     
     public void RefreshSkillInventoryUI()
@@ -145,8 +162,6 @@ public class SocketManagerUI : MonoBehaviour
             slotUI.Initialize(skill, this);
             skillSlotUIs.Add(slotUI);
         }
-        
-        Debug.Log($"스킬 인벤토리 갱신: {skillSlotUIs.Count}개");
     }
     
     public void EquipSkillToSelectedSocket(AttackSkillData skill)
@@ -159,8 +174,6 @@ public class SocketManagerUI : MonoBehaviour
         
         ComboSocket comboSocket = playerController.ComboSocket;
         comboSocket.EquipSkill(selectedSocketIndex, skill);
-        
-        Debug.Log($"소켓 {selectedSocketIndex + 1}에 [{skill.skillName}] 장착!");
         
         RefreshSocketUI();
     }
@@ -176,8 +189,6 @@ public class SocketManagerUI : MonoBehaviour
         }
         
         ComboSocketSlot newSocket = comboSocket.AcquireNewSocket();
-        
-        Debug.Log($"새 소켓 추가! 입력키: {newSocket.assignedInput}");
         
         RefreshSocketUI();
     }

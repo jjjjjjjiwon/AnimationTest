@@ -172,31 +172,30 @@ public class PlayerAttackState : PlayerState
     /// - PlayerController.TryAttack()에서 호출
     /// </summary>
     public void PlayNextStep()
+{
+    animationStarted = false;
+    attackTimer = 0f;
+    
+    attackStartY = player.Transform.eulerAngles.y;
+    currentRotationY = attackStartY;
+    
+    AttackSkillData skill = comboSocket.GetCurrentSkill();
+    
+    if (skill != null)
     {
-        // 플래그 리셋
-        animationStarted = false;
-        attackTimer = 0f;
+        // ========== 강제 재시작 ==========
+        // animator.Play()는 같은 애니메이션이면 무시됨
+        // → 강제로 재시작시키기!
         
-        // 회전 갱신
-        attackStartY = player.Transform.eulerAngles.y;
-        currentRotationY = attackStartY;
+        animator.Play(skill.animationName, 0, 0f);
+        // 파라미터:
+        //   - stateName: 애니메이션 이름
+        //   - layer: 0 (Base Layer)
+        //   - normalizedTime: 0f (처음부터!)
         
-        // ========== 다음 스킬 애니메이션 재생 ==========
-        AttackSkillData skill = comboSocket.GetCurrentSkill();
-        
-        if (skill != null)
-        {
-            animator.Play(skill.animationName);
-            Debug.Log($"다음 타: {skill.skillName} (지속: {skill.TotalTime}초)");
-        }
-        
-        // 마지막 타 체크
-        if (comboSocket.IsComboComplete())
-        {
-            Debug.Log("마지막 타! 애니메이션 후 피니셔");
-            isComboFinished = true;
-        }
+        Debug.Log($"다음 타: {skill.skillName} (애니메이션: {skill.animationName})");
     }
+}
     
     /// <summary>
     /// 콤보 실패 처리
