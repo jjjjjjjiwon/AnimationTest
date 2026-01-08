@@ -33,8 +33,8 @@ public class SkillSlotUI : MonoBehaviour
             skillNameText.text = skillData.skillName;
             damageText.text = $"Damage: {skillData.baseDamage}";
             
-            if (skillData.icon != null)
-                iconImage.sprite = skillData.icon;
+            if (skillData.skillIcon != null)
+                iconImage.sprite = skillData.skillIcon;
         }
     }
     

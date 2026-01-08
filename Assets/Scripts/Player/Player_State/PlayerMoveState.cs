@@ -11,6 +11,8 @@ public class PlayerMoveState : PlayerState
     private Rigidbody rb;
     private Transform cameraTransform;
     private PlayerData data;
+
+    public override bool InterruptsCombo => false;
     
     // 애니메이션 파라미터 해시 (최적화)
     private readonly int isMovingHash = Animator.StringToHash("IsMoving");
@@ -25,6 +27,8 @@ public class PlayerMoveState : PlayerState
     
     public override void Enter()
     {
+        base.Enter();
+        
         Debug.Log("PlayerMoveState 진입");
         
         // IsMoving = true → Animator가 Run으로 전환

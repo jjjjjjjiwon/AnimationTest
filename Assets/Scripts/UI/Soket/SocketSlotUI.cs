@@ -53,7 +53,7 @@ public class SocketSlotUI : MonoBehaviour
             if (socketData.equippedSkill != null)
             {
                 skillNameText.text = socketData.equippedSkill.skillName;
-                iconImage.sprite = socketData.equippedSkill.icon;
+                iconImage.sprite = socketData.equippedSkill.skillIcon;
                 iconImage.color = filledColor;
             }
             else

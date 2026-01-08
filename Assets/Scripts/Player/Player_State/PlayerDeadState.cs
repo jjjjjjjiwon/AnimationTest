@@ -29,7 +29,8 @@ public class PlayerDeadState : PlayerState
     public override void Enter()
     {
         Debug.Log("PlayerDeadState 진입 - 사망!");
-        
+
+                
         // IsMoving = false (사망 중 이동 애니메이션 중지)
         animator.SetBool(isMovingHash, false);
         

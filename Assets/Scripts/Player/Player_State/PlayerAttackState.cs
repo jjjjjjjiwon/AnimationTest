@@ -43,6 +43,9 @@ public class PlayerAttackState : PlayerState
     private const float MAX_ATTACK_ANGLE = 60f; // 최대 회전 각도
     private float currentRotationY;             // 현재 회전값 (Lerp용)
     
+
+    public override bool InterruptsCombo => false;
+
     // ========================================
     // Constructor
     // ========================================
@@ -60,6 +63,7 @@ public class PlayerAttackState : PlayerState
     
     public override void Enter()
     {
+        base.Enter(); 
         Debug.Log("PlayerAttackState 진입");
         
         // 애니메이션 설정

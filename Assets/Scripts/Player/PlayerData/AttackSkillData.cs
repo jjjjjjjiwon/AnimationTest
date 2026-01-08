@@ -13,24 +13,18 @@ public class AttackSkillData : ScriptableObject
     // ========================================
     
     [Header("기본 정보")]
-    [Tooltip("스킬 이름 (UI 표시용)")]
     public string skillName;
-    
-    [Tooltip("스킬 아이콘 (UI용)")]
-    public Sprite icon;
+    public Sprite skillIcon;
     
     // ========================================
     // 애니메이션
     // ========================================
     
     [Header("애니메이션")]
-    [Tooltip("재생할 애니메이션 이름")]
     public string animationName;
-    
-    [Tooltip("공격 지속 시간 (초)")]
+
+    [Header("타이밍")]
     public float duration = 0.8f;
-    
-    [Tooltip("공격 종료 후 대기 시간 (초)")]
     public float exitTime = 0.2f;
     
     // ========================================

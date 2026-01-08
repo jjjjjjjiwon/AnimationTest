@@ -8,6 +8,7 @@ public class PlayerIdleState : PlayerState
 {
     private Animator animator;
     private readonly int isMovingHash = Animator.StringToHash("IsMoving");
+    public override bool InterruptsCombo => false;
 
     public PlayerIdleState(PlayerController player) : base(player)
     {
@@ -16,6 +17,7 @@ public class PlayerIdleState : PlayerState
 
     public override void Enter()
     {
+        base.Enter();
         animator.SetBool(isMovingHash, false);  // Transition용
         animator.Play(AnimationConstants.IDLE);  // 강제 재생
         player.Rigidbody.velocity = Vector3.zero;

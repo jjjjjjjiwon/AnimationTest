@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 2Skill
   m_EditorClassIdentifier: 
   skillName: 2Skill
-  icon: {fileID: 21300000, guid: bafe08d1605ea874b8241b8a0d9a35ad, type: 3}
+  skillIcon: {fileID: 21300000, guid: bafe08d1605ea874b8241b8a0d9a35ad, type: 3}
   animationName: Attack2
   duration: 0.8
   exitTime: 0.2

@@ -33,6 +33,8 @@ public class PlayerDodgeState : PlayerState
     // 애니메이션 시작 대기
     private bool animationStarted = false;
 
+     public override bool InterruptsCombo => true;
+
     public PlayerDodgeState(PlayerController player) : base(player)
     {
         animator = player.Animator;
@@ -41,7 +43,10 @@ public class PlayerDodgeState : PlayerState
 
     public override void Enter()
     {
+        base.Enter();
+        
         Debug.Log("PlayerDodgeState 진입");
+
 
         // IsMoving = false (회피 중 이동 애니메이션 중지)
         animator.SetBool(isMovingHash, false);
