@@ -10,10 +10,9 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "EnemyData", menuName = "Enemy/EnemyData")]
 public class EnemyData : ScriptableObject
 {
-    // ========== 이동 설정 ==========
+    // ========== 기본 설정 ==========
 
     [Header("Movement")]
-    [Tooltip("기본 이동 속도")]
     public float moveSpeed = 3.5f;
 
     [Header("체력")]

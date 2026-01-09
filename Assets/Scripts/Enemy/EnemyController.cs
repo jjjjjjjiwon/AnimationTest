@@ -26,7 +26,7 @@ public class EnemyController : MonoBehaviour, IEnemy
     [Header("References")]
     [Tooltip("추적할 Player Transform")]
     [SerializeField] private Transform player;
-    
+
     [Tooltip("Enemy 데이터 (체력, 속도, 공격력 등)")]
     [SerializeField] private EnemyData data;
 
@@ -42,6 +42,10 @@ public class EnemyController : MonoBehaviour, IEnemy
     // ========================================
 
     private StateMachine stateMachine;
+
+
+    // HP Bar
+    public EnemyHpBacUI enemyHpBacUI;
 
     // ========================================
     // States
@@ -163,6 +167,25 @@ public class EnemyController : MonoBehaviour, IEnemy
         stateMachine.ChangeState(idleState);
     }
 
+    void Start()
+{
+    // ... 기존 코드 ...
+    
+    // ========== Layer 확인 ==========
+    Debug.Log("=== Layer 정보 ===");
+    for (int i = 0; i < 32; i++)
+    {
+        string layerName = LayerMask.LayerToName(i);
+        if (!string.IsNullOrEmpty(layerName))
+        {
+            Debug.Log($"Layer {i}: {layerName}");
+        }
+    }
+    Debug.Log("==================");
+}
+
+
+
     void Update()
     {
         // ========================================
@@ -170,13 +193,16 @@ public class EnemyController : MonoBehaviour, IEnemy
         // ========================================
         if (Input.GetKeyDown(KeyCode.K))
         {
-            TakeStun();
+            Debug.Log("aasdasdsadasdasdsadasd");
+            TakeDamage(10);
         }
 
         if (Input.GetKeyDown(KeyCode.L))
         {
             Die();
         }
+
+
 
         // ========================================
         // 거리 계산 (한 번만)
@@ -297,17 +323,6 @@ public class EnemyController : MonoBehaviour, IEnemy
 
     /// <summary>
     /// 데미지 받기
-    /// 
-    /// 호출:
-    /// - Player 공격 시 PlayerController.OnAttackHit()에서 호출
-    /// 
-    /// 동작:
-    /// 1. 체력 감소
-    /// 2. 사망 체크 (currentHealth <= 0)
-    /// 3. 사망 시 Die() 호출
-    /// 
-    /// 주의:
-    /// - 사망 상태에서는 데미지 무시
     /// </summary>
     /// <param name="damage">받을 데미지 양</param>
     public void TakeDamage(float damage)
@@ -320,6 +335,7 @@ public class EnemyController : MonoBehaviour, IEnemy
         currentHealth -= damage;
 
         Debug.Log($"{gameObject.name} 피격! 데미지: {damage}, 남은 체력: {currentHealth}/{data.maxHealth}");
+        enemyHpBacUI.SetHP(currentHealth, data.maxHealth);
 
         // 사망 체크
         if (currentHealth <= 0)
@@ -445,4 +461,64 @@ public class EnemyController : MonoBehaviour, IEnemy
 
         Debug.Log($"{gameObject.name} 사망!");
     }
+
+    // ========================================
+    // 피격 감지 (추가!)
+    // ========================================
+
+    /// <summary>
+    /// Player 무기와 충돌 감지
+    /// 
+    /// 호출:
+    /// - PlayerWeapon Layer의 Trigger가 EnemyBody와 충돌 시
+    /// 
+    /// 동작:
+    /// 1. Layer 확인 (PlayerWeapon)
+    /// 2. Player에게서 데미지 정보 가져오기
+    /// 3. TakeDamage() 호출
+    /// </summary>
+    void OnTriggerEnter(Collider other)
+    {
+        // 사망 상태면 무시
+        if (stateMachine.CurrentState == deathState)
+            return;
+
+
+
+
+        // ========== Layer 체크 ==========
+        int otherLayer = other.gameObject.layer;
+        int playerWeaponLayer = LayerMask.NameToLayer("PlayerWeapon");
+
+        Debug.Log("PlayerWeapon Layer: " + playerWeaponLayer);
+
+        Debug.Log("Other Layer: " + otherLayer);
+
+        if (otherLayer == playerWeaponLayer)
+        {
+            Debug.Log("충돌 감지!");
+        }
+
+        if (otherLayer == playerWeaponLayer)
+        {
+            Debug.Log($"[Enemy] Player 무기에 맞음! Collider: {other.gameObject.name}");
+
+            // ========== Player에게서 데미지 가져오기 ==========
+            PlayerController player = FindObjectOfType<PlayerController>();
+
+            if (player != null)
+            {
+                float damage = player.GetCurrentAttackDamage();
+                TakeDamage(damage);
+            }
+            else
+            {
+                // Player 못 찾으면 기본 데미지
+                TakeDamage(10f);
+            }
+        }
+    }
+
+
+
 }

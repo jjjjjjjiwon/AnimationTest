@@ -18,19 +18,15 @@ public class WeaponHitbox : MonoBehaviour
     
     void OnTriggerEnter(Collider other)
     {
-        // Enemy 레이어 체크
-        if (other.gameObject.layer != LayerMask.NameToLayer("Enemy"))
-            return;
-        
         // 중복 타격 방지
         if (hitEnemies.Contains(other))
             return;
-        
+
         // 타격 기록
         hitEnemies.Add(other);
         
         // PlayerController에 알림
-        playerController.OnWeaponHit(other);
+        playerController.GetCurrentAttackDamage();
     }
     
     /// <summary>공격 시작 시 호출 (중복 리스트 초기화)</summary>

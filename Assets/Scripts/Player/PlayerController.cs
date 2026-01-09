@@ -10,37 +10,33 @@ public class PlayerController : MonoBehaviour
     // ========================================
 
     [Header("Components")]
-    [Tooltip("Player 데이터 (체력, 속도 등)")]
     [SerializeField] private PlayerData playerData;
 
-    /// <summary>애니메이션 제어</summary>
     private Animator animator;
-
-    /// <summary>물리 이동 제어</summary>
     private Rigidbody rb;
 
-    // ========================================
-    // Camera
-    // ========================================
 
     [Header("Camera")]
     [Tooltip("카메라 Transform (이동 방향 계산용)")]
     [SerializeField] private Transform cameraTransform;
 
-    // ========================================
-    // Systems
-    // ========================================
-
     [Header("Systems")]
-    /// <summary>State Machine - Player 상태 관리</summary>
     private PlayerStateMachine stateMachine;
-
-    /// <summary>Combo System - 콤보 입력 및 판정</summary>
     private ComboSystem comboSystem;
-
-    // ========== ComboSocket 노출 ==========
     private ComboSocket comboSocket;
-    public ComboSocket ComboSocket => comboSocket;  // ← 추가!
+    public ComboSocket ComboSocket => comboSocket;
+
+    
+
+
+    [SerializeField] private HpBarUi hPBar;
+
+    [Header("플레이어 정보")]
+    [SerializeField] private float currentHealth;
+
+    [Header("Hitbox")]
+    [SerializeField] private Collider hitboxCollider;
+
 
     // ========================================
     // States
@@ -53,42 +49,6 @@ public class PlayerController : MonoBehaviour
     public PlayerDodgeState DodgeState { get; private set; }
     public PlayerHitState HitState { get; private set; }
     public PlayerDeadState DeadState { get; private set; }
-
-    /// <summary>
-    /// 체력
-    /// </summary>
-    
-    [Header("플레이어 정보")]
-    [SerializeField] private float currentHealth;
-
-    // ========================================
-    // 전투 설정
-    // ========================================
-
-    [Header("전투 설정")]
-    [Tooltip("공격 범위 반경 (m)")]
-    [SerializeField] private float attackRange = 2f;
-
-    [Tooltip("공격 중심점까지의 거리")]
-    [SerializeField] private float attackDistance = 1.5f;
-
-    // ========================================
-    // 전투 능력치
-    // ========================================
-
-    [Header("전투 능력치")]
-    [Tooltip("현재 장착 무기")]
-    public WeaponData currentWeapon;
-
-    [Tooltip("버프 배율 (1.0 = 기본, 1.5 = 150%)")]
-    private float buffMultiplier = 1.0f;
-
-    // ========================================
-    // Weapon
-    // ========================================  
-
-    [Header("Hitbox")]
-    [SerializeField] private WeaponHitbox weaponHitbox;
 
     // ========================================
     // Properties
@@ -103,14 +63,10 @@ public class PlayerController : MonoBehaviour
     public Transform CameraTransform => cameraTransform;
     public Transform Transform => transform;
 
-    // ========================================
-    // Unity 생명주기
-    // ========================================
-
-    public HPBar hPBar;
 
     void Start()
     {
+
         currentHealth = playerData.maxHealth;
 
         animator = GetComponent<Animator>();
@@ -148,7 +104,6 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.T))
         {
             TakeDamage(10);
-            Debug.Log("데미지 받음");
         }
 
     }
@@ -211,6 +166,57 @@ public class PlayerController : MonoBehaviour
     }
 
 
+
+
+    #region Attack
+
+
+    /// <summary>
+    /// 최종 데미지 계산
+    /// </summary>
+    public float CalculateDamage(AttackSkillData skill)
+    {
+        float totalDamage = 0f;
+
+        // 1. 스킬 기본 데미지
+        totalDamage += skill.baseDamage;
+
+        // 2. 무기 데미지 (나중에)
+        // if (currentWeapon != null)
+        //     totalDamage += currentWeapon.damage;
+
+        // 3. 아이템 보너스 (나중에)
+        // totalDamage += GetItemBonusDamage();
+
+        // 4. 버프 (나중에)
+        // totalDamage *= buffMultiplier;
+
+        return totalDamage;
+    }
+
+    /// <summary>
+    /// Player가 데미지 받기
+    /// </summary>
+    public void TakeDamage(float damage)
+    {
+        // 체력 감소
+        currentHealth -= damage;
+
+        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {currentHealth}");
+        hPBar.SetHP(currentHealth, playerData.maxHealth);
+
+        // 사망 체크
+        if (currentHealth <= 0)
+        {
+            currentHealth = 0;
+            Die();
+            return;
+        }
+
+        // HitState로 전환
+        StateMachine.ChangeState(HitState);
+    }
+
     /// <summary>
     /// 공격 시도
     /// </summary>
@@ -248,12 +254,33 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // ========================================
-    // 회피 시도
-    // ========================================
-    // ========================================
-    // 회피 쿨타임
-    // ========================================
+    /// <summary>
+    /// 현재 공격의 데미지 반환
+    /// 
+    /// 호출:
+    /// - Enemy.OnTriggerEnter()에서 호출
+    /// 
+    /// 반환:
+    /// - 현재 콤보 스킬의 baseDamage
+    /// - 스킬 없으면 기본 데미지 5
+    /// </summary>
+    public float GetCurrentAttackDamage()
+    {
+        AttackSkillData skill = ComboSocket.GetCurrentSkill();
+
+        if (skill != null)
+        {
+            return skill.baseDamage;
+        }
+
+        return 5f;  // 기본 데미지
+    }
+
+    #endregion
+
+
+
+    #region Dodge
 
     /// <summary>마지막 회피 시간</summary>
     private float lastDodgeTime = -999f;
@@ -298,167 +325,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // ========================================
-    // 데미지 계산
-    // ========================================
+    #endregion
+
+
+
+    #region Stun
 
     /// <summary>
-    /// 최종 데미지 계산
+    /// 스턴 게이지 회복
+    /// PlayerHitState에서 호출
     /// </summary>
-    public float CalculateDamage(AttackSkillData skill)
+    public void RecoverStunGauge(float amount)
     {
-        float totalDamage = 0f;
-
-        // 1. 스킬 기본 데미지
-        totalDamage += skill.baseDamage;
-
-        // 2. 무기 데미지 (나중에)
-        // if (currentWeapon != null)
-        //     totalDamage += currentWeapon.damage;
-
-        // 3. 아이템 보너스 (나중에)
-        // totalDamage += GetItemBonusDamage();
-
-        // 4. 버프 (나중에)
-        // totalDamage *= buffMultiplier;
-
-        return totalDamage;
-    }
-
-
-    // ========================================
-    // Hitbox 제어 (애니메이션 이벤트에서 호출)
-    // ========================================
-    
-    /// <summary>
-    /// Hitbox 활성화
-    /// - 애니메이션 이벤트에서 호출
-    /// </summary>
-    public void HitboxOn()
-    {
-        if (weaponHitbox == null)
-        {
-            Debug.LogError("WeaponHitbox가 없습니다!");
-            return;
-        }
-        
-        weaponHitbox.gameObject.SetActive(true);
-        weaponHitbox.ResetHitList();
-        
-        Debug.Log("Hitbox ON");
-    }
-
-    /// <summary>
-    /// Hitbox 비활성화
-    /// - 애니메이션 이벤트에서 호출
-    /// </summary>
-    public void HitboxOff()
-    {
-        if (weaponHitbox == null)
-            return;
-        
-        weaponHitbox.gameObject.SetActive(false);
-        
-        Debug.Log("Hitbox OFF");
-    }
-    
-    /// <summary>
-    /// 무기가 적과 충돌했을 때
-    /// - WeaponHitbox에서 호출
-    /// </summary>
-    public void OnWeaponHit(Collider enemyCollider)
-    {
-        EnemyController enemy = enemyCollider.GetComponent<EnemyController>();
-        
-        if (enemy == null)
-            return;
-        
-        // 현재 스킬 가져오기
-        AttackSkillData skill = ComboSocket.GetCurrentSkill();
-        
-        if (skill == null)
-            return;
-        
-        // 데미지 계산
-        float damage = CalculateDamage(skill);
-        float stun = skill.stunDuration;
-        
-        Debug.Log($"적 타격! 데미지: {damage}, 스턴: {stun}초");
-        
-        // 데미지 적용
-        enemy.TakeDamage(damage);
-    }
-    
-
-    // ========================================
-    // 공격 판정
-    // ========================================
-
-        public void OnAttackHit()
-    {
-        // ========== 현재 스킬 가져오기 ==========
-        AttackSkillData skill = comboSocket.GetCurrentSkill();
-        if (skill == null)
-        {
-            Debug.Log("공격 스킬이 없습니다!");
-            return;
-        }
-
-        // ========== 공격 범위 중심점 계산 ==========
-        Vector3 attackPosition = transform.position + transform.forward * attackDistance;
-
-        // ========== Enemy 감지 ==========
-        Collider[] hitColliders = Physics.OverlapSphere(
-            attackPosition,
-            attackRange,
-            LayerMask.GetMask("Enemy")
-        );
-
-        Debug.Log($"공격 범위 내 Enemy: {hitColliders.Length}명");
-
-        foreach (Collider col in hitColliders)
-        {
-            EnemyController enemy = col.GetComponent<EnemyController>();
-
-            if (enemy != null)
-            {
-                // ========== 데미지 계산 ==========
-                float damage = CalculateDamage(skill);
-                float stunDuration = skill.stunDuration;
-
-                Debug.Log($"Enemy 타격! 데미지: {damage}, 스턴: {stunDuration}초");
-
-                enemy.TakeDamage(damage);
-                enemy.ApplyStun(stunDuration);
-            }
-        }
-    }
-
-    // ========================================
-    // 전투 시스템 - 피격
-    // ========================================
-
-    /// <summary>
-    /// Player가 데미지 받기
-    /// </summary>
-    public void TakeDamage(float damage)
-    {
-        // 체력 감소
-        currentHealth -= damage;
-
-        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {currentHealth}");
-        hPBar.SetHP(currentHealth, playerData.maxHealth);
-
-        // 사망 체크
-        if (currentHealth <= 0)
-        {
-            currentHealth = 0;
-            Die();
-            return;
-        }
-
-        // HitState로 전환
-        StateMachine.ChangeState(HitState);
+        // TODO: 구현
+        Debug.Log($"스턴 게이지 회복: {amount}");
     }
 
     /// <summary>
@@ -470,7 +350,11 @@ public class PlayerController : MonoBehaviour
         Debug.Log($"Player 스턴 데미지: {stunDamage}");
     }
 
+    #endregion
 
+
+
+    #region Die
 
     /// <summary>
     /// Player 사망 처리
@@ -483,36 +367,51 @@ public class PlayerController : MonoBehaviour
         StateMachine.ChangeState(DeadState);
     }
 
-    /// <summary>
-    /// 스턴 게이지 회복
-    /// PlayerHitState에서 호출
-    /// </summary>
-    public void RecoverStunGauge(float amount)
+    #endregion
+
+
+
+    #region Event
+
+public void HitboxOn()
+{
+    Debug.Log("[Player] HitboxOn 호출!");
+    
+    if (hitboxCollider == null)
     {
-        // TODO: 구현
-        Debug.Log($"스턴 게이지 회복: {amount}");
+        Debug.LogError("[Player] hitboxCollider가 null!");
+        
+        // 자동으로 찾기
+        Transform hitboxObj = transform.Find("Hitbox");
+        if (hitboxObj != null)
+        {
+            hitboxCollider = hitboxObj.GetComponent<Collider>();
+            Debug.Log($"[Player] Hitbox 찾음: {hitboxCollider}");
+        }
+        
+        return;
     }
 
-    // ========================================
-    // 디버그 시각화
-    // ========================================
+    hitboxCollider.enabled = true;
+    Debug.Log($"[Player] Hitbox 활성화! Layer: {hitboxCollider.gameObject.layer}");
+}
 
-    void OnDrawGizmosSelected()
+    public void HitboxOff()
     {
-        if (transform != null)
+        if (hitboxCollider != null)
         {
-            Vector3 attackPosition = transform.position + transform.forward * attackDistance;
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(attackPosition, attackRange);
+            hitboxCollider.enabled = false;
+            Debug.Log("Hitbox OFF");
         }
     }
+    #endregion
 
+    #region Debug
 
     /// <summary>
     /// 디버그 정보 표시 (좌측 상단)
     /// - 현재 State
     /// - HP
-    /// - 스턴 게이지
     /// - 콤보 단계
     /// - 회피 쿨타임
     /// </summary>
@@ -530,9 +429,8 @@ public class PlayerController : MonoBehaviour
         labelStyle.normal.textColor = Color.white;
 
         // 배경 박스
-        GUI.Box(new Rect(10, 10, 250, 160), "Player Debug Info", boxStyle);
+        GUI.Box(new Rect(10, 10, 250, 120), "Player Debug Info", boxStyle);
 
-        // 정보 표시
         int yPos = 35;
         int lineHeight = 20;
 
@@ -547,22 +445,11 @@ public class PlayerController : MonoBehaviour
             $"HP: {currentHealth:F0} / {playerData.maxHealth:F0}", labelStyle);
         yPos += lineHeight;
 
-        // 스턴 게이지
-        GUI.Label(new Rect(20, yPos, 230, 20),
-            $"Stun: {playerData.currentStunGauge:F0} / {playerData.maxStunGauge:F0}", labelStyle);
-        yPos += lineHeight;
-
         // 콤보 단계
-        int currentStep = ComboSystem?.GetCurrentStep() ?? -1;
-        int totalSteps = ComboSystem?.GetCurrentCombo()?.steps.Length ?? 0;
+        int currentStep = ComboSocket?.GetCurrentStep() ?? 0;
+        int socketCount = ComboSocket?.GetSocketCount() ?? 0;
         GUI.Label(new Rect(20, yPos, 230, 20),
-            $"Combo: {currentStep + 1} / {totalSteps}", labelStyle);
-        yPos += lineHeight;
-
-        // Perfect 카운트
-        int perfectCount = ComboSystem?.GetPerfectCount() ?? 0;
-        GUI.Label(new Rect(20, yPos, 230, 20),
-            $"Perfect: {perfectCount}", labelStyle);
+            $"Combo: {currentStep} / {socketCount}", labelStyle);
         yPos += lineHeight;
 
         // 회피 쿨타임
@@ -574,4 +461,8 @@ public class PlayerController : MonoBehaviour
         GUI.Label(new Rect(20, yPos, 230, 20),
             $"Dodge: {dodgeText}", labelStyle);
     }
+
+    #endregion
+
+
 }

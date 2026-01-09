@@ -1,7 +1,10 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HPBar : MonoBehaviour
+
+public class EnemyHpBacUI : MonoBehaviour
 {
     public Slider slider;
 
@@ -9,4 +12,6 @@ public class HPBar : MonoBehaviour
     {
         slider.value = current / max;
     }
+
 }
+
