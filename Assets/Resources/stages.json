@@ -1,0 +1,71 @@
+{
+  "stages": [
+    {
+      "stageID": 1,
+      "stageName": "Burning volcano",
+      "stageDescription": "A dangerous dungeon with flowing lava",
+      "iconPath": "StageIcons/volcano",
+      "difficulty": 3,
+      "sceneName": "Stage_Volcano",
+      "goldReward": 1000,
+      "levelUpPoint": 2,
+      "itemRewards": []
+    },
+    {
+      "stageID": 2,
+      "stageName": "Frozen snowfield",
+      "stageDescription": "A cold area with snowstorms",
+      "iconPath": "StageIcons/snowfield",
+      "difficulty": 4,
+      "sceneName": "Stage_Snowfield",
+      "goldReward": 2000,
+      "levelUpPoint": 3,
+      "itemRewards": []
+    },
+    {
+      "stageID": 3,
+      "stageName": "Dark cave",
+      "stageDescription": "A deep cave where no light reaches",
+      "iconPath": "StageIcons/cave",
+      "difficulty": 2,
+      "sceneName": "Stage_Cave",
+      "goldReward": 3000,
+      "levelUpPoint": 2,
+      "itemRewards": []
+    },
+    {
+      "stageID": 4,
+      "stageName": "Forest with many trees",
+      "stageDescription": "There are a lot of trees",
+      "iconPath": "StageIcons/forest",
+      "difficulty": 1,
+      "sceneName": "Stage_Forest",
+      "goldReward": 4000,
+      "levelUpPoint": 3,
+      "itemRewards": []
+    },
+    {
+      "stageID": 5,
+      "stageName": "Watery ocean",
+      "stageDescription": "the water is salty",
+      "iconPath": "StageIcons/ocean",
+      "difficulty": 4,
+      "sceneName": "Stage_Ocean",
+      "goldReward": 6000,
+      "levelUpPoint": 2,
+      "itemRewards": []
+    },
+    {
+      "stageID": 6,
+      "stageName": "Hot desert",
+      "stageDescription": "cover a lot",
+      "iconPath": "StageIcons/desert",
+      "difficulty": 3,
+      "sceneName": "Stage_Desert",
+      "goldReward": 1000,
+      "levelUpPoint": 10,
+      "itemRewards": []
+    }
+    
+  ]
+}

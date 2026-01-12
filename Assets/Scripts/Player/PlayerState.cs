@@ -32,7 +32,7 @@ public abstract class PlayerState
         // ========== 자동 콤보 리셋 ==========
         if (InterruptsCombo)
         {
-            player.ComboSocket.ResetCombo();
+            player.SocketManager.ResetCombo();
             Debug.Log($"[{GetType().Name}] 콤보 리셋!");
         }
     }

@@ -39,8 +39,22 @@ public class WeaponHitbox : MonoBehaviour
         if (playerController == null)
             return;
         
-        // ========== PlayerController에 전달 ==========
-        playerController.AddHitCollider(other);
-        Debug.Log($"[WeaponHitbox] 충돌 감지: {other.name}, Layer: {other.gameObject.layer}");
+        // EnemyHitbox 레이어 체크 (14번)
+        if (other.gameObject.layer != 14)
+            return;
+        
+        // 적의 루트에서 EnemyController 찾기
+        Transform root = other.transform.root;
+        EnemyController enemy = root.GetComponent<EnemyController>();
+        
+        if (enemy == null)
+        {
+            Debug.LogWarning($"[WeaponHitbox] {other.name}의 루트에 EnemyController 없음!");
+            return;
+        }
+        
+        // ========== PlayerController에 Enemy 전달 ==========
+        playerController.AddHitEnemy(enemy);
+        Debug.Log($"[WeaponHitbox] 적 충돌 감지: {enemy.name} (히트박스: {other.name})");
     }
 }

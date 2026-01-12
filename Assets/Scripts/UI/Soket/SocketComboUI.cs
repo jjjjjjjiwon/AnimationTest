@@ -14,7 +14,7 @@ public class SocketComboUI : MonoBehaviour
     [SerializeField] private Color activeColor = Color.white;
     [SerializeField] private Color inactiveColor = new Color(0.3f, 0.3f, 0.3f, 0.5f);
     
-    private ComboSocket comboSocket;
+    private SocketManager socketManager;  // ← 변경!
     private bool isInitialized = false;
     
     void Start()
@@ -39,20 +39,20 @@ public class SocketComboUI : MonoBehaviour
     
     void Update()
     {
-        // 초기화 안 됐으면 시도
+        // 초기화 안 끝으면 시도
         if (!isInitialized)
         {
             TryInitialize();
             return;
         }
         
-        // 초기화 됐으면 업데이트
+        // 초기화 끝으면 업데이트
         UpdateIcons();
     }
     
     /// <summary>
     /// 초기화 시도
-    /// - PlayerController.ComboSocket이 준비될 때까지 대기
+    /// - PlayerController.SocketManager가 준비될 때까지 대기
     /// </summary>
     private void TryInitialize()
     {
@@ -60,14 +60,14 @@ public class SocketComboUI : MonoBehaviour
         if (playerController == null)
             return;
         
-        // ComboSocket 확인
-        if (playerController.ComboSocket == null)
+        // SocketManager 확인
+        if (playerController.SocketManager == null)  // ← 변경!
             return;
         
         // 초기화!
-        comboSocket = playerController.ComboSocket;
+        socketManager = playerController.SocketManager;  // ← 변경!
         
-        Debug.Log("[UI] ComboSocket 할당 완료!");
+        Debug.Log("[UI] SocketManager 할당 완료!");
         
         // Icon Slots 확인
         if (iconSlots.Count == 0)
@@ -91,12 +91,12 @@ public class SocketComboUI : MonoBehaviour
     /// </summary>
     private void UpdateIcons()
     {
-        if (comboSocket == null)
+        if (socketManager == null)  // ← 변경!
             return;
         
-        List<AttackSkillData> history = comboSocket.GetComboHistory();
+        List<AttackSkillData> history = socketManager.GetComboHistory();  // ← 변경!
 
-        Debug.Log($"[UI] 히스토리 개수: {history.Count}, currentIndex: {comboSocket.GetCurrentStep() - 1}");
+        Debug.Log($"[UI] 히스토리 개수: {history.Count}, currentIndex: {socketManager.GetCurrentStep() - 1}");  // ← 변경!
         
         // 히스토리 비어있으면 clear
         if (history.Count == 0)
@@ -138,18 +138,18 @@ public class SocketComboUI : MonoBehaviour
     /// <summary>
     /// 모든 아이콘 비우기
     /// </summary>
-private void ClearIcons()
-{
-    Debug.Log($"[UI] === ClearIcons 시작 === Slots: {iconSlots.Count}개");
-    
-    for (int i = 0; i < iconSlots.Count; i++)
+    private void ClearIcons()
     {
-        iconSlots[i].sprite = null;
-        iconSlots[i].color = inactiveColor;
+        Debug.Log($"[UI] === ClearIcons 시작 === Slots: {iconSlots.Count}개");
         
-        Debug.Log($"[UI] Slot{i} Cleared!");
+        for (int i = 0; i < iconSlots.Count; i++)
+        {
+            iconSlots[i].sprite = null;
+            iconSlots[i].color = inactiveColor;
+            
+            Debug.Log($"[UI] Slot{i} Cleared!");
+        }
+        
+        Debug.Log("[UI] === ClearIcons 완료 ===");
     }
-    
-    Debug.Log("[UI] === ClearIcons 완료 ===");
-}
 }

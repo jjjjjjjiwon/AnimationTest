@@ -4,7 +4,7 @@ public class PlayerFinisherState : PlayerState
 {
     private Animator animator;
     private Rigidbody rb;
-    private ComboSocket comboSocket;  // ← 변경!
+    private SocketManager socketManager;   // ← 변경!
     
     private readonly int isMovingHash = Animator.StringToHash("IsMoving");
     private bool animationStarted = false;
@@ -13,7 +13,7 @@ public class PlayerFinisherState : PlayerState
     {
         animator = player.Animator;
         rb = player.Rigidbody;
-        comboSocket = player.ComboSocket;  // ← 변경!
+        socketManager = player.SocketManager;
     }
     
     public override void Enter()
@@ -38,7 +38,7 @@ public class PlayerFinisherState : PlayerState
         if (stateInfo.normalizedTime >= 0.95f)
         {
             Debug.Log("피니셔 완료! Idle로");
-            comboSocket.ResetCombo();  // ← 변경!
+            socketManager.ResetCombo();  // ← 변경!
             player.StateMachine.ChangeState(player.IdleState);
         }
     }

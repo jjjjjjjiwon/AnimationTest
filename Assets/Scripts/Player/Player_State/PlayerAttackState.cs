@@ -10,7 +10,7 @@ public class PlayerAttackState : PlayerState
 
     private Animator animator;
     private Rigidbody rb;
-    private ComboSocket comboSocket;
+    private SocketManager socketManager;
 
     // ========================================
     // Animation
@@ -42,7 +42,6 @@ public class PlayerAttackState : PlayerState
     private float attackStartY;
     private const float MAX_ATTACK_ANGLE = 60f;
     private float currentRotationY;
-
     public override bool InterruptsCombo => false;
 
     // ========================================
@@ -53,7 +52,7 @@ public class PlayerAttackState : PlayerState
     {
         animator = player.Animator;
         rb = player.Rigidbody;
-        comboSocket = player.ComboSocket;
+         socketManager = player.SocketManager;
     }
 
     // ========================================
@@ -78,7 +77,7 @@ public class PlayerAttackState : PlayerState
         currentRotationY = attackStartY;
 
         // ========== 스킬 애니메이션 재생 ==========
-        AttackSkillData skill = comboSocket.GetCurrentSkill();
+        AttackSkillData skill = socketManager.GetCurrentSkill(); 
 
         if (skill != null)
         {
@@ -101,7 +100,7 @@ public class PlayerAttackState : PlayerState
         attackTimer += Time.fixedDeltaTime;
 
         // ========== 스킬 가져오기 ==========
-        AttackSkillData skill = comboSocket.GetCurrentSkill();
+        AttackSkillData skill = socketManager.GetCurrentSkill(); 
 
         if (skill == null)
         {
@@ -147,7 +146,7 @@ public class PlayerAttackState : PlayerState
         // 애니메이션 종료 체크
         if (stateInfo.normalizedTime >= 0.95f)
         {
-            if (comboSocket.IsComboComplete())
+             if (socketManager.IsComboComplete())
             {
                 Debug.Log("콤보 완료 → 피니셔");
                 player.StateMachine.ChangeState(player.FinisherState);
@@ -155,7 +154,7 @@ public class PlayerAttackState : PlayerState
             else
             {
                 Debug.Log("공격 종료 → Idle");
-                comboSocket.ResetCombo();
+                socketManager.ResetCombo();
                 player.StateMachine.ChangeState(player.IdleState);
             }
         }
@@ -184,7 +183,7 @@ public class PlayerAttackState : PlayerState
         attackStartY = player.Transform.eulerAngles.y;
         currentRotationY = attackStartY;
 
-        AttackSkillData skill = comboSocket.GetCurrentSkill();
+        AttackSkillData skill = socketManager.GetCurrentSkill();
 
         if (skill != null)
         {

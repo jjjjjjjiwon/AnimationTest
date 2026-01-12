@@ -12,10 +12,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Components")]
     [SerializeField] private PlayerData playerData;
-
     private Animator animator;
     private Rigidbody rb;
-
 
     [Header("Camera")]
     [Tooltip("카메라 Transform (이동 방향 계산용)")]
@@ -24,20 +22,20 @@ public class PlayerController : MonoBehaviour
     [Header("Systems")]
     private PlayerStateMachine stateMachine;
     private ComboSystem comboSystem;
-    private ComboSocket comboSocket;
-    public ComboSocket ComboSocket => comboSocket;
-
-
-
+    private SocketManager socketManager; 
+    public SocketManager SocketManager => socketManager;  
 
     [SerializeField] private HpBarUi hPBar;
 
+
     [Header("플레이어 정보")]
+
     [SerializeField] private float currentHealth;
 
     [Header("Hitbox")]
+
     [SerializeField] private Collider hitboxCollider;
-    private List<Collider> hitColliders = new List<Collider>();
+    private HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>(); // 변경!
     private WeaponHitbox weaponHitbox;
 
 
@@ -84,9 +82,8 @@ public class PlayerController : MonoBehaviour
 
         stateMachine = new PlayerStateMachine();
 
-        // ========== ComboSocket 생성 ==========
-        // PlayerData 전달 → 복원 OR 기본 소켓 생성
-        comboSocket = new ComboSocket(playerData);
+        // ========== SocketManager 생성 ==========
+        socketManager = new SocketManager(playerData);
 
         // State 생성
         IdleState = new PlayerIdleState(this);
@@ -173,9 +170,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-
     #region Attack
-
 
     /// <summary>
     /// 최종 데미지 계산
@@ -233,7 +228,7 @@ public class PlayerController : MonoBehaviour
         // Idle 또는 Move에서 시작
         if (currentState == IdleState || currentState == MoveState)
         {
-            bool success = comboSocket.StartCombo(inputType);
+            bool success = socketManager.StartCombo(inputType);
 
             if (success)
             {
@@ -247,7 +242,7 @@ public class PlayerController : MonoBehaviour
         // Attack 중
         else if (currentState == AttackState)
         {
-            bool success = comboSocket.ProcessNext(inputType);
+            bool success = socketManager.ProcessNext(inputType);
 
             if (success)
             {
@@ -272,7 +267,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public float GetCurrentAttackDamage()
     {
-        AttackSkillData skill = ComboSocket.GetCurrentSkill();
+        AttackSkillData skill = socketManager.GetCurrentSkill();
 
         if (skill != null)
         {
@@ -378,7 +373,7 @@ public class PlayerController : MonoBehaviour
 
     #region Hitbox
 
-    public void HitboxOn()
+   public void HitboxOn()
     {
         if (hitboxCollider == null)
         {
@@ -386,7 +381,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        hitColliders.Clear();
+        hitEnemies.Clear(); // 변경!
         hitboxCollider.enabled = true;
         Debug.Log("[Player] Hitbox ON");
     }
@@ -397,19 +392,11 @@ public class PlayerController : MonoBehaviour
             return;
 
         hitboxCollider.enabled = false;
-        Debug.Log($"[Player] Hitbox OFF - {hitColliders.Count}개 타격");
+        Debug.Log($"[Player] Hitbox OFF - {hitEnemies.Count}명의 적 타격"); // 변경!
 
-        foreach (Collider col in hitColliders)
+        // 적 단위로 순회
+        foreach (EnemyController enemy in hitEnemies)
         {
-            if (col == null)
-                continue;
-
-            if (col.gameObject.layer != 14)
-                continue;
-
-            Transform root = col.transform.root;
-            EnemyController enemy = root.GetComponent<EnemyController>();
-
             if (enemy == null)
                 continue;
 
@@ -418,7 +405,7 @@ public class PlayerController : MonoBehaviour
             enemy.TakeDamage(damage);
         }
 
-        hitColliders.Clear();
+        hitEnemies.Clear(); // 변경!
     }
 
     public void ForceDisableHitbox()
@@ -427,15 +414,15 @@ public class PlayerController : MonoBehaviour
         {
             hitboxCollider.enabled = false;
         }
-        hitColliders.Clear();
+        hitEnemies.Clear(); // 변경!
     }
 
-    public void AddHitCollider(Collider col)
+    public void AddHitEnemy(EnemyController enemy) // 메서드 이름 및 파라미터 변경!
     {
-        if (!hitColliders.Contains(col))
+        if (enemy != null && !hitEnemies.Contains(enemy))
         {
-            hitColliders.Add(col);
-            Debug.Log($"[Player] Collider 추가: {col.name}");
+            hitEnemies.Add(enemy);
+            Debug.Log($"[Player] Enemy 추가: {enemy.name}");
         }
     }
 
@@ -482,8 +469,8 @@ public class PlayerController : MonoBehaviour
         yPos += lineHeight;
 
         // 콤보 단계
-        int currentStep = ComboSocket?.GetCurrentStep() ?? 0;
-        int socketCount = ComboSocket?.GetSocketCount() ?? 0;
+        int currentStep = socketManager?.GetCurrentStep() ?? 0; 
+        int socketCount = socketManager?.GetSlotCount() ?? 0;
         GUI.Label(new Rect(20, yPos, 230, 20),
             $"Combo: {currentStep} / {socketCount}", labelStyle);
         yPos += lineHeight;

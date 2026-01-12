@@ -24,6 +24,7 @@ public class SocketManagerUI : MonoBehaviour
     private List<SocketSlotUI> socketSlotUIs = new List<SocketSlotUI>();
     private List<SkillSlotUI> skillSlotUIs = new List<SkillSlotUI>();
     private int selectedSocketIndex = -1;
+    private int selectedSlotIndex = -1;  // ← 추가! (어느 슬롯에 스킬 장착할지)
     
     public static bool IsUIOpen { get; private set; } = false;
     
@@ -104,10 +105,12 @@ public class SocketManagerUI : MonoBehaviour
         playerController.StateMachine.ChangeState(playerController.IdleState);
     }
     
-    // ... 나머지 함수들 동일 ...
-    
+    /// <summary>
+    /// 소켓 UI 새로고침
+    /// </summary>
     public void RefreshSocketUI()
     {
+        // 기존 UI 제거
         foreach (var ui in socketSlotUIs)
         {
             if (ui != null)
@@ -115,34 +118,47 @@ public class SocketManagerUI : MonoBehaviour
         }
         socketSlotUIs.Clear();
         
-        ComboSocket comboSocket = playerController.ComboSocket;
-        List<ComboSocketSlot> sockets = comboSocket.GetAllSockets();
+        // SocketManager에서 모든 소켓 가져오기
+        SocketManager socketManager = playerController.SocketManager;  // ← 변경!
+        List<ComboSocket> sockets = socketManager.GetAllSockets();  // ← 변경!
         
+        // 각 소켓에 대해 UI 생성
         for (int i = 0; i < sockets.Count; i++)
         {
             GameObject slotObj = Instantiate(socketSlotPrefab, socketContainer);
             SocketSlotUI slotUI = slotObj.GetComponent<SocketSlotUI>();
             
-            slotUI.Initialize(i, sockets[i], this);
+            slotUI.Initialize(i, sockets[i], this);  // ← ComboSocket 전달
             socketSlotUIs.Add(slotUI);
         }
     }
     
-    public void SelectSocket(int index)
+    /// <summary>
+    /// 소켓 선택 (어느 소켓의 어느 슬롯에 스킬을 장착할지)
+    /// </summary>
+    public void SelectSocketSlot(int socketIndex, int slotIndex)  // ← 변경!
     {
-        selectedSocketIndex = index;
+        selectedSocketIndex = socketIndex;
+        selectedSlotIndex = slotIndex;  // ← 추가!
         
+        // 모든 소켓 UI 선택 해제
         foreach (var ui in socketSlotUIs)
         {
             ui.SetSelected(false);
         }
         
-        if (index >= 0 && index < socketSlotUIs.Count)
+        // 선택된 소켓만 하이라이트
+        if (socketIndex >= 0 && socketIndex < socketSlotUIs.Count)
         {
-            socketSlotUIs[index].SetSelected(true);
+            socketSlotUIs[socketIndex].SetSelected(true);
         }
+        
+        Debug.Log($"[UI] 소켓 #{socketIndex}, 슬롯 #{slotIndex} 선택됨");
     }
     
+    /// <summary>
+    /// 스킬 인벤토리 UI 새로고침
+    /// </summary>
     public void RefreshSkillInventoryUI()
     {
         foreach (var ui in skillSlotUIs)
@@ -164,32 +180,55 @@ public class SocketManagerUI : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// 선택된 슬롯에 스킬 장착
+    /// </summary>
     public void EquipSkillToSelectedSocket(AttackSkillData skill)
     {
-        if (selectedSocketIndex < 0)
+        if (selectedSocketIndex < 0 || selectedSlotIndex < 0)  // ← 변경!
         {
-            Debug.Log("소켓을 먼저 선택하세요!");
+            Debug.Log("소켓의 슬롯을 먼저 선택하세요!");
             return;
         }
         
-        ComboSocket comboSocket = playerController.ComboSocket;
-        comboSocket.EquipSkill(selectedSocketIndex, skill);
+        // SocketManager에서 해당 소켓 가져오기
+        SocketManager socketManager = playerController.SocketManager;  // ← 변경!
+        ComboSocket socket = socketManager.GetSocket(selectedSocketIndex);  // ← 변경!
         
+        if (socket == null)
+        {
+            Debug.LogError("소켓을 찾을 수 없습니다!");
+            return;
+        }
+        
+        // 스킬 장착
+        socket.EquipSkill(selectedSlotIndex, skill);  // ← 변경!
+        
+        Debug.Log($"[UI] 소켓 #{selectedSocketIndex}, 슬롯 #{selectedSlotIndex}에 '{skill.skillName}' 장착!");
+        
+        // UI 새로고침
         RefreshSocketUI();
     }
     
+    /// <summary>
+    /// 소켓 추가 버튼
+    /// </summary>
     public void OnAddSocketClick()
     {
-        ComboSocket comboSocket = playerController.ComboSocket;
+        SocketManager socketManager = playerController.SocketManager;  // ← 변경!
         
-        if (comboSocket.IsFull())
+        if (socketManager.IsFull())  // ← 변경!
         {
             Debug.Log("소켓이 최대입니다! (5/5)");
             return;
         }
         
-        ComboSocketSlot newSocket = comboSocket.AcquireNewSocket();
+        ComboSocket newSocket = socketManager.AcquireNewSocket();  // ← 변경!
         
-        RefreshSocketUI();
+        if (newSocket != null)
+        {
+            Debug.Log("[UI] 새 소켓 추가됨!");
+            RefreshSocketUI();
+        }
     }
 }
