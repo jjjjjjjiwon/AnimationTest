@@ -15,7 +15,8 @@ MonoBehaviour:
   skillName: 1Skill
   skillIcon: {fileID: 21300000, guid: 3ee760b1d6564da4980b008e4b98e01e, type: 3}
   animationName: Attack1
-  duration: 0.1
+  duration: 0.77
   exitTime: 0.2
+  hitboxTiming: 0.3
   baseDamage: 10
   stunDuration: 0.5

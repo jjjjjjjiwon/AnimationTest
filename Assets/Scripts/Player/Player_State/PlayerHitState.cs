@@ -31,10 +31,10 @@ public class PlayerHitState : PlayerState
     
     public override void Enter()
     {
-
         base.Enter();
-
         Debug.Log("PlayerHitState 진입 - 스턴!");
+
+        player.ForceDisableHitbox();
 
         // IsMoving = false (피격 중 이동 애니메이션 중지)
         animator.SetBool(isMovingHash, false);

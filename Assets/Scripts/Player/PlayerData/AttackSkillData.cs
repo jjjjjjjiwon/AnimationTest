@@ -26,7 +26,12 @@ public class AttackSkillData : ScriptableObject
     [Header("타이밍")]
     public float duration = 0.8f;
     public float exitTime = 0.2f;
-    
+
+    [Header("타격 타이밍")]
+    [Range(0f, 1f)]
+    [Tooltip("스킬 지속 시간(duration) 중 몇 % 지점에서 타격? (0~1)")]
+    public float hitboxTiming = 0.5f;  // ← 추가!
+
     // ========================================
     // 데미지
     // ========================================
@@ -49,4 +54,7 @@ public class AttackSkillData : ScriptableObject
     
     /// <summary>총 시간 (duration + exitTime)</summary>
     public float TotalTime => duration + exitTime;
+
+    /// <summary>타격 시점 (초 단위)</summary>
+    public float HitboxTime => duration * hitboxTiming;
 }

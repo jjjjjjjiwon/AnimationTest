@@ -462,63 +462,6 @@ public class EnemyController : MonoBehaviour, IEnemy
         Debug.Log($"{gameObject.name} 사망!");
     }
 
-    // ========================================
-    // 피격 감지 (추가!)
-    // ========================================
-
-    /// <summary>
-    /// Player 무기와 충돌 감지
-    /// 
-    /// 호출:
-    /// - PlayerWeapon Layer의 Trigger가 EnemyBody와 충돌 시
-    /// 
-    /// 동작:
-    /// 1. Layer 확인 (PlayerWeapon)
-    /// 2. Player에게서 데미지 정보 가져오기
-    /// 3. TakeDamage() 호출
-    /// </summary>
-    void OnTriggerEnter(Collider other)
-    {
-        // 사망 상태면 무시
-        if (stateMachine.CurrentState == deathState)
-            return;
-
-
-
-
-        // ========== Layer 체크 ==========
-        int otherLayer = other.gameObject.layer;
-        int playerWeaponLayer = LayerMask.NameToLayer("PlayerWeapon");
-
-        Debug.Log("PlayerWeapon Layer: " + playerWeaponLayer);
-
-        Debug.Log("Other Layer: " + otherLayer);
-
-        if (otherLayer == playerWeaponLayer)
-        {
-            Debug.Log("충돌 감지!");
-        }
-
-        if (otherLayer == playerWeaponLayer)
-        {
-            Debug.Log($"[Enemy] Player 무기에 맞음! Collider: {other.gameObject.name}");
-
-            // ========== Player에게서 데미지 가져오기 ==========
-            PlayerController player = FindObjectOfType<PlayerController>();
-
-            if (player != null)
-            {
-                float damage = player.GetCurrentAttackDamage();
-                TakeDamage(damage);
-            }
-            else
-            {
-                // Player 못 찾으면 기본 데미지
-                TakeDamage(10f);
-            }
-        }
-    }
-
 
 
 }

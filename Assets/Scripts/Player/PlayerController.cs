@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Player 전체 제어 컨트롤러
@@ -26,7 +27,7 @@ public class PlayerController : MonoBehaviour
     private ComboSocket comboSocket;
     public ComboSocket ComboSocket => comboSocket;
 
-    
+
 
 
     [SerializeField] private HpBarUi hPBar;
@@ -36,6 +37,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Hitbox")]
     [SerializeField] private Collider hitboxCollider;
+    private List<Collider> hitColliders = new List<Collider>();
+    private WeaponHitbox weaponHitbox;
 
 
     // ========================================
@@ -64,9 +67,11 @@ public class PlayerController : MonoBehaviour
     public Transform Transform => transform;
 
 
+
+    #region Start
+
     void Start()
     {
-
         currentHealth = playerData.maxHealth;
 
         animator = GetComponent<Animator>();
@@ -93,8 +98,9 @@ public class PlayerController : MonoBehaviour
         DeadState = new PlayerDeadState(this);
 
         stateMachine.ChangeState(IdleState);
-
     }
+
+    #endregion
 
     void Update()
     {
@@ -370,41 +376,71 @@ public class PlayerController : MonoBehaviour
     #endregion
 
 
+    #region Hitbox
 
-    #region Event
-
-public void HitboxOn()
-{
-    Debug.Log("[Player] HitboxOn 호출!");
-    
-    if (hitboxCollider == null)
+    public void HitboxOn()
     {
-        Debug.LogError("[Player] hitboxCollider가 null!");
-        
-        // 자동으로 찾기
-        Transform hitboxObj = transform.Find("Hitbox");
-        if (hitboxObj != null)
+        if (hitboxCollider == null)
         {
-            hitboxCollider = hitboxObj.GetComponent<Collider>();
-            Debug.Log($"[Player] Hitbox 찾음: {hitboxCollider}");
+            Debug.LogError("[Player] hitboxCollider가 null!");
+            return;
         }
-        
-        return;
+
+        hitColliders.Clear();
+        hitboxCollider.enabled = true;
+        Debug.Log("[Player] Hitbox ON");
     }
 
-    hitboxCollider.enabled = true;
-    Debug.Log($"[Player] Hitbox 활성화! Layer: {hitboxCollider.gameObject.layer}");
-}
-
     public void HitboxOff()
+    {
+        if (hitboxCollider == null)
+            return;
+
+        hitboxCollider.enabled = false;
+        Debug.Log($"[Player] Hitbox OFF - {hitColliders.Count}개 타격");
+
+        foreach (Collider col in hitColliders)
+        {
+            if (col == null)
+                continue;
+
+            if (col.gameObject.layer != 14)
+                continue;
+
+            Transform root = col.transform.root;
+            EnemyController enemy = root.GetComponent<EnemyController>();
+
+            if (enemy == null)
+                continue;
+
+            float damage = GetCurrentAttackDamage();
+            Debug.Log($"[Player] {enemy.name} 타격! 데미지: {damage}");
+            enemy.TakeDamage(damage);
+        }
+
+        hitColliders.Clear();
+    }
+
+    public void ForceDisableHitbox()
     {
         if (hitboxCollider != null)
         {
             hitboxCollider.enabled = false;
-            Debug.Log("Hitbox OFF");
+        }
+        hitColliders.Clear();
+    }
+
+    public void AddHitCollider(Collider col)
+    {
+        if (!hitColliders.Contains(col))
+        {
+            hitColliders.Add(col);
+            Debug.Log($"[Player] Collider 추가: {col.name}");
         }
     }
+
     #endregion
+
 
     #region Debug
 

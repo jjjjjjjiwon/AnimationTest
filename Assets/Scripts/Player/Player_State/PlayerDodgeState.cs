@@ -44,9 +44,9 @@ public class PlayerDodgeState : PlayerState
     public override void Enter()
     {
         base.Enter();
-        
         Debug.Log("PlayerDodgeState 진입");
 
+        player.ForceDisableHitbox();
 
         // IsMoving = false (회피 중 이동 애니메이션 중지)
         animator.SetBool(isMovingHash, false);

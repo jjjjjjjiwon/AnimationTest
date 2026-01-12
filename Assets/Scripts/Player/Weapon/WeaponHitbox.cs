@@ -1,37 +1,46 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 /// <summary>
-/// 무기 Hitbox
-/// - OnTriggerEnter로 타격 감지
-/// - 중복 타격 방지
+/// 무기 Hitbox - OnTriggerEnter만 감지하고 전달
 /// </summary>
 public class WeaponHitbox : MonoBehaviour
 {
     private PlayerController playerController;
-    private HashSet<Collider> hitEnemies = new HashSet<Collider>();
+    private Collider hitboxCollider;
     
     void Awake()
     {
-        playerController = GetComponentInParent<PlayerController>();
+        // PlayerController 찾기
+        playerController = FindObjectOfType<PlayerController>();
+        
+        if (playerController == null)
+        {
+            Debug.LogError("[WeaponHitbox] PlayerController를 찾을 수 없습니다!");
+        }
+        
+        // Collider 가져오기
+        hitboxCollider = GetComponent<Collider>();
+        
+        if (hitboxCollider != null)
+        {
+            // 초기 비활성화
+            hitboxCollider.enabled = false;
+            Debug.Log("[WeaponHitbox] Collider 초기 비활성화");
+        }
+        else
+        {
+            Debug.LogError("[WeaponHitbox] Collider를 찾을 수 없습니다!");
+        }
     }
     
     void OnTriggerEnter(Collider other)
     {
-        // 중복 타격 방지
-        if (hitEnemies.Contains(other))
+        // PlayerController 체크
+        if (playerController == null)
             return;
-
-        // 타격 기록
-        hitEnemies.Add(other);
         
-        // PlayerController에 알림
-        playerController.GetCurrentAttackDamage();
-    }
-    
-    /// <summary>공격 시작 시 호출 (중복 리스트 초기화)</summary>
-    public void ResetHitList()
-    {
-        hitEnemies.Clear();
+        // ========== PlayerController에 전달 ==========
+        playerController.AddHitCollider(other);
+        Debug.Log($"[WeaponHitbox] 충돌 감지: {other.name}, Layer: {other.gameObject.layer}");
     }
 }
