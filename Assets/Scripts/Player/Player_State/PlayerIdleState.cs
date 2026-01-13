@@ -18,6 +18,8 @@ public class PlayerIdleState : PlayerState
     public override void Enter()
     {
         base.Enter();
+        Debug.Log("PlayerIdleState 진입");
+
         animator.SetBool(isMovingHash, false);  // Transition용
         animator.Play(AnimationConstants.IDLE);  // 강제 재생
         player.Rigidbody.velocity = Vector3.zero;
@@ -32,6 +34,9 @@ public class PlayerIdleState : PlayerState
         // 이동 입력 있으면 MoveState로
         if (horizontal != 0 || vertical != 0)
         {
+            if (SocketManagerUI.IsUIOpen)
+            return;
+            
             player.StateMachine.ChangeState(player.MoveState);
         }
     }

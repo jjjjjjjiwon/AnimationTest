@@ -4,190 +4,99 @@ using TMPro;
 using System.Collections.Generic;
 
 /// <summary>
-/// 개별 소켓 UI (1개 소켓 = 5개 슬롯)
+/// 소켓 UI - 1줄에 5개 슬롯
 /// </summary>
 public class SocketSlotUI : MonoBehaviour
 {
-    [Header("UI 요소")]
-    [SerializeField] private Image backgroundImage;
-    [SerializeField] private TextMeshProUGUI socketNameText;
-    [SerializeField] private Transform slotContainer;  // ← 5개 슬롯을 담을 컨테이너
-    [SerializeField] private GameObject slotItemPrefab;  // ← 개별 슬롯 UI Prefab
+    [Header("5개 슬롯 이미지")]
+    [SerializeField] private List<Image> slotImages = new List<Image>();
+    [SerializeField] private List<Button> slotButtons = new List<Button>();
+    [SerializeField] private List<TextMeshProUGUI> keyTexts = new List<TextMeshProUGUI>(); // ← 추가!
     
     [Header("색상")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color selectedColor = Color.yellow;
+    [SerializeField] private Color emptyColor = Color.gray;
+    [SerializeField] private Color filledColor = Color.white;
+    [SerializeField] private Color selectedColor = new Color(1f, 1f, 0.5f, 1f);
     
     private int socketIndex;
-    private ComboSocket socketData;  // ← 변경!
+    private ComboSocket socketData;
     private SocketManagerUI manager;
-    private bool isSelected = false;
+    private int selectedSlotIndex = -1;
     
-    private List<SlotItemUI> slotItemUIs = new List<SlotItemUI>();  // ← 5개 슬롯 UI
-    
-    public void Initialize(int index, ComboSocket data, SocketManagerUI managerUI)  // ← 변경!
+    public void Initialize(int index, ComboSocket data, SocketManagerUI managerUI)
     {
         socketIndex = index;
         socketData = data;
         manager = managerUI;
         
+        // 버튼 이벤트 연결
+        for (int i = 0; i < slotButtons.Count; i++)
+        {
+            int slotIdx = i;
+            if (slotButtons[i] != null)
+            {
+                slotButtons[i].onClick.AddListener(() => OnSlotClick(slotIdx));
+            }
+        }
+        
         UpdateUI();
     }
     
     public void UpdateUI()
     {
-        if (socketData == null)
-        {
-            if (socketNameText != null)
-                socketNameText.text = "Empty Socket";
+        if (socketData == null || socketData.slots == null)
             return;
-        }
         
-        // 소켓 이름 표시
-        if (socketNameText != null)
-            socketNameText.text = socketData.socketName;  // ← 변경!
-        
-        // 기존 슬롯 UI 제거
-        foreach (var slotUI in slotItemUIs)
+        // 5개 슬롯 업데이트
+        for (int i = 0; i < 5 && i < socketData.slots.Count && i < slotImages.Count; i++)
         {
-            if (slotUI != null)
-                Destroy(slotUI.gameObject);
-        }
-        slotItemUIs.Clear();
-        
-        // 5개 슬롯 UI 생성
-        List<ComboSlot> slots = socketData.slots;  // ← 변경!
-        for (int i = 0; i < slots.Count; i++)
-        {
-            GameObject slotObj = Instantiate(slotItemPrefab, slotContainer);
-            SlotItemUI slotItemUI = slotObj.GetComponent<SlotItemUI>();
+            ComboSlot slot = socketData.slots[i];
             
-            if (slotItemUI != null)
+            // ========== 입력키 텍스트 표시 ========== 
+            if (i < keyTexts.Count && keyTexts[i] != null)
             {
-                slotItemUI.Initialize(socketIndex, i, slots[i], manager);
-                slotItemUIs.Add(slotItemUI);
+                keyTexts[i].text = GetInputKeyString(slot.assignedInput);
+            }
+            
+            // 스킬 아이콘 표시
+            if (slot.equippedSkill != null && slot.equippedSkill.skillIcon != null)
+            {
+                // 스킬 있음 - 아이콘 표시
+                slotImages[i].sprite = slot.equippedSkill.skillIcon;
+                slotImages[i].color = filledColor;
+            }
+            else
+            {
+                // 스킬 없음 - 회색
+                slotImages[i].sprite = null;
+                slotImages[i].color = emptyColor;
             }
         }
-        
-        // 선택 표시 업데이트
-        UpdateSelection();
     }
     
     public void SetSelected(bool selected)
     {
-        isSelected = selected;
-        UpdateSelection();
+        // 선택 표시
     }
     
-    private void UpdateSelection()
+    private void OnSlotClick(int slotIndex)
     {
-        if (backgroundImage != null)
-        {
-            backgroundImage.color = isSelected ? selectedColor : normalColor;
-        }
-    }
-}
-
-/// <summary>
-/// 개별 슬롯 아이템 UI (1개 입력키 + 1개 스킬)
-/// </summary>
-public class SlotItemUI : MonoBehaviour
-{
-    [Header("UI 요소")]
-    [SerializeField] private Image iconImage;
-    [SerializeField] private TextMeshProUGUI inputText;
-    [SerializeField] private TextMeshProUGUI skillNameText;
-    [SerializeField] private Button button;
-    
-    [Header("색상")]
-    [SerializeField] private Color emptyColor = Color.gray;
-    [SerializeField] private Color filledColor = Color.white;
-    
-    private int socketIndex;
-    private int slotIndex;
-    private ComboSlot slotData;  // ← 변경!
-    private SocketManagerUI manager;
-    
-    public void Initialize(int sockIdx, int slIdx, ComboSlot data, SocketManagerUI managerUI)  // ← 변경!
-    {
-        socketIndex = sockIdx;
-        slotIndex = slIdx;
-        slotData = data;
-        manager = managerUI;
-        
-        if (button != null)
-            button.onClick.AddListener(OnClick);
-        
-        UpdateUI();
-    }
-    
-    public void UpdateUI()
-    {
-        if (slotData == null)
-        {
-            if (inputText != null)
-                inputText.text = "none";
-            if (skillNameText != null)
-                skillNameText.text = "Empty";
-            if (iconImage != null)
-            {
-                iconImage.color = emptyColor;
-                iconImage.sprite = null;
-            }
-            return;
-        }
-        
-        // 입력키 표시
-        if (inputText != null)
-            inputText.text = GetInputKeyString(slotData.assignedInput);  // ← 변경!
-        
-        // 스킬 표시
-        if (slotData.equippedSkill != null)  // ← 변경!
-        {
-            if (skillNameText != null)
-                skillNameText.text = slotData.equippedSkill.skillName;
-            
-            if (iconImage != null)
-            {
-                iconImage.sprite = slotData.equippedSkill.skillIcon;
-                iconImage.color = filledColor;
-            }
-        }
-        else
-        {
-            if (skillNameText != null)
-                skillNameText.text = "Empty";
-            
-            if (iconImage != null)
-            {
-                iconImage.color = emptyColor;
-                iconImage.sprite = null;
-            }
-        }
-    }
-    
-    private void OnClick()
-    {
-        if (slotData == null)
-        {
-            Debug.Log("빈 슬롯!");
-            return;
-        }
-        
-        // 이 슬롯 선택
+        selectedSlotIndex = slotIndex;
         manager.SelectSocketSlot(socketIndex, slotIndex);
+        Debug.Log($"소켓 {socketIndex}, 슬롯 {slotIndex} 클릭!");
     }
     
+    // ========== 입력키 → 텍스트 변환 ========== 
     private string GetInputKeyString(InputTypes input)
     {
         switch (input)
         {
             case InputTypes.LeftClick: return "Left";
-            case InputTypes.RightClick: return "Right";
+            case InputTypes.RightClick: return "Rifht";
             case InputTypes.QKey: return "Q";
             case InputTypes.EKey: return "E";
             case InputTypes.RKey: return "R";
-            default: return "없음";
+            default: return "?";
         }
     }
 }

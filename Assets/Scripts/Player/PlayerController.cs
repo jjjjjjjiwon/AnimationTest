@@ -22,8 +22,8 @@ public class PlayerController : MonoBehaviour
     [Header("Systems")]
     private PlayerStateMachine stateMachine;
     private ComboSystem comboSystem;
-    private SocketManager socketManager; 
-    public SocketManager SocketManager => socketManager;  
+    private SocketManager socketManager;
+    public SocketManager SocketManager => socketManager;
 
     [SerializeField] private HpBarUi hPBar;
 
@@ -114,6 +114,14 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         stateMachine.Update();
+    }
+
+
+    // 이때만 UI 열기
+    public bool CanOpenUI()
+    {
+        PlayerState currentState = stateMachine.CurrentState;
+        return currentState == IdleState || currentState == MoveState;
     }
 
     // ========================================
@@ -373,7 +381,7 @@ public class PlayerController : MonoBehaviour
 
     #region Hitbox
 
-   public void HitboxOn()
+    public void HitboxOn()
     {
         if (hitboxCollider == null)
         {
@@ -469,7 +477,7 @@ public class PlayerController : MonoBehaviour
         yPos += lineHeight;
 
         // 콤보 단계
-        int currentStep = socketManager?.GetCurrentStep() ?? 0; 
+        int currentStep = socketManager?.GetCurrentStep() ?? 0;
         int socketCount = socketManager?.GetSlotCount() ?? 0;
         GUI.Label(new Rect(20, yPos, 230, 20),
             $"Combo: {currentStep} / {socketCount}", labelStyle);
