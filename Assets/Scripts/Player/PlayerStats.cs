@@ -13,6 +13,8 @@ public class PlayerStats
     /// <summary>
     /// 스탯 레벨 (런타임 변경 가능)
     /// </summary>
+    public int level;
+
     public int health_Level;
     public int defense_Level;
     public int strength_Level;
@@ -24,7 +26,7 @@ public class PlayerStats
     // ========================================
     // 기타 런타임 값
     // ========================================    
-
+    
     public float speed;
     public float current_Health;
     public int availablePoints = 0;
@@ -34,6 +36,8 @@ public class PlayerStats
     // ========================================
     public PlayerStats(PlayerData data)
     {
+        level = data.total_Level;
+        
         health_Level = data.base_Health_Level;
         defense_Level = data.base_Defense_Level;
         strength_Level = data.base_Strength_Level;

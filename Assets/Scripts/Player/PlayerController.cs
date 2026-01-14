@@ -69,6 +69,24 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+
+    // ========================================
+    // RuntimeManager 초기화
+    // ========================================
+    if (RuntimeManager.Instance == null)
+    {
+        Debug.LogError("[PlayerController] RuntimeManager.Instance가 null입니다!");
+    }
+    else if (RuntimeManager.Instance.playerStats == null)
+    {
+        Debug.Log("[PlayerController] RuntimeManager 초기화 호출");
+        RuntimeManager.Instance.Initialize(playerData);
+    }
+    else
+    {
+        Debug.Log("[PlayerController] RuntimeManager 이미 초기화됨");
+    }
+
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
 
@@ -92,6 +110,7 @@ public class PlayerController : MonoBehaviour
         DeadState = new PlayerDeadState(this);
 
         stateMachine.ChangeState(IdleState);
+        Debug.Log($"[Player] 초기화 완료");
     }
 
     #endregion
