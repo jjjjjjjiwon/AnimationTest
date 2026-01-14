@@ -76,7 +76,7 @@ public class PlayerMoveState : PlayerState
         Vector3 moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
 
         // 이동 (Y축 0으로 고정!)
-        Vector3 moveVelocity = moveDirection * data.moveSpeed;
+        Vector3 moveVelocity = moveDirection * data.stats.move_Speed;
         rb.velocity = new Vector3(moveVelocity.x, rb.velocity.y, moveVelocity.z);
 
         // 회전 (이동 방향으로)

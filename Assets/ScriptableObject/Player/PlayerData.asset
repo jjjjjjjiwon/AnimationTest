@@ -12,16 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 236e961b75d356c43826d846c0a60d4e, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  moveSpeed: 15
+  playerName: Knight
+  total_Level: 10
+  character_Sprite: {fileID: 21300000, guid: 6d2ffe43bfc1a104d88d5ea9115ce9a3, type: 3}
+  weaponData: {fileID: 11400000, guid: 00436245345e95e4282ce5a4f8ece26d, type: 2}
+  base_Health_Level: 10
+  base_Defense_Level: 5
+  base_Strength_Level: 10
+  base_Dexterity_Level: 6
+  base_Agility_Level: 5
+  base_Intelligence_Level: 1
+  base_Luck_Level: 3
+  base_Move_Speed: 5
   rotationSpeed: 10
-  attackPower: 10
-  defense: 5
   maxStunGauge: 100
-  currentStunGauge: 100
   stunRecoveryRate: 10
   dodgeCooldown: 1
-  dodgeDistance: 5
   dodgeDuration: 0.5
   combos: []
   socketSlots:

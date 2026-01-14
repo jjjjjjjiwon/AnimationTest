@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.PlasticSCM.Editor.WebApi;
 
 /// <summary>
 /// Player 전체 제어 컨트롤러
@@ -28,9 +29,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private HpBarUi hPBar;
 
 
-    [Header("플레이어 정보")]
 
-    [SerializeField] private float currentHealth;
 
     [Header("Hitbox")]
 
@@ -70,8 +69,6 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        currentHealth = playerData.maxHealth;
-
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
 
@@ -107,6 +104,17 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.T))
         {
             TakeDamage(10);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            Debug.Log("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP");
+            AddStatPoints(5);
+        }
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            playerData.stats.PrintStats();
         }
 
     }
@@ -177,7 +185,6 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
     #region Attack
 
     /// <summary>
@@ -209,15 +216,15 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float damage)
     {
         // 체력 감소
-        currentHealth -= damage;
+        playerData.stats.current_Health -= damage;
 
-        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {currentHealth}");
-        hPBar.SetHP(currentHealth, playerData.maxHealth);
+        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {playerData.stats.current_Health}");
+        hPBar.SetHP(playerData.stats.current_Health, playerData.stats.max_Health);
 
         // 사망 체크
-        if (currentHealth <= 0)
+        if (playerData.stats.current_Health <= 0)
         {
-            currentHealth = 0;
+            playerData.stats.current_Health = 0;
             Die();
             return;
         }
@@ -394,6 +401,55 @@ public class PlayerController : MonoBehaviour
         Debug.Log("[Player] Hitbox ON");
     }
 
+
+    #region Stat Points
+
+    /// <summary>
+    /// 스탯 포인트 추가
+    /// - 보상으로 포인트 지급 시 호출
+    /// </summary>
+    public void AddStatPoints(int amount)
+    {
+        playerData.stats.AddPoints(amount);
+        Debug.Log($"[Player] 스탯 포인트 +{amount} → 총 {playerData.stats.availablePoints}개");
+    }
+
+    /// <summary>
+    /// 스탯 투자 (UI에서 호출)
+    /// </summary>
+    public bool InvestStat(StatType statType)
+    {
+        bool success = playerData.stats.InvestStat(statType);
+
+        if (success && statType == StatType.Health)
+        {
+            // 체력 투자 시 최대 HP 갱신
+            RefreshMaxHealth();
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    /// 최대 HP 갱신 (체력 스탯 투자 후)
+    /// </summary>
+    private void RefreshMaxHealth()
+    {
+        float newMaxHP = playerData.stats.max_Health;
+
+        // 현재 HP 갱신 (최대치로)
+        playerData.stats.current_Health = newMaxHP;
+
+        Debug.Log($"[Player] 최대 HP 갱신: {newMaxHP}");
+
+        if (hPBar != null)
+        {
+            hPBar.SetHP(playerData.stats.current_Health, newMaxHP);
+        }
+    }
+
+    #endregion
+
     public void HitboxOff()
     {
         if (hitboxCollider == null)
@@ -473,7 +529,7 @@ public class PlayerController : MonoBehaviour
 
         // HP
         GUI.Label(new Rect(20, yPos, 230, 20),
-            $"HP: {currentHealth:F0} / {playerData.maxHealth:F0}", labelStyle);
+            $"HP: {playerData.stats.max_Health:F0} / {playerData.stats.max_Health:F0}", labelStyle);
         yPos += lineHeight;
 
         // 콤보 단계

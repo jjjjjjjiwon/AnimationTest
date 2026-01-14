@@ -95,13 +95,10 @@ public class SocketComboUI : MonoBehaviour
             return;
         
         List<AttackSkillData> history = socketManager.GetComboHistory();  // ← 변경!
-
-        Debug.Log($"[UI] 히스토리 개수: {history.Count}, currentIndex: {socketManager.GetCurrentStep() - 1}");  // ← 변경!
         
         // 히스토리 비어있으면 clear
         if (history.Count == 0)
         {
-            Debug.Log("[UI] 히스토리 비어있음 → Clear!"); 
             ClearIcons();
             return;
         }
@@ -140,16 +137,13 @@ public class SocketComboUI : MonoBehaviour
     /// </summary>
     private void ClearIcons()
     {
-        Debug.Log($"[UI] === ClearIcons 시작 === Slots: {iconSlots.Count}개");
         
         for (int i = 0; i < iconSlots.Count; i++)
         {
             iconSlots[i].sprite = null;
             iconSlots[i].color = inactiveColor;
             
-            Debug.Log($"[UI] Slot{i} Cleared!");
         }
         
-        Debug.Log("[UI] === ClearIcons 완료 ===");
     }
 }
