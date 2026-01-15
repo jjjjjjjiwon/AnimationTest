@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// 게임 런타임 데이터 관리
@@ -20,6 +21,10 @@ public class RuntimeManager : MonoBehaviour
 
     [Header("플레이어 데이터")]
     public PlayerStats playerStats;
+    public PlayerInventory playerInventory;
+
+    [Header("아이템 데이터베이스")]
+    public Dictionary<int, ItemData> itemDatabase;
 
     [Header("재화")]
     public int gold = 0;
@@ -30,17 +35,21 @@ public class RuntimeManager : MonoBehaviour
 
     void Awake()
     {
-        // 싱글톤 설정
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            playerStats = null;
+            gold = 0;
+
+            // 초기화
+
             Debug.Log("[RuntimeManager] 생성 완료");
         }
         else
         {
             Destroy(gameObject);
-            Debug.Log("[RuntimeManager] 중복 제거");
         }
     }
 
@@ -56,15 +65,30 @@ public class RuntimeManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[RuntimeManager] PlayerData 확인 - totalLevel: {playerData.total_Level}, base_Health: {playerData.base_Health_Level}");
-
         // PlayerStats 생성 (초기값 복사)
         playerStats = new PlayerStats(playerData);
+
+        // PlayerInventory 생성 (추가!)
+        playerInventory = new PlayerInventory();
 
         // 초기 골드
         gold = 0;
 
         Debug.Log($"[RuntimeManager] 초기화 완료 - 레벨: {playerStats.level}, HP: {playerStats.max_Health}");
+    }
+
+    // ========================================
+    // 아이템 조회 (추가!)
+    // ========================================
+
+    /// <summary>ID로 아이템 데이터 가져오기</summary>
+    public ItemData GetItem(int itemID)
+    {
+        if (itemDatabase.TryGetValue(itemID, out ItemData item))
+            return item;
+
+        Debug.LogWarning($"[RuntimeManager] 아이템 ID {itemID}를 찾을 수 없습니다!");
+        return null;
     }
 
     // ========================================
@@ -90,6 +114,23 @@ public class RuntimeManager : MonoBehaviour
             else
             {
                 Debug.Log("[RuntimeManager] playerStats가 null입니다!");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            if (playerInventory != null)
+            {
+                playerInventory.AddItem(1, 1);
+            }
+        }
+
+        // 2 키: 아이템 ID 2 추가
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            if (playerInventory != null)
+            {
+                playerInventory.AddItem(2, 1);
             }
         }
     }

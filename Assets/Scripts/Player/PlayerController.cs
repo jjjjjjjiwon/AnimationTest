@@ -70,22 +70,11 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
 
-    // ========================================
-    // RuntimeManager 초기화
-    // ========================================
-    if (RuntimeManager.Instance == null)
-    {
-        Debug.LogError("[PlayerController] RuntimeManager.Instance가 null입니다!");
-    }
-    else if (RuntimeManager.Instance.playerStats == null)
-    {
-        Debug.Log("[PlayerController] RuntimeManager 초기화 호출");
-        RuntimeManager.Instance.Initialize(playerData);
-    }
-    else
-    {
-        Debug.Log("[PlayerController] RuntimeManager 이미 초기화됨");
-    }
+        // RuntimeManager 강제 초기화
+        if (RuntimeManager.Instance != null)
+        {
+            RuntimeManager.Instance.Initialize(playerData);
+        }
 
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
@@ -234,16 +223,19 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void TakeDamage(float damage)
     {
-        // 체력 감소
-        playerData.stats.current_Health -= damage;
+        // RuntimeManager의 스탯 사용
+        PlayerStats stats = RuntimeManager.Instance.playerStats;
 
-        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {playerData.stats.current_Health}");
-        hPBar.SetHP(playerData.stats.current_Health, playerData.stats.max_Health);
+        // 체력 감소
+        stats.current_Health -= damage;
+
+        Debug.Log($"Player 피격! 데미지: {damage}, 남은 체력: {stats.current_Health}");
+        hPBar.SetHP(stats.current_Health, stats.max_Health);
 
         // 사망 체크
-        if (playerData.stats.current_Health <= 0)
+        if (stats.current_Health <= 0)
         {
-            playerData.stats.current_Health = 0;
+            stats.current_Health = 0;
             Die();
             return;
         }
@@ -429,20 +421,19 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void AddStatPoints(int amount)
     {
-        playerData.stats.AddPoints(amount);
-        Debug.Log($"[Player] 스탯 포인트 +{amount} → 총 {playerData.stats.availablePoints}개");
+        RuntimeManager.Instance.playerStats.AddPoints(amount);
+        Debug.Log($"[Player] 스탯 포인트 +{amount} → 총 {RuntimeManager.Instance.playerStats.availablePoints}개");
     }
-
     /// <summary>
     /// 스탯 투자 (UI에서 호출)
     /// </summary>
     public bool InvestStat(StatType statType)
     {
-        bool success = playerData.stats.InvestStat(statType);
+        bool success = RuntimeManager.Instance.playerStats.InvestStat(statType);
 
+        // 체력 투자 시 최대 HP 갱신
         if (success && statType == StatType.Health)
         {
-            // 체력 투자 시 최대 HP 갱신
             RefreshMaxHealth();
         }
 
@@ -454,16 +445,17 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void RefreshMaxHealth()
     {
-        float newMaxHP = playerData.stats.max_Health;
+        PlayerStats stats = RuntimeManager.Instance.playerStats;
+        float newMaxHP = stats.max_Health;
 
         // 현재 HP 갱신 (최대치로)
-        playerData.stats.current_Health = newMaxHP;
+        stats.current_Health = newMaxHP;
 
         Debug.Log($"[Player] 최대 HP 갱신: {newMaxHP}");
 
         if (hPBar != null)
         {
-            hPBar.SetHP(playerData.stats.current_Health, newMaxHP);
+            hPBar.SetHP(stats.current_Health, newMaxHP);
         }
     }
 
@@ -547,8 +539,9 @@ public class PlayerController : MonoBehaviour
         yPos += lineHeight;
 
         // HP
+        PlayerStats stats = RuntimeManager.Instance.playerStats;
         GUI.Label(new Rect(20, yPos, 230, 20),
-            $"HP: {playerData.stats.max_Health:F0} / {playerData.stats.max_Health:F0}", labelStyle);
+            $"HP: {stats.current_Health:F0} / {stats.max_Health:F0}", labelStyle);
         yPos += lineHeight;
 
         // 콤보 단계

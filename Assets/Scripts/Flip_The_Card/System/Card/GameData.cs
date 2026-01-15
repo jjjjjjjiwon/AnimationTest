@@ -19,7 +19,8 @@ public class GameData : MonoBehaviour
     
     [Header("Loaded Stage Data")]
     public List<StageData> allStageData = new List<StageData>();  // ← 추가: JSON에서 로드된 전체 스테이지
-    
+    public Dictionary<int, ItemData> itemDatabase = new Dictionary<int, ItemData>(); // ← 추가!
+
     void Awake()
     {
         if (Instance == null)
@@ -76,4 +77,20 @@ public class GameData : MonoBehaviour
         InitializeSeed();
         Debug.Log("[GameData] 새로운 런 시작!");
     }
+
+        // ========================================
+    // 아이템 조회 (추가!)
+    // ========================================
+    
+    /// <summary>ID로 아이템 데이터 가져오기</summary>
+    public ItemData GetItem(int itemID)
+    {
+        if (itemDatabase.TryGetValue(itemID, out ItemData item))
+            return item;
+        
+        Debug.LogWarning($"[GameData] 아이템 ID {itemID}를 찾을 수 없습니다!");
+        return null;
+    }
+
+    
 }

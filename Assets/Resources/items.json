@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "itemID": 1,
+      "itemName": "1번 아이템",
+      "iconPath": "",
+      "itemType": "KeyItem",
+      "healAmount": 0,
+      "description": "1번 아이템"
+    },
+    {
+      "itemID": 2,
+      "itemName": "2번 아이템",
+      "iconPath": "",
+      "itemType": "KeyItem",
+      "healAmount": 0,
+      "description": "2번 아이템"
+    }
+  ]
+}

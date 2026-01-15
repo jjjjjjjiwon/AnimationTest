@@ -56,7 +56,7 @@ public class PlayerStats
     // 계산된 능력치 (프로퍼티)
     // ========================================
 
-    public float max_Health => 100 + (health_Level * 10);
+    public float max_Health => (health_Level * 10);
     public float defense => defense_Level * 2;
     public float physicalDamage => 10 + (strength_Level * 5);
     public float dexterityBonus => dexterity_Level * 0.02f;
