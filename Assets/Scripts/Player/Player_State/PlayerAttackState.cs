@@ -52,7 +52,7 @@ public class PlayerAttackState : PlayerState
     {
         animator = player.Animator;
         rb = player.Rigidbody;
-         socketManager = player.SocketManager;
+        socketManager = player.SocketManager;
     }
 
     // ========================================

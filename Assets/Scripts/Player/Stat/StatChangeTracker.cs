@@ -141,16 +141,13 @@ public class StatChangeTracker
         confirmedStats = new Dictionary<StatType, int>(tempStats);
 
         // 3️⃣ 변경 추적 초기화 (새로 생성)
-        statChanges = new Dictionary<StatType, int>
-    {
-        { StatType.Health, 0 },
-        { StatType.Defense, 0 },
-        { StatType.Strength, 0 },
-        { StatType.Dexterity, 0 },
-        { StatType.Agility, 0 },
-        { StatType.Intelligence, 0 },
-        { StatType.Luck, 0 }
-    };
+statChanges[StatType.Health] = 0;
+statChanges[StatType.Defense] = 0;
+statChanges[StatType.Strength] = 0;
+statChanges[StatType.Dexterity] = 0;
+statChanges[StatType.Agility] = 0;
+statChanges[StatType.Intelligence] = 0;
+statChanges[StatType.Luck] = 0;
 
         Debug.Log("[Tracker] ✅ 변경사항 확정!");
     }
@@ -166,16 +163,13 @@ public class StatChangeTracker
         tempStats = new Dictionary<StatType, int>(confirmedStats);
 
         // 2️⃣ 변경 추적 초기화 (새로 생성)
-        statChanges = new Dictionary<StatType, int>
-    {
-        { StatType.Health, 0 },
-        { StatType.Defense, 0 },
-        { StatType.Strength, 0 },
-        { StatType.Dexterity, 0 },
-        { StatType.Agility, 0 },
-        { StatType.Intelligence, 0 },
-        { StatType.Luck, 0 }
-    };
+statChanges[StatType.Health] = 0;
+statChanges[StatType.Defense] = 0;
+statChanges[StatType.Strength] = 0;
+statChanges[StatType.Dexterity] = 0;
+statChanges[StatType.Agility] = 0;
+statChanges[StatType.Intelligence] = 0;
+statChanges[StatType.Luck] = 0;
 
         Debug.Log("[Tracker] ❌ 변경사항 취소!");
     }
@@ -211,4 +205,7 @@ public class StatChangeTracker
 
     /// <summary>확정된 스탯</summary>
     public int GetConfirmedStat(StatType type) => confirmedStats[type];
+
+    /// <summary>임시 스탯으로 계산된 보너스를 가진 PlayerStats 복사본 생성</summary>
+
 }
