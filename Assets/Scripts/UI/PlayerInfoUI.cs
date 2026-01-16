@@ -15,6 +15,7 @@ public class PlayerInfoUI : MonoBehaviour
 
     [Header("참조")]
     [SerializeField] private PlayerController playerController;
+    private StatChangeTracker tracker;
     [SerializeField] private GameObject uiPanel; // Player Info 전체 패널
 
     // ========================================
@@ -30,7 +31,11 @@ public class PlayerInfoUI : MonoBehaviour
     // ========================================
 
     [Header("스탯 정보")]
-    [SerializeField] private TextMeshProUGUI status_Text; // Player_Status_Text
+    [SerializeField] private TextMeshProUGUI status_Total_Level_Text;
+    [SerializeField] private TextMeshProUGUI status_stat_Level_Text;
+    [SerializeField] private TextMeshProUGUI status_Detail_Stat_Text;
+
+    [SerializeField] private Button confirmButton;  // 확정 버튼
 
     // ========================================
     // Player_Weapon (무기 정보)
@@ -69,6 +74,12 @@ public class PlayerInfoUI : MonoBehaviour
             uiPanel.SetActive(false);
         }
         isUIOpen = false;
+
+        // ⭐ 확정 버튼 이벤트 연결
+        if (confirmButton != null)
+        {
+            confirmButton.onClick.AddListener(OnConfirmButtonClick);
+        }
 
         CreateInventorySlots();
     }
@@ -117,6 +128,13 @@ public class PlayerInfoUI : MonoBehaviour
             uiPanel.SetActive(true);
         }
 
+        // ⭐ Tracker 생성 (추가!)
+        if (RuntimeManager.Instance != null && RuntimeManager.Instance.playerStats != null)
+        {
+            tracker = new StatChangeTracker(RuntimeManager.Instance.playerStats);
+            Debug.Log("[정보창] StatChangeTracker 생성");
+        }
+
         // 데이터 갱신
         RefreshCharacterInfo();
 
@@ -126,12 +144,21 @@ public class PlayerInfoUI : MonoBehaviour
     /// <summary>UI 닫기</summary>
     public void CloseUI()
     {
+        // ⭐ 미확정 변경사항이 있으면 자동 취소
+        if (tracker != null && tracker.HasChanges())
+        {
+            tracker.CancelChanges();
+            Debug.Log("[정보창] 미확정 변경사항 자동 취소");
+        }
+
         isUIOpen = false;
 
         if (uiPanel != null)
         {
             uiPanel.SetActive(false);
         }
+
+        tracker = null;
 
         Debug.Log("[정보창] 닫힘");
     }
@@ -161,7 +188,9 @@ public class PlayerInfoUI : MonoBehaviour
         }
 
         // 스탯 정보 갱신
+        LevelInfo();
         RefreshStatusInfo();
+        DetailStatInfo();
 
         // 무기 정보 갱신
         RefreshWeaponInfo();
@@ -173,32 +202,204 @@ public class PlayerInfoUI : MonoBehaviour
     }
 
 
-    /// <summary>스탯 정보 갱신</summary>
-    private void RefreshStatusInfo()
+    #region Stat
+
+    private void LevelInfo()
     {
-        if (status_Text == null)
+        if (status_Total_Level_Text == null)
             return;
 
-        // ⭐ RuntimeManager에서 가져오기
-        PlayerData data = playerController.PlayerData;
-        PlayerStats stats = RuntimeManager.Instance.playerStats;
+        int level, points;
 
-        // 레벨 + 스탯 정보
-        string statusInfo = $@"Level {stats.level} +{stats.availablePoints}
+        // ⭐ Tracker가 있으면 임시값, 없으면 원본값
+        if (tracker != null)
+        {
+            level = tracker.GetTempLevel();
+            points = tracker.GetTempAvailablePoints();
+        }
+        else
+        {
+            PlayerStats stats = RuntimeManager.Instance.playerStats;
+            level = stats.level;
+            points = stats.availablePoints;
+        }
 
-▼▲ {stats.health_Level} 체력 → HP: {stats.max_Health:F0} (현재: {stats.current_Health:F0})
-▼▲ {stats.defense_Level} 방어 → 방어력: {stats.defense:F0}
-▼▲ {stats.strength_Level} 물리 → 공격력: {stats.physicalDamage:F0}
-▼▲ {stats.dexterity_Level} 기량 → 보너스: {(stats.dexterityBonus * 100):F1}%
-▼▲ {stats.agility_Level} 민첩 → 이동속도: {stats.move_Speed:F1}
-▼▲ {stats.intelligence_Level} 마법 → 마법 공격력: {stats.magicDamage:F0}
-▼▲ {stats.luck_Level} 럭 → 드랍률: {(stats.luckBonus * 100):F1}%";
+        status_Total_Level_Text.text = $"Level {level} + {points}";
+    }
 
-        status_Text.text = statusInfo;
+    private void RefreshStatusInfo()
+    {
+        if (status_stat_Level_Text == null)
+            return;
+
+        // ⭐ Tracker가 있으면 임시값 + 색상 표시
+        if (tracker != null)
+        {
+            int health = tracker.GetTempStat(StatType.Health);
+            int defense = tracker.GetTempStat(StatType.Defense);
+            int strength = tracker.GetTempStat(StatType.Strength);
+            int dexterity = tracker.GetTempStat(StatType.Dexterity);
+            int agility = tracker.GetTempStat(StatType.Agility);
+            int intelligence = tracker.GetTempStat(StatType.Intelligence);
+            int luck = tracker.GetTempStat(StatType.Luck);
+
+            int healthChange = tracker.GetStatChange(StatType.Health);
+            int defenseChange = tracker.GetStatChange(StatType.Defense);
+            int strengthChange = tracker.GetStatChange(StatType.Strength);
+            int dexterityChange = tracker.GetStatChange(StatType.Dexterity);
+            int agilityChange = tracker.GetStatChange(StatType.Agility);
+            int intelligenceChange = tracker.GetStatChange(StatType.Intelligence);
+            int luckChange = tracker.GetStatChange(StatType.Luck);
+
+            status_stat_Level_Text.text = $@"체력: {FormatStatValue(health, healthChange)}
+방어: {FormatStatValue(defense, defenseChange)}
+물리: {FormatStatValue(strength, strengthChange)}
+기량: {FormatStatValue(dexterity, dexterityChange)}
+민첩: {FormatStatValue(agility, agilityChange)}
+마법: {FormatStatValue(intelligence, intelligenceChange)}
+운: {FormatStatValue(luck, luckChange)}";
+        }
+        else
+        {
+            // 원본값 표시
+            PlayerStats stats = RuntimeManager.Instance.playerStats;
+            status_stat_Level_Text.text = $@"체력: {stats.health_Level}
+방어: {stats.defense_Level}
+물리: {stats.strength_Level}
+기량: {stats.dexterity_Level}
+민첩: {stats.agility_Level}
+마법: {stats.intelligence_Level}
+운: {stats.luck_Level}";
+        }
 
         Debug.Log("[정보창] 스탯 정보 갱신");
     }
 
+    /// <summary>변경 여부에 따라 숫자에 색상 적용</summary>
+    private string FormatStatValue(int value, int change)
+    {
+        if (change > 0)
+        {
+            // 증가: 녹색
+            return $"<color=green>{value}</color>";
+        }
+        else
+        {
+            // 변화 없음: 기본색
+            return value.ToString();
+        }
+    }
+
+    /// <summary>스탯을 변경량과 함께 포맷팅</summary>
+    private string FormatStatWithChange(int value, int change)
+    {
+        if (change > 0)
+        {
+            return $"{value} <color=green>(+{change})</color>";
+        }
+        else if (change < 0)
+        {
+            return $"{value} <color=red>({change})</color>";
+        }
+        else
+        {
+            return value.ToString();
+        }
+    }
+
+    private void DetailStatInfo()
+    {
+        if (status_Detail_Stat_Text == null)
+            return;
+
+        // ⭐ Tracker가 있으면 임시값, 없으면 원본값
+        PlayerStats stats = RuntimeManager.Instance.playerStats;
+
+        string statusInfo;
+        // 원본값 표시 (기존 코드)
+        statusInfo = $@"체력: {stats.max_Health} 
+방어력: {stats.defense}
+물리력: {stats.physicalDamage}
+기량: {stats.dexterityBonus} 
+민첩: {stats.agilityBonus}
+마법력: {stats.magicDamage} 
+운: {stats.luckBonus} ";
+
+        status_Detail_Stat_Text.text = statusInfo;
+
+        Debug.Log("[정보창] 스탯 정보 갱신");
+    }
+
+
+    /// <summary>스탯 증가 (▲ 버튼)</summary>
+    public void TryLevelUp(StatType type)
+    {
+        if (tracker == null)
+        {
+            Debug.LogWarning("[정보창] Tracker가 없습니다!");
+            return;
+        }
+
+        // ⭐ Tracker를 통해 임시 증가
+        if (tracker.TryIncreaseStat(type))
+        {
+            // UI 갱신
+            LevelInfo();
+            RefreshStatusInfo();
+            DetailStatInfo();
+        }
+    }
+
+    /// <summary>스탯 감소 (▼ 버튼)</summary>
+    public void TryLevelDown(StatType type)  // ⭐ Dwon → Down
+    {
+        if (tracker == null)
+        {
+            Debug.LogWarning("[정보창] Tracker가 없습니다!");
+            return;
+        }
+
+        // ⭐ Tracker를 통해 임시 감소
+        if (tracker.TryDecreaseStat(type))
+        {
+            // UI 갱신
+            LevelInfo();
+            RefreshStatusInfo();
+            DetailStatInfo();
+        }
+    }
+
+    /// <summary>확정 버튼 클릭</summary>
+    private void OnConfirmButtonClick()
+    {
+        if (tracker == null)
+        {
+            Debug.LogWarning("[정보창] Tracker가 없습니다!");
+            return;
+        }
+
+        if (!tracker.HasChanges())
+        {
+            Debug.Log("[정보창] 변경사항이 없습니다.");
+            return;
+        }
+
+        // ✅ 변경사항 확정
+        tracker.ConfirmChanges();
+
+        // UI 갱신
+        LevelInfo();
+        RefreshStatusInfo();
+        DetailStatInfo();
+
+        Debug.Log("[정보창] ✅ 스탯 변경 확정!");
+    }
+
+
+    #endregion
+
+
+    #region Weapon
 
     /// <summary>무기 정보 갱신</summary>
     private void RefreshWeaponInfo()
@@ -243,99 +444,105 @@ public class PlayerInfoUI : MonoBehaviour
         Debug.Log("[정보창] 무기 정보 갱신");
     }
 
+    #endregion
+
+
+    #region Inventory
+
     // ========================================
     // 인벤토리 슬롯 생성 (추가!)
     // ========================================
 
     /// <summary>인벤토리 슬롯 생성</summary>
     void CreateInventorySlots()
-{
-    if (itemSlotPrefab == null || inventoryGrid == null)
     {
-        Debug.LogWarning("[인벤토리] 프리팹 또는 그리드가 설정되지 않았습니다!");
-        return;
+        if (itemSlotPrefab == null || inventoryGrid == null)
+        {
+            Debug.LogWarning("[인벤토리] 프리팹 또는 그리드가 설정되지 않았습니다!");
+            return;
+        }
+
+        // 9개 슬롯 생성
+        for (int i = 0; i < 9; i++)
+        {
+            GameObject slot = Instantiate(itemSlotPrefab, inventoryGrid);
+            slot.name = $"ItemSlot_{i}";
+
+            // ⭐ 모든 Image 컴포넌트 찾기
+            Image[] images = slot.GetComponentsInChildren<Image>();
+
+            Debug.Log($"[인벤토리] 슬롯 {i}: Image 개수 = {images.Length}"); // 디버그
+
+            if (images.Length >= 2)
+            {
+                // images[0] = 부모 Image (배경)
+                // images[1] = 자식 Image (아이콘)
+                Image icon = images[1];
+                slotIcons.Add(icon);
+                icon.enabled = false; // 처음엔 비어있음
+
+                Debug.Log($"[인벤토리] 슬롯 {i}: 아이콘 추가 완료");
+            }
+            else if (images.Length == 1)
+            {
+                // Image가 1개만 있으면 그것을 아이콘으로 사용
+                Debug.LogWarning($"[인벤토리] 슬롯 {i}: Image가 1개만 있습니다. 이것을 아이콘으로 사용합니다.");
+                Image icon = images[0];
+                slotIcons.Add(icon);
+                icon.enabled = false;
+            }
+            else
+            {
+                Debug.LogError($"[인벤토리] 슬롯 {i}: Image 컴포넌트를 찾을 수 없습니다!");
+            }
+        }
+
+        Debug.Log($"[인벤토리] {slotIcons.Count}개 슬롯 생성 완료");
     }
-    
-    // 9개 슬롯 생성
-    for (int i = 0; i < 9; i++)
-    {
-        GameObject slot = Instantiate(itemSlotPrefab, inventoryGrid);
-        slot.name = $"ItemSlot_{i}";
-        
-        // ⭐ 모든 Image 컴포넌트 찾기
-        Image[] images = slot.GetComponentsInChildren<Image>();
-        
-        Debug.Log($"[인벤토리] 슬롯 {i}: Image 개수 = {images.Length}"); // 디버그
-        
-        if (images.Length >= 2)
-        {
-            // images[0] = 부모 Image (배경)
-            // images[1] = 자식 Image (아이콘)
-            Image icon = images[1];
-            slotIcons.Add(icon);
-            icon.enabled = false; // 처음엔 비어있음
-            
-            Debug.Log($"[인벤토리] 슬롯 {i}: 아이콘 추가 완료");
-        }
-        else if (images.Length == 1)
-        {
-            // Image가 1개만 있으면 그것을 아이콘으로 사용
-            Debug.LogWarning($"[인벤토리] 슬롯 {i}: Image가 1개만 있습니다. 이것을 아이콘으로 사용합니다.");
-            Image icon = images[0];
-            slotIcons.Add(icon);
-            icon.enabled = false;
-        }
-        else
-        {
-            Debug.LogError($"[인벤토리] 슬롯 {i}: Image 컴포넌트를 찾을 수 없습니다!");
-        }
-    }
-    
-    Debug.Log($"[인벤토리] {slotIcons.Count}개 슬롯 생성 완료");
-}
 
 
     /// <summary>인벤토리 정보 갱신</summary>
     private void RefreshInventoryInfo()
-{
-    if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerInventory == null)
     {
-        Debug.LogWarning("[정보창] RuntimeManager 또는 인벤토리가 null입니다!");
-        return;
-    }
-    
-    PlayerInventory inventory = RuntimeManager.Instance.playerInventory;
-    
-    // 9개 슬롯 갱신
-    for (int i = 0; i < slotIcons.Count; i++)
-    {
-        InventorySlot slot = inventory.GetSlot(i);
-        
-        if (slot != null && !slot.IsEmpty)
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerInventory == null)
         {
-            ItemData item = GameData.Instance.GetItem(slot.itemID);
-            
-            if (item != null && item.icon != null)
+            Debug.LogWarning("[정보창] RuntimeManager 또는 인벤토리가 null입니다!");
+            return;
+        }
+
+        PlayerInventory inventory = RuntimeManager.Instance.playerInventory;
+
+        // 9개 슬롯 갱신
+        for (int i = 0; i < slotIcons.Count; i++)
+        {
+            InventorySlot slot = inventory.GetSlot(i);
+
+            if (slot != null && !slot.IsEmpty)
             {
-                slotIcons[i].sprite = item.icon;
-                slotIcons[i].enabled = true;
-                slotIcons[i].color = Color.white;
+                ItemData item = GameData.Instance.GetItem(slot.itemID);
+
+                if (item != null && item.icon != null)
+                {
+                    slotIcons[i].sprite = item.icon;
+                    slotIcons[i].enabled = true;
+                    slotIcons[i].color = Color.white;
+                }
+                else
+                {
+                    // 아이콘 없음 → 색으로 표시
+                    slotIcons[i].enabled = true;
+                    slotIcons[i].sprite = null;
+                    slotIcons[i].color = Color.yellow;
+                }
             }
             else
             {
-                // 아이콘 없음 → 색으로 표시
-                slotIcons[i].enabled = true;
-                slotIcons[i].sprite = null;
-                slotIcons[i].color = Color.yellow;
+                // 빈 슬롯
+                slotIcons[i].enabled = false;
             }
         }
-        else
-        {
-            // 빈 슬롯
-            slotIcons[i].enabled = false;
-        }
     }
-    
-}
+
+    #endregion
 
 }
