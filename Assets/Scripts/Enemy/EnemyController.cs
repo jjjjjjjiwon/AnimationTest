@@ -161,7 +161,7 @@ public class EnemyController : MonoBehaviour, IEnemy
         // ========================================
         // 체력 초기화
         // ========================================
-        currentHealth = data.maxHealth;
+        currentHealth = data.baseHealth;
 
         // 초기 State 설정
         stateMachine.ChangeState(idleState);
@@ -334,8 +334,8 @@ public class EnemyController : MonoBehaviour, IEnemy
         // 체력 감소
         currentHealth -= damage;
 
-        Debug.Log($"{gameObject.name} 피격! 데미지: {damage}, 남은 체력: {currentHealth}/{data.maxHealth}");
-        enemyHpBacUI.SetHP(currentHealth, data.maxHealth);
+        Debug.Log($"{gameObject.name} 피격! 데미지: {damage}, 남은 체력: {currentHealth}/{data.baseHealth}");
+        enemyHpBacUI.SetHP(currentHealth, data.baseHealth);
 
         // 사망 체크
         if (currentHealth <= 0)
@@ -414,54 +414,79 @@ public class EnemyController : MonoBehaviour, IEnemy
         Debug.Log($"{gameObject.name} 기절!");
     }
 
-    /// <summary>
-    /// 사망 처리
-    /// 
-    /// 호출:
-    /// - TakeDamage()에서 체력 0 시 자동 호출
-    /// - 또는 직접 호출 (즉사 기믹 등)
-    /// 
-    /// 동작:
-    /// 1. 진행 중인 애니메이션 강제 중단
-    /// 2. 모든 Trigger 리셋
-    /// 3. DeathState로 강제 전환
-    /// 
-    /// 특징:
-    /// - 이미 사망 상태면 무시 (중복 방지)
-    /// - DeathState에서 최종 처리 (오브젝트 제거 등)
-    /// </summary>
-    public void Die()
+
+/// <summary>
+/// 사망 처리
+/// 
+/// 호출:
+/// - TakeDamage()에서 체력 0 시 자동 호출
+/// - 또는 직접 호출 (즉사 기믹 등)
+/// 
+/// 동작:
+/// 1. 진행 중인 애니메이션 강제 중단
+/// 2. 모든 Trigger 리셋
+/// 3. DeathState로 강제 전환
+/// 4. StageManager에 사망 알림
+/// 
+/// 특징:
+/// - 이미 사망 상태면 무시 (중복 방지)
+/// - 보스: 포탈 바로 활성화
+/// - 일반 몹: 처치 카운트 증가
+/// </summary>
+public void Die()
+{
+    // 이미 사망 상태면 무시
+    if (stateMachine.CurrentState == deathState)
+        return;
+
+    // ========================================
+    // 진행 중인 애니메이션 중단
+    // ========================================
+    animator.Play(AnimationConstants.HIT, 0, 0);
+
+    // ========================================
+    // 모든 Trigger 리셋
+    // ========================================
+    // 공격 Trigger들
+    foreach (string attackTrigger in data.enabledAttacks)
     {
-        // 이미 사망 상태면 무시
-        if (stateMachine.CurrentState == deathState)
-            return;
+        animator.ResetTrigger(attackTrigger);
+    }
+    // 기타 Trigger들
+    animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
+    animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
+    animator.ResetTrigger(AnimationConstants.DEATH_TRIGGER);
 
-        // ========================================
-        // 진행 중인 애니메이션 중단
-        // ========================================
-        animator.Play(AnimationConstants.HIT, 0, 0);
+    // ========================================
+    // 사망 상태로 강제 전환
+    // ========================================
+    stateMachine.ChangeState(deathState);
 
-        // ========================================
-        // 모든 Trigger 리셋
-        // ========================================
-        // 공격 Trigger들
-        foreach (string attackTrigger in data.enabledAttacks)
+    // ========================================
+    // StageManager에 사망 알림
+    // ========================================
+    if (StageManager.Instance != null)
+    {
+        if (data.enemyType == EnemyType.Boss)
         {
-            animator.ResetTrigger(attackTrigger);
+            // 보스: 포탈 바로 활성화
+            StageManager.Instance.ActivatePortal();
+            Debug.Log($"[{gameObject.name}] 보스 처치 - 포탈 활성화!");
         }
-        // 기타 Trigger들
-        animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
-        animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
-        animator.ResetTrigger(AnimationConstants.DEATH_TRIGGER);
-
-        // ========================================
-        // 사망 상태로 강제 전환
-        // ========================================
-        stateMachine.ChangeState(deathState);
-
-        Debug.Log($"{gameObject.name} 사망!");
+        else
+        {
+            // 일반 몹: 처치 카운트 증가
+            StageManager.Instance.OnEnemyKilled();
+            Debug.Log($"[{gameObject.name}] 일반 몹 처치 - 카운트 증가");
+        }
+    }
+    else
+    {
+        Debug.LogWarning("[EnemyController] StageManager.Instance가 null입니다!");
     }
 
+    Debug.Log($"{gameObject.name} 사망!");
+}
 
 
 }

@@ -1,0 +1,30 @@
+{
+  "bosses": [
+    {
+      "bossName": "Flame Titan",
+      "upgrades": [
+        {
+          "upgradeID": "health_20",
+          "upgradeName": "체력 강화",
+          "upgradeDescription": "보스 체력 +20%",
+          "upgradeType": "stat",
+          "statType": "health",
+          "value": 0.2
+        },
+        {
+          "upgradeID": "teleport",
+          "upgradeName": "순간 이동",
+          "upgradeDescription": "대쉬 대신 순간 이동 사용",
+          "upgradeType": "ability",
+          "abilityID": "teleport"
+        },
+        {
+          "upgradeID": "none",
+          "upgradeName": "강화 없음",
+          "upgradeDescription": "보스를 강화하지 않습니다",
+          "upgradeType": "none"
+        }
+      ]
+    }
+  ]
+}

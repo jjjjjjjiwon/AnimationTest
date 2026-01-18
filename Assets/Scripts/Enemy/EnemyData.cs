@@ -12,11 +12,15 @@ public class EnemyData : ScriptableObject
 {
     // ========== 기본 설정 ==========
 
+    [Header("기본 정보")]
+    public string enemyName;
+    public EnemyType enemyType;
+
     [Header("Movement")]
     public float moveSpeed = 3.5f;
 
     [Header("체력")]
-    public float maxHealth = 100f;
+    public float baseHealth;
 
     // ========== 공격 설정 ==========
 
@@ -54,4 +58,11 @@ public class EnemyData : ScriptableObject
     [Tooltip("사망 시 생성할 이펙트 Prefab")]
     public GameObject deathEffectPrefab;
 
+}
+
+
+public enum EnemyTypes
+{
+    Normal,
+    Boss
 }

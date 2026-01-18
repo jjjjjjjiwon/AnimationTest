@@ -20,7 +20,6 @@ public class PlayerData : ScriptableObject
     // ========================================
 
     [Header("기본 정보")]
-
     public string playerName = "Knight";
     public int total_Level = 10;
     public Sprite character_Sprite; // 플레이어 기본 이미지
@@ -39,6 +38,14 @@ public class PlayerData : ScriptableObject
 
     [Tooltip("회전 속도")]
     public float rotationSpeed = 10f;
+
+
+    // ========================================
+    // 기본 아이템
+    // ========================================
+
+    [Header("재화")]
+    public int startingGold = 1000;
 
     // ========================================
     // 스턴 시스템
