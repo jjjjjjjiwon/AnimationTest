@@ -190,7 +190,6 @@ public class RuntimeManager : MonoBehaviour
     // 보상
     // ========================================
 
-    /// <summary>보상 지급 (골드, 스탯 포인트)</summary>
     public void GiveReward(StageData stage)
     {
         if (stage == null)
@@ -199,21 +198,7 @@ public class RuntimeManager : MonoBehaviour
             return;
         }
 
-        // 골드 지급
-        if (stage.goldReward > 0)
-        {
-            gold += stage.goldReward;
-            Debug.Log($"[보상] 골드 +{stage.goldReward} → 총 {gold}G");
-        }
-
-        // 스탯 포인트 지급
-        if (stage.levelUpPoint > 0)
-        {
-            playerStats.availablePoints += stage.levelUpPoint;
-            Debug.Log($"[보상] 스탯 포인트 +{stage.levelUpPoint} → 총 {playerStats.availablePoints}p");
-        }
-
-        // UI 표시
+        // UI 표시만 수행
         RewardUI.Show(stage, stage.isBossStage);
     }
 

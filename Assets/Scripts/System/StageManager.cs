@@ -50,23 +50,20 @@ public class StageManager : MonoBehaviour
 
 IEnumerator InitializeStage()
 {
-    // 1프레임 대기 (다른 Start()들이 끝날 때까지)
     yield return null;
-    
-    Debug.Log("[StageManager] Start() 실행!");
     
     if (currentStage == null && GameData.Instance != null)
     {
-        Debug.Log("[StageManager] currentStage null - 1층 로드 시도");
         currentStage = GameData.Instance.GetStageByFloor(1);
         
         if (currentStage != null)
         {
-            Debug.Log($"[StageManager] {currentStage.stageName} 로드 완료");
-        }
-        else
-        {
-            Debug.LogError("[StageManager] 1층을 찾을 수 없습니다!");
+            // ========== 이 부분이 추가됨! ==========
+            if (RuntimeManager.Instance != null)
+            {
+                RuntimeManager.Instance.PrepareFloor(currentStage.stageID);
+                Debug.Log($"[StageManager] 초기화 시 층 {currentStage.stageID} 준비 - 보스: {RuntimeManager.Instance.currentBossName}");
+            }
         }
     }
 }

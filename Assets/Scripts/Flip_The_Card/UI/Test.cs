@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class Test : MonoBehaviour
 {
     int i = 1081;
-    public GameObject PBgm;
+    GameObject PBgm;
     private GameObject PVgm;
     void Awake()
     {
@@ -18,6 +18,9 @@ public class Test : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q))
-            SceneManager.LoadScene("Lobby");
+        {
+            Debug.Log("=======================================");
+            SceneManager.LoadScene("Lobby");   
+        }
     }
 }
