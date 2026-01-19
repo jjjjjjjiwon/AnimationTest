@@ -25,8 +25,8 @@ public class CardUI : MonoBehaviour
     /// <summary>
     /// 카드 설정
     /// </summary>
-    /// <param name="title">제목 (예: "골드", "체력 강화")</param>
-    /// <param name="description">설명 (예: "+1000G", "보스 체력 +20%")</param>
+    /// <param name="title">제목</param>
+    /// <param name="description">설명</param>
     /// <param name="icon">아이콘 (null 가능)</param>
     /// <param name="onClick">클릭 콜백 (null이면 클릭 불가)</param>
     public void Setup(string title, string description, Sprite icon, Action onClick)
@@ -48,7 +48,7 @@ public class CardUI : MonoBehaviour
             }
             else
             {
-                iconImage.gameObject.SetActive(false);  // 아이콘 없으면 숨김
+                iconImage.gameObject.SetActive(false);
             }
         }
         
@@ -57,7 +57,7 @@ public class CardUI : MonoBehaviour
         
         if (button != null)
         {
-            button.onClick.RemoveAllListeners();  // 기존 리스너 제거
+            button.onClick.RemoveAllListeners();
             
             if (onClick != null)
             {

@@ -9,7 +9,10 @@
       "sceneName": "Stage_Volcano",
       "goldReward": 1000,
       "levelUpPoint": 2,
-      "itemRewards": []
+      "itemRewards": [],
+      "isBossStage": false,
+      "bossName": "Flame Titan",
+      "skillReward": "Sword"
     },
     {
       "stageID": 2,
@@ -66,6 +69,5 @@
       "levelUpPoint": 10,
       "itemRewards": []
     }
-    
   ]
 }

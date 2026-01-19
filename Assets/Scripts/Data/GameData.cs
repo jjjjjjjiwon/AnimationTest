@@ -114,23 +114,38 @@ public class GameData : MonoBehaviour
         {
             return bossUpgradesDB[bossName];
         }
-
+        
+        Debug.Log($"boss name : {bossName}");
         Debug.LogWarning($"[GameData] 보스 '{bossName}'의 강화 데이터가 없습니다!");
         return new List<BossUpgrade>();
     }
 
     /// <summary>층 번호로 스테이지 찾기</summary>
-    public StageData GetStageByFloor(int floor)
-    {
-        if (allStageData == null)
-        {
-            Debug.LogWarning("[GameData] allStageData가 null입니다!");
-            return null;
-        }
+public StageData GetStageByFloor(int floor)
+{
 
-        // stageID == floor 가정
-        return allStageData.Find(s => s.stageID == floor);
+    if (allStageData == null)
+    {
+        Debug.LogWarning("[GameData] allStageData가 null입니다!");
+        return null;
     }
+    
+    Debug.Log($"[GameData] 스테이지 검색: floor={floor}, 총 {allStageData.Count}개");
+    
+    foreach (var stage in allStageData)
+    {
+        Debug.Log($"  - stageID: {stage.stageID}, name: {stage.stageName}");
+    }
+    
+    var result = allStageData.Find(s => s.stageID == floor);
+    
+    if (result == null)
+    {
+        Debug.LogWarning($"[GameData] stageID {floor}를 찾을 수 없습니다!");
+    }
+    
+    return result;
+}
 
 
 }

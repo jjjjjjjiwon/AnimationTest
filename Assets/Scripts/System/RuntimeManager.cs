@@ -156,8 +156,16 @@ public class RuntimeManager : MonoBehaviour
         if (available.Count <= 3)
             return available;
 
-        // 섞고 3개 선택
-        return available.OrderBy(x => Random.value).Take(3).ToList();
+        // ⭐ Fisher-Yates Shuffle (제대로 된 랜덤)
+        for (int i = available.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            var temp = available[i];
+            available[i] = available[j];
+            available[j] = temp;
+        }
+
+        return available.Take(3).ToList();
     }
 
     /// <summary>강화 선택</summary>
@@ -209,53 +217,57 @@ public class RuntimeManager : MonoBehaviour
         RewardUI.Show(stage, stage.isBossStage);
     }
 
-
-    // ========================================
-    // 디버그 (테스트용)
-    // ========================================
-
-    void Update()
+    // 원래 private
+    public void TestBossUpgrade()
     {
-        // G 키: 골드 추가 테스트
-        if (Input.GetKeyDown(KeyCode.G))
+        Debug.Log("=== 보스 강화 테스트 ===");
+
+        // ⭐ PrepareFloor() 제거 (리셋하지 않음)
+        // PrepareFloor(1);
+
+        // ⭐ 보스 이름이 없으면 초기화
+        if (string.IsNullOrEmpty(currentBossName))
         {
-            gold += 100;
-            Debug.Log($"[골드] +100 → 총 {gold}G");
+            currentBossName = "Flame Titan";
+            currentFloor = 1;
+            selectedBossUpgrades.Clear();
+            Debug.Log("[테스트] 초기화 완료");
         }
 
-        // L 키: 스탯 출력 테스트
-        if (Input.GetKeyDown(KeyCode.C))
+        Debug.Log($"[테스트] 현재 층: {currentFloor}, 보스: {currentBossName}");
+
+        // 사용 가능한 강화 목록
+        var available = GetAvailableUpgrades();
+        Debug.Log($"사용 가능한 강화: {available.Count}개");
+
+        if (available.Count == 0)
         {
-            if (playerStats != null)
-            {
-                playerStats.PrintStats();
-            }
-            else
-            {
-                Debug.Log("[RuntimeManager] playerStats가 null입니다!");
-            }
+            Debug.Log("더 이상 선택할 강화가 없습니다!");
+            return;
         }
 
-        if (Input.GetKeyDown(KeyCode.F1))
+        // 랜덤 3개
+        var random3 = GetRandomThreeUpgrades();
+        Debug.Log($"랜덤 3개:");
+        foreach (var upgrade in random3)
         {
-            if (playerInventory != null)
-            {
-                playerInventory.AddItem(1, 1);
-            }
+            Debug.Log($"  - {upgrade.upgradeName}: {upgrade.upgradeDescription}");
         }
 
-        // 2 키: 아이템 ID 2 추가
-        if (Input.GetKeyDown(KeyCode.F2))
+        // 하나 선택
+        if (random3.Count > 0)
         {
-            if (playerInventory != null)
+            SelectUpgrade(random3[0].upgradeID);
+
+            // 선택된 강화 확인
+            var selected = GetSelectedUpgrades();
+            Debug.Log($"선택된 강화: {selected.Count}개");
+            foreach (var s in selected)
             {
-                playerInventory.AddItem(2, 1);
+                Debug.Log($"  - {s.upgradeName}");
             }
         }
     }
-
-
-
 
 
 }

@@ -188,22 +188,12 @@ public class EnemyController : MonoBehaviour, IEnemy
 
     void Update()
     {
-        // ========================================
-        // 테스트용 입력 (나중에 제거)
-        // ========================================
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            Debug.Log("aasdasdsadasdasdsadasd");
-            TakeDamage(10);
-        }
 
+        // L키: 적 죽음
         if (Input.GetKeyDown(KeyCode.L))
         {
-            Die();
+           Die();
         }
-
-
-
         // ========================================
         // 거리 계산 (한 번만)
         // ========================================

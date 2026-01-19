@@ -18,16 +18,16 @@ public class ItemDataLoader : MonoBehaviour
     void LoadItemsFromJSON()
     {
         // 1. JSON 파일 읽기
-        TextAsset jsonFile = Resources.Load<TextAsset>("items");
+        TextAsset json = Resources.Load<TextAsset>("Json/items");
         
-        if (jsonFile == null)
+        if (json == null)
         {
             Debug.LogError("[ItemLoader] items.json 파일을 찾을 수 없습니다!");
             return;
         }
         
         // 2. JSON 파싱
-        ItemDataList dataList = JsonUtility.FromJson<ItemDataList>(jsonFile.text);
+        ItemDataList dataList = JsonUtility.FromJson<ItemDataList>(json.text);
         
         if (dataList == null || dataList.items == null)
         {

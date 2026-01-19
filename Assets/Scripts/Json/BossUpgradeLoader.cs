@@ -18,7 +18,7 @@ public class BossUpgradeLoader : MonoBehaviour
     void LoadBossUpgradesFromJSON()
     {
         // 1. JSON 파일 읽기
-        TextAsset jsonFile = Resources.Load<TextAsset>("Data/BossUpgrades");
+        TextAsset jsonFile = Resources.Load<TextAsset>("Json/BossUpgrade");
         
         if (jsonFile == null)
         {

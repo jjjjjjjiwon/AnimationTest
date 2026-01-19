@@ -90,20 +90,20 @@ public class BossUpgradeUI : MonoBehaviour
         panel.SetActive(false);
     }
     
-   private void OnCardSelected(BossUpgrade upgrade)
-{
-    // 강화 선택 저장
-    RuntimeManager.Instance.SelectUpgrade(upgrade.upgradeID);
-    
-    // UI 닫기
-    panel.SetActive(false);
-    
-    // ⭐ 로비로 복귀
-    if (StageManager.Instance != null)
+    private void OnCardSelected(BossUpgrade upgrade)
     {
-        StageManager.Instance.LoadLobby();
+        // 강화 선택 저장
+        RuntimeManager.Instance.SelectUpgrade(upgrade.upgradeID);
+        
+        // UI 닫기
+        panel.SetActive(false);
+        
+        // 로비로 복귀
+        if (StageManager.Instance != null)
+        {
+            StageManager.Instance.LoadLobby();
+        }
+        
+        Debug.Log($"[BossUpgradeUI] 강화 선택: {upgrade.upgradeName}");
     }
-    
-    Debug.Log($"[BossUpgradeUI] 강화 선택: {upgrade.upgradeName}");
-}
 }

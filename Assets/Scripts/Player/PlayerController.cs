@@ -107,24 +107,6 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         HandleInput();
-
-        // 테스트용: T키로 공격 판정
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            TakeDamage(10);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            Debug.Log("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP");
-            AddStatPoints(5);
-        }
-
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            playerData.stats.PrintStats();
-        }
-
     }
 
     void FixedUpdate()

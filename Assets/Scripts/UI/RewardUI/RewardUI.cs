@@ -110,7 +110,7 @@ public class RewardUI : MonoBehaviour
         panel.SetActive(false);
     }
     
-    private void OnConfirmClick()
+private void OnConfirmClick()
 {
     // 아이템/스킬 지급
     GiveItems();
@@ -121,10 +121,9 @@ public class RewardUI : MonoBehaviour
     // 다음 단계
     if (isBossStage)
     {
-        // 보스 클리어 → 다음 층
+        // 보스 클리어 → 다음 층 → 로비
         RuntimeManager.Instance.MoveToNextFloor();
         
-        // ⭐ 로비 씬 로드
         if (StageManager.Instance != null)
         {
             StageManager.Instance.LoadLobby();
@@ -132,7 +131,7 @@ public class RewardUI : MonoBehaviour
     }
     else
     {
-        // 일반 스테이지 → 강화 선택
+        // 일반 스테이지 → 보스 강화 선택
         BossUpgradeUI.Show();
     }
 }
