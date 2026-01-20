@@ -47,37 +47,41 @@ public class SocketManagerUI : MonoBehaviour
         }
     }
 
-    public void ToggleUI()
+ public void ToggleUI()
+{
+    // ⭐ RuntimeManager 체크 추가!
+    if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
     {
-        // ⭐ 스테이지에서만 상태 체크
-        PlayerController pc = FindObjectOfType<PlayerController>();
-        if (pc != null && !pc.CanOpenUI())
-        {
-            Debug.Log("지금은 UI를 열 수 없습니다!");
-            return;
-        }
+        Debug.LogWarning("[SocketUI] RuntimeManager가 아직 초기화되지 않았습니다!");
+        return;
+    }
+    
+    // ⭐ 스테이지에서만 상태 체크
+    PlayerController pc = FindObjectOfType<PlayerController>();
+    if (pc != null && !pc.CanOpenUI())
+    {
+        Debug.Log("지금은 UI를 열 수 없습니다!");
+        return;
+    }
 
-        if (!IsUIOpen)
-        {
-            IsUIOpen = true;
-            uiPanel.SetActive(true);
-            RefreshSocketUI();
+    if (!IsUIOpen)
+    {
+        IsUIOpen = true;
+        uiPanel.SetActive(true);
+        RefreshSocketUI();
 
-            // ⭐ 스테이지에서만 Idle 전환
-            if (pc != null)
-            {
-                Debug.Log("[UI] UI 열림, 상태를 IdleState로 전환 시도");
-                pc.StateMachine.ChangeState(pc.IdleState);
-            }
-
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-        }
-        else
+        // ⭐ 스테이지에서만 Idle 전환
+        if (pc != null)
         {
-            CloseUI();
+            Debug.Log("[UI] UI 열림, 상태를 IdleState로 전환 시도");
+            pc.StateMachine.ChangeState(pc.IdleState);
         }
     }
+    else
+    {
+        CloseUI();
+    }
+}
 
     public void CloseUI()
     {

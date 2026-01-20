@@ -11,7 +11,6 @@ using System.Collections.Generic;
 public class RewardUI : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private GameObject panel;
     [SerializeField] private Transform cardContainer;  // 카드들이 들어갈 부모
     [SerializeField] private GameObject cardPrefab;    // CardUI 프리팹
     [SerializeField] private Button confirmButton;
@@ -24,25 +23,21 @@ public class RewardUI : MonoBehaviour
     private List<CardUI> rewardCards = new List<CardUI>();
     
     // ========================================
-    // 표시
+    // Initialization
     // ========================================
     
-    /// <summary>보상 UI 표시</summary>
-    public static void Show(StageData stage, bool isBoss)
+    void Start()
     {
-        // UI 인스턴스 찾기 (씬에 미리 배치되어 있어야 함)
-        RewardUI instance = FindObjectOfType<RewardUI>();
-        
-        if (instance == null)
-        {
-            Debug.LogError("[RewardUI] RewardUI 인스턴스를 찾을 수 없습니다!");
-            return;
-        }
-        
-        instance.ShowInternal(stage, isBoss);
+        confirmButton.onClick.AddListener(OnConfirmClick);
+        gameObject.SetActive(false);
     }
     
-    private void ShowInternal(StageData stage, bool isBoss)
+    // ========================================
+    // Public API - UIManager가 호출
+    // ========================================
+    
+    /// <summary>보상 UI 설정 및 표시 준비</summary>
+    public void Setup(StageData stage, bool isBoss)
     {
         currentStage = stage;
         isBossStage = isBoss;
@@ -63,8 +58,7 @@ public class RewardUI : MonoBehaviour
             confirmButtonText.text = "확인";
         }
         
-        // 패널 표시
-        panel.SetActive(true);
+        Debug.Log($"[RewardUI] Setup 완료 - {stage.stageName}");
     }
     
     // ========================================
@@ -118,7 +112,7 @@ public class RewardUI : MonoBehaviour
                 "골드", 
                 $"+{goldAmount}G", 
                 null,
-                () => OnGoldCardClick(goldAmount)  // ⭐ 클릭 콜백
+                () => OnGoldCardClick(goldAmount)
             );
             
             rewardCards.Add(card);
@@ -138,7 +132,7 @@ public class RewardUI : MonoBehaviour
                 "스탯 포인트", 
                 $"+{points}p", 
                 null,
-                () => OnStatPointCardClick(points)  // ⭐ 클릭 콜백
+                () => OnStatPointCardClick(points)
             );
             
             rewardCards.Add(card);
@@ -157,7 +151,7 @@ public class RewardUI : MonoBehaviour
                 "아이템", 
                 itemID, 
                 null,
-                () => OnItemCardClick(itemID)  // ⭐ 클릭 콜백
+                () => OnItemCardClick(itemID)
             );
             
             rewardCards.Add(card);
@@ -176,7 +170,7 @@ public class RewardUI : MonoBehaviour
                 "스킬", 
                 skillID, 
                 null,
-                () => OnSkillCardClick(skillID)  // ⭐ 클릭 콜백
+                () => OnSkillCardClick(skillID)
             );
             
             rewardCards.Add(card);
@@ -215,20 +209,10 @@ public class RewardUI : MonoBehaviour
     // 버튼 이벤트
     // ========================================
     
-    private void Start()
-    {
-        confirmButton.onClick.AddListener(OnConfirmClick);
-        panel.SetActive(false);
-    }
-    
-    /// <summary>
-    /// 확인 버튼 클릭 - 다음 단계로
-    /// (보상은 이미 카드 클릭 시 지급됨)
-    /// </summary>
     private void OnConfirmClick()
     {
         // UI 닫기
-        panel.SetActive(false);
+        gameObject.SetActive(false);
         
         // 다음 단계
         if (isBossStage)
@@ -244,7 +228,10 @@ public class RewardUI : MonoBehaviour
         else
         {
             // 일반 스테이지 → 보스 강화 선택
-            BossUpgradeUI.Show();
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowBossUpgradeUI();
+            }
         }
     }
     
@@ -252,9 +239,7 @@ public class RewardUI : MonoBehaviour
     // 선택 상태 확인 (Optional - UI 피드백용)
     // ========================================
     
-    /// <summary>
-    /// 모든 카드를 선택했는지 확인
-    /// </summary>
+    /// <summary>모든 카드를 선택했는지 확인</summary>
     private bool AllCardsSelected()
     {
         foreach (CardUI card in rewardCards)
@@ -265,12 +250,10 @@ public class RewardUI : MonoBehaviour
         return true;
     }
     
-    /// <summary>
-    /// Update에서 확인 버튼 텍스트 업데이트 (Optional)
-    /// </summary>
+    /// <summary>Update에서 확인 버튼 텍스트 업데이트 (Optional)</summary>
     void Update()
     {
-        if (confirmButtonText != null && panel.activeSelf)
+        if (confirmButtonText != null && gameObject.activeSelf)
         {
             // 모든 카드를 선택했으면 "확인" → "다음"
             if (AllCardsSelected())

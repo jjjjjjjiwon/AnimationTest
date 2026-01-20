@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
     private PlayerStateMachine stateMachine;
     private ComboSystem comboSystem;
     private SocketManager socketManager;
-    
+
     public SocketManager SocketManager => socketManager;
 
     [SerializeField] private HpBarUi hPBar;
@@ -70,21 +70,21 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // ⭐ 이미 초기화되었으면 호출하지 않음
-    if (RuntimeManager.Instance != null)
-    {
-        // playerData가 null이면 초기화 필요
-        if (RuntimeManager.Instance.playerData == null)
+        // RuntimeManager 초기화
+        if (RuntimeManager.Instance != null)
         {
-            RuntimeManager.Instance.Initialize(playerData);
-            Debug.Log("[PlayerController] RuntimeManager 초기화");
+            if (RuntimeManager.Instance.playerData == null)
+            {
+                RuntimeManager.Instance.Initialize(playerData);
+                Debug.Log("[PlayerController] RuntimeManager 초기화");
+            }
+            else
+            {
+                Debug.Log("[PlayerController] RuntimeManager 이미 초기화됨");
+            }
         }
-        else
-        {
-            Debug.Log("[PlayerController] RuntimeManager 이미 초기화됨");
-        }
-    }
 
+        // 컴포넌트 가져오기
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
 
@@ -93,20 +93,33 @@ public class PlayerController : MonoBehaviour
             RigidbodyConstraints.FreezeRotationY |
             RigidbodyConstraints.FreezeRotationZ;
 
+        // 시스템 생성
         stateMachine = new PlayerStateMachine();
-
-        // ========== RuntimeManager의 SocketManager 사용 ==========
         socketManager = RuntimeManager.Instance.socketManager;
 
-        // State 생성
+        // 모든 State 생성 (중요!)
         IdleState = new PlayerIdleState(this);
-        // ...
+        MoveState = new PlayerMoveState(this);        // ← 이게 없어서 못 움직였음!
+        AttackState = new PlayerAttackState(this);
+        FinisherState = new PlayerFinisherState(this);
+        DodgeState = new PlayerDodgeState(this);
+        HitState = new PlayerHitState(this);
+        DeadState = new PlayerDeadState(this);
+
+        // 초기 State 설정
+        stateMachine.ChangeState(IdleState);
+
+        Debug.Log("[PlayerController] 초기화 완료!");
+        Debug.Log($"[PlayerController] 소켓 개수: {socketManager?.GetSocketCount() ?? 0}개");
     }
+
 
     #endregion
 
     void Update()
     {
+
+        Debug.Log("==============================================================================================");
         HandleInput();
     }
 
@@ -128,32 +141,32 @@ public class PlayerController : MonoBehaviour
     // ========================================
 
     void HandleInput()
-{
-    // ========== 디버그 추가 ==========
-    if (Input.anyKeyDown)
     {
-        Debug.Log($"[Input] IsUIOpen: {SocketManagerUI.IsUIOpen}");
-    }
-    // ================================
-    
-    // ========== UI 열려있으면 게임 입력 차단! ==========
-    if (SocketManagerUI.IsUIOpen)
-        return;
+        // ========== 디버그 추가 ==========
+        if (Input.anyKeyDown)
+        {
+            Debug.Log($"[Input] IsUIOpen: {SocketManagerUI.IsUIOpen}");
+        }
+        // ================================
 
-    // 회피 입력
-    if (Input.GetKeyDown(KeyCode.Space))
-    {
-        TryDodge();
-        return;
-    }
+        // ========== UI 열려있으면 게임 입력 차단! ==========
+        if (SocketManagerUI.IsUIOpen)
+            return;
 
-    // 공격 입력
-    InputTypes inputType = GetInputType();
-    if (inputType != InputTypes.None)
-    {
-        TryAttack(inputType);
+        // 회피 입력
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TryDodge();
+            return;
+        }
+
+        // 공격 입력
+        InputTypes inputType = GetInputType();
+        if (inputType != InputTypes.None)
+        {
+            TryAttack(inputType);
+        }
     }
-}
 
     /// <summary>
     /// 현재 프레임 입력을 InputType으로 변환
@@ -163,6 +176,9 @@ public class PlayerController : MonoBehaviour
         // ========== UI 열려있으면 None 반환 ==========
         if (SocketManagerUI.IsUIOpen)
             return InputTypes.None;
+
+        Debug.Log("ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ");
+
 
         if (Input.GetMouseButtonDown(0))
             return InputTypes.LeftClick;
@@ -235,41 +251,48 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// 공격 시도
-    /// </summary>
-    void TryAttack(InputTypes inputType)
+/// 공격 시도
+/// </summary>
+void TryAttack(InputTypes inputType)
+{
+    // ⭐ socketManager null 체크 추가!
+    if (socketManager == null)
     {
-        PlayerState currentState = stateMachine.CurrentState;
+        Debug.LogWarning("[PlayerController] socketManager가 null입니다!");
+        return;
+    }
+    
+    PlayerState currentState = stateMachine.CurrentState;
 
-        // Idle 또는 Move에서 시작
-        if (currentState == IdleState || currentState == MoveState)
+    // Idle 또는 Move에서 시작
+    if (currentState == IdleState || currentState == MoveState)
+    {
+        bool success = socketManager.StartCombo(inputType);
+
+        if (success)
         {
-            bool success = socketManager.StartCombo(inputType);
-
-            if (success)
-            {
-                stateMachine.ChangeState(AttackState);
-            }
-            else
-            {
-                Debug.Log("콤보 시작 실패!");
-            }
+            stateMachine.ChangeState(AttackState);
         }
-        // Attack 중
-        else if (currentState == AttackState)
+        else
         {
-            bool success = socketManager.ProcessNext(inputType);
-
-            if (success)
-            {
-                AttackState.PlayNextStep();
-            }
-            else
-            {
-                AttackState.OnComboFailed();
-            }
+            Debug.Log("콤보 시작 실패!");
         }
     }
+    // Attack 중
+    else if (currentState == AttackState)
+    {
+        bool success = socketManager.ProcessNext(inputType);
+
+        if (success)
+        {
+            AttackState.PlayNextStep();
+        }
+        else
+        {
+            AttackState.OnComboFailed();
+        }
+    }
+}
 
     /// <summary>
     /// 현재 공격의 데미지 반환
@@ -505,6 +528,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void OnGUI()
     {
+        // ⭐ RuntimeManager 체크 추가!
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerStats == null)
+            return;
+
         // 배경 스타일
         GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
         boxStyle.alignment = TextAnchor.UpperLeft;

@@ -129,4 +129,6 @@ public class CardUI : MonoBehaviour
             SetSelected(true);  // 클릭 시 선택 상태로 변경
         }
     }
+
+    
 }

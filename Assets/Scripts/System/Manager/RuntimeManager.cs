@@ -198,17 +198,30 @@ public class RuntimeManager : MonoBehaviour
     // 보상
     // ========================================
 
-    public void GiveReward(StageData stage)
+/// <summary>
+/// 보상 지급 및 UI 표시
+/// StageManager.OnStageCleared()에서 호출됨
+/// </summary>
+public void GiveReward(StageData stage)
+{
+    if (stage == null)
     {
-        if (stage == null)
-        {
-            Debug.LogError("[RuntimeManager] StageData가 null입니다!");
-            return;
-        }
-
-        // UI 표시만 수행
-        RewardUI.Show(stage, stage.isBossStage);
+        Debug.LogError("[RuntimeManager] StageData가 null입니다!");
+        return;
     }
+
+    Debug.Log($"[RuntimeManager] 보상 지급 - {stage.stageName}");
+
+    // UIManager를 통해 보상 UI 표시
+    if (UIManager.Instance != null)
+    {
+        UIManager.Instance.ShowRewardUI(stage, stage.isBossStage);
+    }
+    else
+    {
+        Debug.LogError("[RuntimeManager] UIManager.Instance가 null입니다!");
+    }
+}
 
     // 원래 private
     public void TestBossUpgrade()

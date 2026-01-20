@@ -3112,7 +3112,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0efbc36f84dd8d54d9ef26788be08170, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerController: {fileID: 75892092}
   uiPanel: {fileID: 412554216}
   socketContainer: {fileID: 721838777}
   skillContainer: {fileID: 1505758082}
@@ -9345,7 +9344,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1535767863
 MonoBehaviour:
   m_ObjectHideFlags: 0

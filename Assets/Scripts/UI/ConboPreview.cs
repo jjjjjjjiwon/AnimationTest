@@ -50,27 +50,33 @@ public class ConboPreview : MonoBehaviour
         }
     }
 
-    public void OpenUI()
+public void OpenUI()
+{
+    // ⭐ RuntimeManager 체크 추가!
+    if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
     {
-        PlayerController pc = FindObjectOfType<PlayerController>();
-        if (pc != null && !pc.CanOpenUI())
-        {
-            Debug.Log("Tab을 열수 없습니다");
-
-            return;
-        }
-
-        isUIOpen = true;
-
-        if (uiPanel != null)
-        {
-            uiPanel.SetActive(true);
-        }
-
-        RefreshPreviewUI();
-
-        Debug.Log("[정보창] 열림");
+        Debug.LogWarning("[ComboPreview] RuntimeManager가 아직 초기화되지 않았습니다!");
+        return;
     }
+    
+    PlayerController pc = FindObjectOfType<PlayerController>();
+    if (pc != null && !pc.CanOpenUI())
+    {
+        Debug.Log("Tab을 열수 없습니다");
+        return;
+    }
+
+    isUIOpen = true;
+
+    if (uiPanel != null)
+    {
+        uiPanel.SetActive(true);
+    }
+
+    RefreshPreviewUI();
+
+    Debug.Log("[정보창] 열림");
+}
 
     public void CloseUI()
     {

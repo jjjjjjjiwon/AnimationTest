@@ -112,47 +112,51 @@ public class PlayerInfoUI : MonoBehaviour
 
     /// <summary>UI 열기</summary>
     public void OpenUI()
+{
+    // ⭐ RuntimeManager 체크 추가!
+    if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerStats == null)
     {
-        PlayerController pc = FindObjectOfType<PlayerController>();
-        if (pc != null && !pc.CanOpenUI())
-        {
-            Debug.Log("[정보창] 지금은 열 수 없습니다!");
-            return;
-        }
-
-        isUIOpen = true;
-
-        if (uiPanel != null)
-        {
-            uiPanel.SetActive(true);
-        }
-
-        // ⭐ Tracker 생성
-        if (RuntimeManager.Instance != null && RuntimeManager.Instance.playerStats != null)
-        {
-            tracker = new StatChangeTracker(RuntimeManager.Instance.playerStats);
-            Debug.Log("[정보창] StatChangeTracker 생성");
-        }
-
-        // ========== 추가: 씬별 확정 버튼 제어 ==========
-        if (confirmButton != null)
-        {
-            // 로비에서만 확정 버튼 활성화
-            bool isLobby = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Lobby");
-            confirmButton.interactable = isLobby;
-
-            if (!isLobby)
-            {
-                Debug.Log("[정보창] 스테이지에서는 스탯 투자 불가 (보기만 가능)");
-            }
-        }
-        // =============================================
-
-        // 데이터 갱신
-        RefreshCharacterInfo();
-
-        Debug.Log("[정보창] 열림");
+        Debug.LogWarning("[PlayerInfoUI] RuntimeManager가 아직 초기화되지 않았습니다!");
+        return;
     }
+    
+    PlayerController pc = FindObjectOfType<PlayerController>();
+    if (pc != null && !pc.CanOpenUI())
+    {
+        Debug.Log("지금은 UI를 열 수 없습니다!");
+        return;
+    }
+
+    isUIOpen = true;
+
+    if (uiPanel != null)
+    {
+        uiPanel.SetActive(true);
+    }
+
+    // ⭐ Tracker 생성
+    tracker = new StatChangeTracker(RuntimeManager.Instance.playerStats);
+    Debug.Log("[정보창] StatChangeTracker 생성");
+
+    // ========== 추가: 씬별 확정 버튼 제어 ==========
+    if (confirmButton != null)
+    {
+        // 로비에서만 확정 버튼 활성화
+        bool isLobby = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Lobby");
+        confirmButton.interactable = isLobby;
+
+        if (!isLobby)
+        {
+            Debug.Log("[정보창] 스테이지에서는 스탯 투자 불가 (보기만 가능)");
+        }
+    }
+    // =============================================
+
+    // 데이터 갱신
+    RefreshCharacterInfo();
+
+    Debug.Log("[정보창] 열림");
+}
 
     /// <summary>UI 닫기</summary>
     public void CloseUI()
@@ -219,29 +223,32 @@ public class PlayerInfoUI : MonoBehaviour
 
     #region Stat
 
-    private void LevelInfo()
+private void LevelInfo()
+{
+    int level, points;
+
+    if (tracker != null)
     {
-        if (status_Total_Level_Text == null)
+        level = tracker.GetTempLevel();
+        points = tracker.GetTempAvailablePoints();
+    }
+    else
+    {
+        // ⭐ RuntimeManager null 체크 추가!
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerStats == null)
+        {
+            Debug.LogWarning("[PlayerInfoUI] RuntimeManager 또는 playerStats가 없습니다!");
+            status_Total_Level_Text.text = "Level ? + ?";
             return;
-
-        int level, points;
-
-        // ⭐ Tracker가 있으면 임시값, 없으면 원본값
-        if (tracker != null)
-        {
-            level = tracker.GetTempLevel();
-            points = tracker.GetTempAvailablePoints();
         }
-        else
-        {
-            PlayerStats stats = RuntimeManager.Instance.playerStats;
-            level = stats.level;
-            points = stats.availablePoints;
-        }
-
-        status_Total_Level_Text.text = $"Level {level} + {points}";
+        
+        PlayerStats stats = RuntimeManager.Instance.playerStats;
+        level = stats.level;
+        points = stats.availablePoints;
     }
 
+    status_Total_Level_Text.text = $"Level {level} + {points}";
+}
     private void RefreshStatusInfo()
     {
         if (status_stat_Level_Text == null)

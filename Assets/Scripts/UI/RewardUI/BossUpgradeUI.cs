@@ -9,30 +9,24 @@ using System.Collections.Generic;
 public class BossUpgradeUI : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private GameObject panel;
     [SerializeField] private Transform cardContainer;  // 카드 3개가 들어갈 부모
     [SerializeField] private GameObject cardPrefab;    // CardUI 프리팹
     
     // ========================================
-    // 표시
+    // Initialization
     // ========================================
     
-    /// <summary>강화 선택 UI 표시</summary>
-    public static void Show()
+    void Start()
     {
-        // UI 인스턴스 찾기 (씬에 미리 배치되어 있어야 함)
-        BossUpgradeUI instance = FindObjectOfType<BossUpgradeUI>();
-        
-        if (instance == null)
-        {
-            Debug.LogError("[BossUpgradeUI] BossUpgradeUI 인스턴스를 찾을 수 없습니다!");
-            return;
-        }
-        
-        instance.ShowInternal();
+        gameObject.SetActive(false);
     }
     
-    private void ShowInternal()
+    // ========================================
+    // Public API - UIManager가 호출
+    // ========================================
+    
+    /// <summary>보스 강화 UI 설정 및 표시 준비</summary>
+    public void Setup()
     {
         // 기존 카드 제거
         foreach (Transform child in cardContainer)
@@ -46,7 +40,7 @@ public class BossUpgradeUI : MonoBehaviour
         if (upgrades.Count == 0)
         {
             Debug.LogWarning("[BossUpgradeUI] 사용 가능한 강화가 없습니다!");
-            panel.SetActive(false);
+            gameObject.SetActive(false);
             return;
         }
         
@@ -56,8 +50,7 @@ public class BossUpgradeUI : MonoBehaviour
             CreateUpgradeCard(upgrade);
         }
         
-        // 패널 표시
-        panel.SetActive(true);
+        Debug.Log($"[BossUpgradeUI] Setup 완료 - {upgrades.Count}개 강화");
     }
     
     // ========================================
@@ -85,18 +78,13 @@ public class BossUpgradeUI : MonoBehaviour
     // 이벤트
     // ========================================
     
-    private void Start()
-    {
-        panel.SetActive(false);
-    }
-    
     private void OnCardSelected(BossUpgrade upgrade)
     {
         // 강화 선택 저장
         RuntimeManager.Instance.SelectUpgrade(upgrade.upgradeID);
         
         // UI 닫기
-        panel.SetActive(false);
+        gameObject.SetActive(false);
         
         // 로비로 복귀
         if (StageManager.Instance != null)
