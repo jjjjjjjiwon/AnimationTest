@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     private PlayerStateMachine stateMachine;
     private ComboSystem comboSystem;
     private SocketManager socketManager;
+    
     public SocketManager SocketManager => socketManager;
 
     [SerializeField] private HpBarUi hPBar;
@@ -69,11 +70,20 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // RuntimeManager 강제 초기화
-        if (RuntimeManager.Instance != null)
+        // ⭐ 이미 초기화되었으면 호출하지 않음
+    if (RuntimeManager.Instance != null)
+    {
+        // playerData가 null이면 초기화 필요
+        if (RuntimeManager.Instance.playerData == null)
         {
             RuntimeManager.Instance.Initialize(playerData);
+            Debug.Log("[PlayerController] RuntimeManager 초기화");
         }
+        else
+        {
+            Debug.Log("[PlayerController] RuntimeManager 이미 초기화됨");
+        }
+    }
 
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
@@ -118,25 +128,32 @@ public class PlayerController : MonoBehaviour
     // ========================================
 
     void HandleInput()
+{
+    // ========== 디버그 추가 ==========
+    if (Input.anyKeyDown)
     {
-        // ========== UI 열려있으면 게임 입력 차단! ==========
-        if (SocketManagerUI.IsUIOpen)
-            return;
-
-        // 회피 입력
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            TryDodge();
-            return;
-        }
-
-        // 공격 입력
-        InputTypes inputType = GetInputType();
-        if (inputType != InputTypes.None)
-        {
-            TryAttack(inputType);
-        }
+        Debug.Log($"[Input] IsUIOpen: {SocketManagerUI.IsUIOpen}");
     }
+    // ================================
+    
+    // ========== UI 열려있으면 게임 입력 차단! ==========
+    if (SocketManagerUI.IsUIOpen)
+        return;
+
+    // 회피 입력
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+        TryDodge();
+        return;
+    }
+
+    // 공격 입력
+    InputTypes inputType = GetInputType();
+    if (inputType != InputTypes.None)
+    {
+        TryAttack(inputType);
+    }
+}
 
     /// <summary>
     /// 현재 프레임 입력을 InputType으로 변환

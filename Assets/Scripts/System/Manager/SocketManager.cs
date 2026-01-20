@@ -133,27 +133,40 @@ public class SocketManager
     /// <summary>
     /// 콤보 시작 - 자동으로 적절한 소켓 찾기
     /// </summary>
-    public bool StartCombo(InputTypes input)
+   public bool StartCombo(InputTypes startInput)
+{
+    // ========== 디버그 추가 ==========
+    Debug.Log($"-------------------------------------------------------------------------");
+
+    Debug.Log($"[SocketManager] 소켓 개수: {sockets.Count}");
+    for (int i = 0; i < sockets.Count; i++)
     {
-        // ===== 입력키로 시작하는 소켓 찾기 =====
-        int foundIndex = FindSocketByFirstInput(input);
-        
-        if (foundIndex == -1)
+        ComboSocket socket = sockets[i];
+        bool isFullyEquipped = socket.IsFullyEquipped();
+        InputTypes firstInput = InputTypes.None;
+        if (isFullyEquipped && socket.GetSlot(0) != null)
         {
-            Debug.Log($"[SocketManager] '{input}'로 시작하는 사용 가능한 소켓 없음!");
-            return false;
+            firstInput = socket.GetSlot(0).assignedInput;
         }
-        
-        // ===== 찾은 소켓으로 자동 전환 =====
-        activeSocketIndex = foundIndex;
-        ComboSocket socket = sockets[activeSocketIndex];
-        
-        Debug.Log($"[SocketManager] 소켓 #{foundIndex + 1} 자동 선택!");
-        
-        // ===== 콤보 시작 =====
-        return socket.StartCombo(input);
+        Debug.Log($"  - 소켓 {i}: {socket.socketName}, 완전장착: {isFullyEquipped}, 첫키: {firstInput}");
+    }
+    // ================================
+    
+    // 자동으로 소켓 찾기
+    int socketIndex = FindSocketByFirstInput(startInput);
+    
+    if (socketIndex >= 0)
+    {
+        activeSocketIndex = socketIndex;
+        // sockets[activeSocketIndex].StartCombo();  // ← 주석 처리
+        Debug.Log($"[SocketManager] 소켓 {socketIndex} 시작!");
+        return true;
     }
     
+    Debug.Log($"[SocketManager] '{startInput}'로 시작하는 사용 가능한 소켓 없음!");
+    return false;
+}
+
     /// <summary>
     /// 콤보 이어가기
     /// </summary>

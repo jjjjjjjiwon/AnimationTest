@@ -30,10 +30,16 @@ public class SocketManagerUI : MonoBehaviour
         IsUIOpen = false;
 
         RefreshSkillInventoryUI();
+
+        // ⭐ 씬 전환 시 자동으로 닫기
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void Update()
     {
+        // ⭐ 다른 UI가 열려있으면 무시
+        if (PlayerInfoUI.IsUIOpen)
+            return;
         if (Input.GetKeyDown(KeyCode.F))
         {
             Debug.Log("Socket Open ===============================");
@@ -78,8 +84,21 @@ public class SocketManagerUI : MonoBehaviour
         IsUIOpen = false;
         uiPanel.SetActive(false);
 
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        // ⭐ 스테이지에서만 커서 숨기기
+        bool isLobby = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Lobby");
+
+        if (!isLobby)
+        {
+            // 스테이지: 커서 숨김
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else
+        {
+            // 로비: 커서 유지
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
     }
 
     public void RefreshSocketUI()
@@ -165,23 +184,45 @@ public class SocketManagerUI : MonoBehaviour
 
     public void OnAddSocketClick()
     {
-        // ⭐ RuntimeManager에서 가져오기
-        SocketManager socketManager = RuntimeManager.Instance.socketManager;
+         SocketManager socketManager = RuntimeManager.Instance.socketManager;
+    
+    if (socketManager.IsFull())
+    {
+        Debug.Log("소켓이 최대입니다! (5/5)");
+        return;
+    }
+    
+    ComboSocket newSocket = socketManager.AcquireNewSocket();
+    
+    if (newSocket != null)
+    {
+        Debug.Log("[UI] 새 소켓 추가됨!");
+        
+        // ========== 디버그 추가 ==========
+        Debug.Log($"[Debug] RuntimeManager.socketManager 소켓 개수: {RuntimeManager.Instance.socketManager.GetAllSockets().Count}");
+        // ================================
+        
+        RefreshSocketUI();
+    }
+    }
 
-        if (socketManager.IsFull())
+    void OnDestroy()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    // ⭐ 새 메서드 추가
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // 씬 전환 시 UI 강제로 닫기
+        if (IsUIOpen)
         {
-            Debug.Log("소켓이 최대입니다! (5/5)");
-            return;
-        }
-
-        ComboSocket newSocket = socketManager.AcquireNewSocket();
-
-        if (newSocket != null)
-        {
-            Debug.Log("[UI] 새 소켓 추가됨!");
-            RefreshSocketUI();
+            CloseUI();
+            Debug.Log("[SocketUI] 씬 전환으로 UI 자동 닫김");
         }
     }
+
+    
 
 
 }

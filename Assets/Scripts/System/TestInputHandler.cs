@@ -13,11 +13,7 @@ public class TestInputHandler : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            Debug.Log("======");
-            SceneManager.LoadScene("Lobby");   
-        }
+
 
         // C 키: 스탯 출력 테스트
         if (Input.GetKeyDown(KeyCode.C))

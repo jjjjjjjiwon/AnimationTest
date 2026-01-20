@@ -25,6 +25,8 @@ public class RuntimeManager : MonoBehaviour
     public PlayerInventory playerInventory;
     public PlayerData playerData;
     public SocketManager socketManager;
+    private bool isInitialized = false; 
+
 
 
     [Header("아이템 데이터베이스")]
@@ -61,31 +63,31 @@ public class RuntimeManager : MonoBehaviour
         }
     }
 
-    public void Initialize(PlayerData playerData)
+   public void Initialize(PlayerData playerData)
+{
+    if (playerData == null)
     {
-        if (playerData == null)
-        {
-            Debug.LogError("[RuntimeManager] playerData가 null입니다!");
-            return;
-        }
-
-        // ⭐ PlayerData 저장 추가
-        this.playerData = playerData;
-
-        // PlayerStats 생성
-        playerStats = new PlayerStats(playerData);
-
-        // PlayerInventory 생성
-        playerInventory = new PlayerInventory();
-
-        // ⭐ SocketManager 생성 추가!
-        socketManager = new SocketManager(playerData);
-
-        // 초기 골드 설정
-        gold = playerData.startingGold;
-
-        Debug.Log($"[RuntimeManager] 초기화 완료 - 이름: {playerData.playerName}, 레벨: {playerStats.level}, 골드: {gold}G");
+        Debug.LogError("[RuntimeManager] playerData가 null입니다!");
+        return;
     }
+    
+    // ⭐ 이미 초기화되었으면 스킵
+    if (isInitialized)
+    {
+        Debug.Log("[RuntimeManager] 이미 초기화됨 - 스킵");
+        return;
+    }
+
+    this.playerData = playerData;
+    playerStats = new PlayerStats(playerData);
+    playerInventory = new PlayerInventory();
+    socketManager = new SocketManager(playerData);
+    gold = playerData.startingGold;
+    
+    isInitialized = true;  // ← 플래그 설정
+
+    Debug.Log($"[RuntimeManager] 초기화 완료 - 이름: {playerData.playerName}, 소켓: {socketManager.GetSocketCount()}개");
+}
 
     // ========================================
     // 아이템 조회 (추가!)
