@@ -14,7 +14,6 @@ public class PlayerInfoUI : MonoBehaviour
     // ========================================
 
     [Header("참조")]
-    [SerializeField] private PlayerController playerController;
     private StatChangeTracker tracker;
     [SerializeField] private GameObject uiPanel; // Player Info 전체 패널
 
@@ -114,8 +113,8 @@ public class PlayerInfoUI : MonoBehaviour
     /// <summary>UI 열기</summary>
     public void OpenUI()
     {
-        // Idle이나 Move 상태에서만 열기
-        if (playerController != null && !playerController.CanOpenUI())
+        PlayerController pc = FindObjectOfType<PlayerController>();
+        if (pc != null && !pc.CanOpenUI())
         {
             Debug.Log("[정보창] 지금은 열 수 없습니다!");
             return;
@@ -128,12 +127,26 @@ public class PlayerInfoUI : MonoBehaviour
             uiPanel.SetActive(true);
         }
 
-        // ⭐ Tracker 생성 (추가!)
+        // ⭐ Tracker 생성
         if (RuntimeManager.Instance != null && RuntimeManager.Instance.playerStats != null)
         {
             tracker = new StatChangeTracker(RuntimeManager.Instance.playerStats);
             Debug.Log("[정보창] StatChangeTracker 생성");
         }
+
+        // ========== 추가: 씬별 확정 버튼 제어 ==========
+        if (confirmButton != null)
+        {
+            // 로비에서만 확정 버튼 활성화
+            bool isLobby = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Lobby");
+            confirmButton.interactable = isLobby;
+
+            if (!isLobby)
+            {
+                Debug.Log("[정보창] 스테이지에서는 스탯 투자 불가 (보기만 가능)");
+            }
+        }
+        // =============================================
 
         // 데이터 갱신
         RefreshCharacterInfo();
@@ -170,11 +183,13 @@ public class PlayerInfoUI : MonoBehaviour
     /// <summary>캐릭터 정보 갱신</summary>
     private void RefreshCharacterInfo()
     {
-        if (playerController == null)
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerData == null)
+        {
+            Debug.LogWarning("[정보창] PlayerData를 찾을 수 없습니다!");
             return;
+        }
 
-        PlayerData data = playerController.PlayerData;
-
+        PlayerData data = RuntimeManager.Instance.playerData;
         // 이름 표시
         if (playerName_Text != null)
         {
@@ -275,82 +290,82 @@ public class PlayerInfoUI : MonoBehaviour
         Debug.Log("[정보창] 스탯 정보 갱신");
     }
 
-    
+
 
     private void DetailStatInfo()
-{
-    if (status_Detail_Stat_Text == null)
-        return;
-
-    PlayerStats stats = RuntimeManager.Instance.playerStats;
-
-    if (tracker != null)
     {
-        int health = tracker.GetTempStat(StatType.Health);
-        int defense = tracker.GetTempStat(StatType.Defense);
-        int strength = tracker.GetTempStat(StatType.Strength);
-        int dexterity = tracker.GetTempStat(StatType.Dexterity);
-        int agility = tracker.GetTempStat(StatType.Agility);
-        int intelligence = tracker.GetTempStat(StatType.Intelligence);
-        int luck = tracker.GetTempStat(StatType.Luck);
+        if (status_Detail_Stat_Text == null)
+            return;
 
-        // 변경량 가져오기
-        int healthChange = tracker.GetStatChange(StatType.Health);
-        int defenseChange = tracker.GetStatChange(StatType.Defense);
-        int strengthChange = tracker.GetStatChange(StatType.Strength);
-        int dexterityChange = tracker.GetStatChange(StatType.Dexterity);
-        int agilityChange = tracker.GetStatChange(StatType.Agility);
-        int intelligenceChange = tracker.GetStatChange(StatType.Intelligence);
-        int luckChange = tracker.GetStatChange(StatType.Luck);
+        PlayerStats stats = RuntimeManager.Instance.playerStats;
 
-        // 보너스 계산
-        float maxHealth = health * 10;
-        float defenseValue = defense * 2;
-        float physicalDamage = 10 + (strength * 5);
-        float dexterityBonus = dexterity * 0.02f;
-        float agilityBonus = agility * 0.02f;
-        float magicDamage = 10 + (intelligence * 8);
-        float luckBonus = luck * 0.05f;
+        if (tracker != null)
+        {
+            int health = tracker.GetTempStat(StatType.Health);
+            int defense = tracker.GetTempStat(StatType.Defense);
+            int strength = tracker.GetTempStat(StatType.Strength);
+            int dexterity = tracker.GetTempStat(StatType.Dexterity);
+            int agility = tracker.GetTempStat(StatType.Agility);
+            int intelligence = tracker.GetTempStat(StatType.Intelligence);
+            int luck = tracker.GetTempStat(StatType.Luck);
 
-        // ⭐ FormatStatValue 사용해서 색상 적용
-        status_Detail_Stat_Text.text = $@"체력: {FormatStatValue(maxHealth, healthChange)}
+            // 변경량 가져오기
+            int healthChange = tracker.GetStatChange(StatType.Health);
+            int defenseChange = tracker.GetStatChange(StatType.Defense);
+            int strengthChange = tracker.GetStatChange(StatType.Strength);
+            int dexterityChange = tracker.GetStatChange(StatType.Dexterity);
+            int agilityChange = tracker.GetStatChange(StatType.Agility);
+            int intelligenceChange = tracker.GetStatChange(StatType.Intelligence);
+            int luckChange = tracker.GetStatChange(StatType.Luck);
+
+            // 보너스 계산
+            float maxHealth = health * 10;
+            float defenseValue = defense * 2;
+            float physicalDamage = 10 + (strength * 5);
+            float dexterityBonus = dexterity * 0.02f;
+            float agilityBonus = agility * 0.02f;
+            float magicDamage = 10 + (intelligence * 8);
+            float luckBonus = luck * 0.05f;
+
+            // ⭐ FormatStatValue 사용해서 색상 적용
+            status_Detail_Stat_Text.text = $@"체력: {FormatStatValue(maxHealth, healthChange)}
 방어력: {FormatStatValue(defenseValue, defenseChange)}
 물리력: {FormatStatValue(physicalDamage, strengthChange)}
 기량: {FormatStatValue(dexterityBonus, dexterityChange)}
 민첩: {FormatStatValue(agilityBonus, agilityChange)}
 마법력: {FormatStatValue(magicDamage, intelligenceChange)}
 운: {FormatStatValue(luckBonus, luckChange)}";
-    }
-    else
-    {
-        status_Detail_Stat_Text.text = $@"체력: {stats.max_Health:F0}
+        }
+        else
+        {
+            status_Detail_Stat_Text.text = $@"체력: {stats.max_Health:F0}
 방어력: {stats.defense:F0}
 물리력: {stats.physicalDamage:F0}
 기량: {stats.dexterityBonus:F2}
 민첩: {stats.agilityBonus:F2}
 마법력: {stats.magicDamage:F0}
 운: {stats.luckBonus:F2}";
+        }
     }
-}
 
-/// <summary>스탯 값 포맷</summary>
-private string FormatStatValue(float value, int change)
-{
-    if (change > 0)
+    /// <summary>스탯 값 포맷</summary>
+    private string FormatStatValue(float value, int change)
     {
-        if (value < 1)
-            return $"<color=green>{value:F2}</color>";
+        if (change > 0)
+        {
+            if (value < 1)
+                return $"<color=green>{value:F2}</color>";
+            else
+                return $"<color=green>{value:F0}</color>";
+        }
         else
-            return $"<color=green>{value:F0}</color>";
+        {
+            if (value < 1)
+                return $"{value:F2}";
+            else
+                return $"{value:F0}";
+        }
     }
-    else
-    {
-        if (value < 1)
-            return $"{value:F2}";
-        else
-            return $"{value:F0}";
-    }
-}
 
     /// <summary>스탯을 변경량과 함께 포맷팅</summary>
     private string FormatStatWithChange(int value, int change)
@@ -442,10 +457,13 @@ private string FormatStatValue(float value, int change)
     /// <summary>무기 정보 갱신</summary>
     private void RefreshWeaponInfo()
     {
-        if (playerController == null)
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.playerData == null)
+        {
+            Debug.LogWarning("[정보창] PlayerData를 찾을 수 없습니다!");
             return;
+        }
 
-        PlayerData data = playerController.PlayerData;
+        PlayerData data = RuntimeManager.Instance.playerData;
 
         // 무기 정보
         if (data.weaponData != null)

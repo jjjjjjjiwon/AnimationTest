@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 /// <summary>
 /// 씬 타입 정의
@@ -12,7 +13,7 @@ public enum SceneType
     Lobby = 2,         // 로비 (허브)
     Stage = 4,         // 일반 스테이지
     BossStage = 8,     // 보스 스테이지
-    
+
     // 조합도 가능 (Flags처럼 사용)
     AllGame = Stage | BossStage,  // 모든 게임 씬
     All = MainMenu | Lobby | Stage | BossStage  // 모든 씬
@@ -25,7 +26,7 @@ public enum SceneType
 public class SceneVisibilityAttribute : System.Attribute
 {
     public SceneType VisibleInScenes { get; private set; }
-    
+
     public SceneVisibilityAttribute(SceneType scenes)
     {
         VisibleInScenes = scenes;
@@ -40,13 +41,13 @@ public class UIElement
 {
     [Tooltip("UI 이름 (식별용)")]
     public string name;
-    
+
     [Tooltip("UI GameObject")]
     public GameObject uiObject;
-    
+
     [Tooltip("어떤 씬에서 보일지")]
     public SceneType visibleInScenes;
-    
+
     [Tooltip("초기 상태 (활성화/비활성화)")]
     public bool startActive = false;
 }
@@ -60,101 +61,124 @@ public class UIManager : MonoBehaviour
     // ========================================
     // 싱글톤
     // ========================================
-    
+
     public static UIManager Instance { get; private set; }
-    
+
     // ========================================
     // 씬 타입 설정
     // ========================================
-    
+
     [Header("Scene Configuration")]
     [Tooltip("씬 이름 → 씬 타입 매핑")]
-    [SerializeField] private List<SceneMapping> sceneMappings = new List<SceneMapping>()
+    [SerializeField]
+    private List<SceneMapping> sceneMappings = new List<SceneMapping>()
     {
         new SceneMapping("MainMenu", SceneType.MainMenu),
         new SceneMapping("Lobby", SceneType.Lobby),
         new SceneMapping("Stage", SceneType.Stage),
         new SceneMapping("BossStage", SceneType.BossStage)
     };
-    
+
     [System.Serializable]
     public class SceneMapping
     {
         public string sceneNamePattern;  // 씬 이름 (Contains로 검색)
         public SceneType sceneType;
-        
+
         public SceneMapping(string pattern, SceneType type)
         {
             sceneNamePattern = pattern;
             sceneType = type;
         }
     }
-    
+
     // ========================================
     // UI 등록
     // ========================================
-    
+
     [Header("UI Elements")]
     [Tooltip("관리할 모든 UI 리스트")]
     [SerializeField] private List<UIElement> uiElements = new List<UIElement>();
-    
+
     // 빠른 접근을 위한 딕셔너리
     private Dictionary<string, UIElement> uiDictionary = new Dictionary<string, UIElement>();
-    
+
     // 현재 씬 타입
     private SceneType currentSceneType = SceneType.None;
-    
+
     // ========================================
     // 초기화
     // ========================================
-    
+
     void Awake()
     {
-        // 싱글톤 설정
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            Debug.Log("[UIManager] DontDestroyOnLoad 적용");
-        }
-        else
-        {
-            Debug.Log("[UIManager] 중복 인스턴스 파괴");
-            Destroy(gameObject);
-            return;
-        }
-        
-        // UI 딕셔너리 초기화
-        InitializeUIDictionary();
-        
-        // 씬 로드 이벤트 등록
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-    
-    void OnDestroy()
+    if (Instance == null)
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        Debug.Log("[UIManager] DontDestroyOnLoad 적용");
+        
+        // InitializePlayerData(); ← 삭제!
+    }
+    else
+    {
+        Debug.Log("[UIManager] 중복 인스턴스 파괴");
+        Destroy(gameObject);
+        return;
     }
     
+    SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
     void Start()
     {
-            foreach (var ui in uiElements)
-    {
-        if (ui.uiObject != null)
-            ui.uiObject.SetActive(ui.startActive);
-    }
+        InitializePlayerData();
+        foreach (var ui in uiElements)
+        {
+            if (ui.uiObject != null)
+                ui.uiObject.SetActive(ui.startActive);
+        }
 
         // 현재 씬에 맞게 UI 표시
         UpdateUIForCurrentScene();
     }
-    
+
+// ========================================
+// Player Data 초기화
+// ========================================
+
+/// <summary>
+/// RuntimeManager에 PlayerData 초기화
+/// </summary>
+private void InitializePlayerData()
+{
+    if (GameData.Instance != null && GameData.Instance.defaultPlayerData != null)
+    {
+        if (RuntimeManager.Instance != null)
+        {
+            RuntimeManager.Instance.Initialize(GameData.Instance.defaultPlayerData);
+            Debug.Log("[UIManager] PlayerData 초기화 완료");
+        }
+    }
+    else
+    {
+        Debug.LogWarning("[UIManager] GameData 또는 defaultPlayerData가 없습니다!");
+    }
+}
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+
     /// <summary>
     /// UI 딕셔너리 초기화
     /// </summary>
     private void InitializeUIDictionary()
     {
         uiDictionary.Clear();
-        
+
         foreach (var ui in uiElements)
         {
             if (ui.uiObject != null && !string.IsNullOrEmpty(ui.name))
@@ -162,26 +186,26 @@ public class UIManager : MonoBehaviour
                 uiDictionary[ui.name] = ui;
             }
         }
-        
+
         Debug.Log($"[UIManager] {uiDictionary.Count}개 UI 등록 완료");
     }
-    
+
     // ========================================
     // 씬 전환 시 UI 자동 업데이트
     // ========================================
-    
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"[UIManager] 씬 로드됨: {scene.name}");
-        
+
         // 씬 타입 결정
         currentSceneType = GetSceneType(scene.name);
         Debug.Log($"[UIManager] 씬 타입: {currentSceneType}");
-        
+
         // UI 표시 업데이트
         UpdateUIForCurrentScene();
     }
-    
+
     /// <summary>
     /// 씬 이름으로 씬 타입 결정
     /// </summary>
@@ -194,28 +218,28 @@ public class UIManager : MonoBehaviour
                 return mapping.sceneType;
             }
         }
-        
+
         Debug.LogWarning($"[UIManager] 씬 '{sceneName}'의 타입을 찾을 수 없습니다. None 반환");
         return SceneType.None;
     }
-    
+
     /// <summary>
     /// 현재 씬에 맞게 UI 표시 업데이트
     /// </summary>
     private void UpdateUIForCurrentScene()
     {
         Debug.Log($"[UIManager] UI 업데이트 시작 - 현재 씬: {currentSceneType}");
-        
+
         int showCount = 0;
         int hideCount = 0;
-        
+
         foreach (var ui in uiElements)
         {
             if (ui.uiObject == null) continue;
-            
+
             // 현재 씬에서 보여야 하는지 확인
             bool shouldShow = (ui.visibleInScenes & currentSceneType) != 0;
-            
+
             if (shouldShow)
             {
                 ui.uiObject.SetActive(ui.startActive);
@@ -229,14 +253,14 @@ public class UIManager : MonoBehaviour
                 Debug.Log($"  ❌ {ui.name}: 비활성화");
             }
         }
-        
+
         Debug.Log($"[UIManager] UI 업데이트 완료 - 활성: {showCount}, 비활성: {hideCount}");
     }
-    
+
     // ========================================
     // UI 제어 메서드
     // ========================================
-    
+
     /// <summary>
     /// UI 표시 (이름으로 접근)
     /// </summary>
@@ -260,7 +284,7 @@ public class UIManager : MonoBehaviour
             Debug.LogError($"[UIManager] UI를 찾을 수 없습니다: {uiName}");
         }
     }
-    
+
     /// <summary>
     /// UI 숨기기 (이름으로 접근)
     /// </summary>
@@ -276,7 +300,7 @@ public class UIManager : MonoBehaviour
             Debug.LogError($"[UIManager] UI를 찾을 수 없습니다: {uiName}");
         }
     }
-    
+
     /// <summary>
     /// UI 토글 (이름으로 접근)
     /// </summary>
@@ -294,7 +318,7 @@ public class UIManager : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// UI가 활성화되어 있는지 확인
     /// </summary>
@@ -306,7 +330,7 @@ public class UIManager : MonoBehaviour
         }
         return false;
     }
-    
+
     /// <summary>
     /// 현재 씬에서 특정 UI가 표시 가능한지 확인
     /// </summary>
@@ -318,36 +342,36 @@ public class UIManager : MonoBehaviour
         }
         return false;
     }
-    
+
     // ========================================
     // 특정 UI 빠른 접근 (Optional)
     // ========================================
-    
+
     public void ShowRewardUI() => ShowUI("RewardUI");
     public void HideRewardUI() => HideUI("RewardUI");
-    
+
     public void ShowBossUpgradeUI() => ShowUI("BossUpgradeUI");
     public void HideBossUpgradeUI() => HideUI("BossUpgradeUI");
-    
+
     public void ShowPauseUI() => ShowUI("PauseUI");
     public void HidePauseUI() => HideUI("PauseUI");
-    
+
     public void ShowStageSelectUI() => ShowUI("StageSelectUI");
     public void HideStageSelectUI() => HideUI("StageSelectUI");
-    
+
     public void ShowStatInvestUI() => ShowUI("StatInvestUI");
     public void HideStatInvestUI() => HideUI("StatInvestUI");
-    
+
     public void ShowSocketManagerUI() => ShowUI("SocketManagerUI");
     public void HideSocketManagerUI() => HideUI("SocketManagerUI");
-    
+
     public void ShowBossHealthBar() => ShowUI("BossHealthBar");
     public void HideBossHealthBar() => HideUI("BossHealthBar");
-    
+
     // ========================================
     // 유틸리티
     // ========================================
-    
+
     /// <summary>
     /// 현재 씬 타입 가져오기
     /// </summary>
@@ -355,7 +379,7 @@ public class UIManager : MonoBehaviour
     {
         return currentSceneType;
     }
-    
+
     /// <summary>
     /// 모든 UI 숨기기
     /// </summary>

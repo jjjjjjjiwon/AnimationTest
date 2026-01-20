@@ -9,6 +9,9 @@ public class GameData : MonoBehaviour
 {
     public static GameData Instance { get; private set; }
 
+    [Header("Player Data")]
+    public PlayerData defaultPlayerData; 
+
     [Header("Current Session")]
     public int currentSeed;
     public int currentFloor = 1;

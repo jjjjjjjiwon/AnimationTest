@@ -69,7 +69,6 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-
         // RuntimeManager 강제 초기화
         if (RuntimeManager.Instance != null)
         {
@@ -86,20 +85,12 @@ public class PlayerController : MonoBehaviour
 
         stateMachine = new PlayerStateMachine();
 
-        // ========== SocketManager 생성 ==========
-        socketManager = new SocketManager(playerData);
+        // ========== RuntimeManager의 SocketManager 사용 ==========
+        socketManager = RuntimeManager.Instance.socketManager;
 
         // State 생성
         IdleState = new PlayerIdleState(this);
-        MoveState = new PlayerMoveState(this);
-        AttackState = new PlayerAttackState(this);
-        FinisherState = new PlayerFinisherState(this);
-        DodgeState = new PlayerDodgeState(this);
-        HitState = new PlayerHitState(this);
-        DeadState = new PlayerDeadState(this);
-
-        stateMachine.ChangeState(IdleState);
-        Debug.Log($"[Player] 초기화 완료");
+        // ...
     }
 
     #endregion

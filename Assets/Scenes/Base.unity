@@ -5406,6 +5406,7 @@ MonoBehaviour:
     speed: 0
     current_Health: 0
     availablePoints: 0
+  playerData: {fileID: 0}
   gold: 0
   currentFloor: 1
   currentBossName: 
@@ -9344,7 +9345,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1535767863
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11813,7 +11814,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1870962569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11909,7 +11910,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 283cb9d6aa673ad469f47013cf9da810, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerController: {fileID: 75892092}
   uiPanel: {fileID: 1121243580}
   playerName_Text: {fileID: 2043987481}
   player_Image: {fileID: 888679293}
@@ -12859,6 +12859,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23a8de7d4656e124bbcfaf602546f8d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultPlayerData: {fileID: 0}
   currentSeed: 0
   currentFloor: 1
   selectedStages: []

@@ -23,6 +23,9 @@ public class RuntimeManager : MonoBehaviour
     [Header("플레이어 데이터")]
     public PlayerStats playerStats;
     public PlayerInventory playerInventory;
+    public PlayerData playerData;
+    public SocketManager socketManager;
+
 
     [Header("아이템 데이터베이스")]
     public Dictionary<int, ItemData> itemDatabase;
@@ -58,9 +61,6 @@ public class RuntimeManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 런타임 데이터 초기화 (게임 시작 시 호출)
-    /// </summary>
     public void Initialize(PlayerData playerData)
     {
         if (playerData == null)
@@ -69,16 +69,22 @@ public class RuntimeManager : MonoBehaviour
             return;
         }
 
+        // ⭐ PlayerData 저장 추가
+        this.playerData = playerData;
+
         // PlayerStats 생성
         playerStats = new PlayerStats(playerData);
 
         // PlayerInventory 생성
         playerInventory = new PlayerInventory();
 
-        // 초기 골드 설정 ⭐
+        // ⭐ SocketManager 생성 추가!
+        socketManager = new SocketManager(playerData);
+
+        // 초기 골드 설정
         gold = playerData.startingGold;
 
-        Debug.Log($"[RuntimeManager] 초기화 완료 - 레벨: {playerStats.level}, 골드: {gold}G");
+        Debug.Log($"[RuntimeManager] 초기화 완료 - 이름: {playerData.playerName}, 레벨: {playerStats.level}, 골드: {gold}G");
     }
 
     // ========================================
