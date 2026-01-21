@@ -437,46 +437,40 @@ public void Die()
     // ========================================
     // 모든 Trigger 리셋
     // ========================================
-    // 공격 Trigger들
     foreach (string attackTrigger in data.enabledAttacks)
-    {
         animator.ResetTrigger(attackTrigger);
-    }
-    // 기타 Trigger들
+
     animator.ResetTrigger(AnimationConstants.DASH_TRIGGER);
     animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
     animator.ResetTrigger(AnimationConstants.DEATH_TRIGGER);
 
     // ========================================
-    // 사망 상태로 강제 전환
+    // 사망 상태로 전환
     // ========================================
     stateMachine.ChangeState(deathState);
 
+    Debug.Log($"{gameObject.name} 사망!");
+
     // ========================================
-    // StageManager에 사망 알림
+    // StageManager 알림 (중복 없이 단일 진입점)
     // ========================================
-    if (StageManager.Instance != null)
+    if (StageManager.Instance == null)
     {
-        if (data.enemyType == EnemyType.Boss)
-        {
-            // 보스: 포탈 바로 활성화
-            StageManager.Instance.ActivatePortal();
-            Debug.Log($"[{gameObject.name}] 보스 처치 - 포탈 활성화!");
-        }
-        else
-        {
-            // 일반 몹: 처치 카운트 증가
-            StageManager.Instance.OnEnemyKilled();
-            Debug.Log($"[{gameObject.name}] 일반 몹 처치 - 카운트 증가");
-        }
-    }
-    else
-    {
-        Debug.LogWarning("[EnemyController] StageManager.Instance가 null입니다!");
+        Debug.LogWarning("[EnemyController] StageManager.Instance null");
+        return;
     }
 
-    Debug.Log($"{gameObject.name} 사망!");
+    // 보스는 킬 카운트 제외 + 포탈 처리
+    if (data.enemyType == EnemyType.Boss)
+    {
+        Debug.Log($"[{gameObject.name}] 보스 처치 → 포탈 활성화");
+    }
+
+    // 일반 몹만 KillTarget 카운트
+    StageManager.Instance.NotifyEnemyKilled();
+    Debug.Log($"[{gameObject.name}] 일반 몹 처치 → KillTarget 카운트 증가");
 }
+
 
 
 }

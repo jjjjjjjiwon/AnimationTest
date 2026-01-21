@@ -27,7 +27,7 @@ public class RuntimeManager : MonoBehaviour
     public SocketManager socketManager;
     private bool isInitialized = false; 
 
-
+    
 
     [Header("아이템 데이터베이스")]
     public Dictionary<int, ItemData> itemDatabase;
@@ -38,6 +38,12 @@ public class RuntimeManager : MonoBehaviour
     [Header("진행 상태")]
     public int currentFloor = 1;                    // 현재 층
     public string currentBossName;                  // 현재 보스 이름
+
+    public void SetCurrentBossName(string bossName)
+{
+    currentBossName = bossName;
+}
+public string GetCurrentBossName() => currentBossName;
 
     // ========================================
     // 초기화
@@ -62,6 +68,34 @@ public class RuntimeManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    void Start()
+{
+    // ⭐ 이미 초기화되었으면 스킵
+    if (isInitialized)
+    {
+        Debug.Log("[RuntimeManager] 이미 초기화됨");
+        return;
+    }
+    
+    // ⭐ GameData에서 PlayerData 가져오기
+    if (GameData.Instance == null)
+    {
+        Debug.LogError("[RuntimeManager] GameData.Instance가 없습니다!");
+        return;
+    }
+    
+    PlayerData defaultData = GameData.Instance.defaultPlayerData;
+    
+    if (defaultData == null)
+    {
+        Debug.LogError("[RuntimeManager] GameData.defaultPlayerData가 없습니다!");
+        return;
+    }
+    
+    // ⭐ 자동으로 초기화!
+    Initialize(defaultData);
+}
 
    public void Initialize(PlayerData playerData)
 {
@@ -149,6 +183,7 @@ public class RuntimeManager : MonoBehaviour
     /// <summary>사용 가능한 강화 목록 (선택 안 한 것들)</summary>
     public List<BossUpgrade> GetAvailableUpgrades()
     {
+        string bossName = GetCurrentBossName();
         var allUpgrades = GameData.Instance.GetUpgradesForBoss(currentBossName);
 
         return allUpgrades

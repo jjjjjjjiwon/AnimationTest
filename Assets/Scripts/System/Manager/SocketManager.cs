@@ -158,7 +158,7 @@ public class SocketManager
     if (socketIndex >= 0)
     {
         activeSocketIndex = socketIndex;
-        // sockets[activeSocketIndex].StartCombo();  // ← 주석 처리
+        sockets[activeSocketIndex].StartCombo(startInput);
         Debug.Log($"[SocketManager] 소켓 {socketIndex} 시작!");
         return true;
     }

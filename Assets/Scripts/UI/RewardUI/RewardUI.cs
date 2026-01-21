@@ -14,7 +14,6 @@ public class RewardUI : MonoBehaviour
     [SerializeField] private Transform cardContainer;  // 카드들이 들어갈 부모
     [SerializeField] private GameObject cardPrefab;    // CardUI 프리팹
     [SerializeField] private Button confirmButton;
-    [SerializeField] private TextMeshProUGUI confirmButtonText; // "확인" 또는 "다음"
     
     private StageData currentStage;
     private bool isBossStage;
@@ -26,9 +25,21 @@ public class RewardUI : MonoBehaviour
     // Initialization
     // ========================================
     
+    private void Awake()
+{
+    if (confirmButton != null)
+        confirmButton.onClick.AddListener(OnConfirmClick);
+    else
+        Debug.LogError("[RewardUI] confirmButton 미할당");
+}
+
+private void OnDestroy()
+{
+    if (confirmButton != null)
+        confirmButton.onClick.RemoveListener(OnConfirmClick);
+}
     void Start()
     {
-        confirmButton.onClick.AddListener(OnConfirmClick);
         gameObject.SetActive(false);
     }
     
@@ -37,29 +48,31 @@ public class RewardUI : MonoBehaviour
     // ========================================
     
     /// <summary>보상 UI 설정 및 표시 준비</summary>
-    public void Setup(StageData stage, bool isBoss)
+public void Setup(StageData stage, bool isBoss)
+{
+    if (stage == null)
     {
-        currentStage = stage;
-        isBossStage = isBoss;
-        
-        // 기존 카드 제거
-        foreach (Transform child in cardContainer)
-        {
-            Destroy(child.gameObject);
-        }
-        rewardCards.Clear();
-        
-        // 보상 카드 생성
-        CreateRewardCards();
-        
-        // 확인 버튼 텍스트 설정
-        if (confirmButtonText != null)
-        {
-            confirmButtonText.text = "확인";
-        }
-        
-        Debug.Log($"[RewardUI] Setup 완료 - {stage.stageName}");
+        Debug.LogError("[RewardUI] stage null");
+        return;
     }
+
+    if (cardContainer == null || cardPrefab == null)
+    {
+        Debug.LogError("[RewardUI] cardContainer/cardPrefab 미할당");
+        return;
+    }
+
+    currentStage = stage;
+    RuntimeManager.Instance.SetCurrentBossName(stage.bossName);
+    isBossStage = isBoss;
+
+    foreach (Transform child in cardContainer)
+        Destroy(child.gameObject);
+
+    rewardCards.Clear();
+
+    CreateRewardCards();
+}
     
     // ========================================
     // 카드 생성
@@ -253,17 +266,6 @@ public class RewardUI : MonoBehaviour
     /// <summary>Update에서 확인 버튼 텍스트 업데이트 (Optional)</summary>
     void Update()
     {
-        if (confirmButtonText != null && gameObject.activeSelf)
-        {
-            // 모든 카드를 선택했으면 "확인" → "다음"
-            if (AllCardsSelected())
-            {
-                confirmButtonText.text = "다음";
-            }
-            else
-            {
-                confirmButtonText.text = "확인";
-            }
-        }
+
     }
 }

@@ -100,10 +100,74 @@ public class UIManager : MonoBehaviour
         
         // 씬 타입 업데이트
         UpdateSceneType(scene.name);
-        
+
+        RebindSceneUIs(); 
         // UI 표시 업데이트
         UpdateUIVisibility();
     }
+
+private void RebindSceneUIs()
+{
+    // RewardUI
+    var reward = Object.FindFirstObjectByType<RewardUI>(FindObjectsInactive.Include);
+    if (reward != null) BindUIObject("RewardUI", reward.gameObject);
+
+    // BossUpgradeUI
+    var boss = Object.FindFirstObjectByType<BossUpgradeUI>(FindObjectsInactive.Include);
+    if (boss != null) BindUIObject("BossUpgradeUI", boss.gameObject);
+
+    // PlayerInfoUI (필요하면)
+    var info = Object.FindFirstObjectByType<PlayerInfoUI>(FindObjectsInactive.Include);
+    if (info != null) BindUIObject("Player _Info_UI", info.gameObject); // 인스펙터 name에 맞춰
+}
+
+private void BindUIObject(string elementName, GameObject go)
+{
+    if (uiElements == null) return;
+
+    for (int i = 0; i < uiElements.Length; i++)
+    {
+        if (uiElements[i] == null) continue;
+        if (uiElements[i].name != elementName) continue;
+
+        uiElements[i].uiObject = go;
+        Debug.Log($"[UIManager] Rebind 성공: {elementName} -> {go.name}");
+        return;
+    }
+
+    Debug.LogWarning($"[UIManager] Rebind 실패: uiElements에 '{elementName}' 슬롯이 없음");
+}
+
+
+private void Rebind<T>() where T : MonoBehaviour
+{
+    // uiElements에서 해당 타입을 가진 항목 찾기
+    if (uiElements == null) return;
+
+    for (int i = 0; i < uiElements.Length; i++)
+    {
+        var element = uiElements[i];
+        if (element == null) continue;
+
+        // 이미 살아있으면 스킵
+        if (element.uiObject != null && element.uiObject.GetComponent<T>() != null)
+            return;
+
+        // 현재 씬에서 (비활성 포함) 해당 컴포넌트 탐색
+        var found = Object.FindFirstObjectByType<T>(FindObjectsInactive.Include);
+        if (found != null)
+        {
+            element.uiObject = found.gameObject;
+            Debug.Log($"[UIManager] Rebind 성공: {typeof(T).Name} -> {found.gameObject.name}");
+        }
+        else
+        {
+            Debug.LogWarning($"[UIManager] Rebind 실패: {typeof(T).Name} (씬에 없음)");
+        }
+
+        return;
+    }
+}
     
     /// <summary>씬 이름으로 씬 타입 판단</summary>
     private void UpdateSceneType(string sceneName)
@@ -131,20 +195,25 @@ public class UIManager : MonoBehaviour
     }
     
     /// <summary>현재 씬 타입에 맞게 UI 표시/숨김</summary>
-    private void UpdateUIVisibility()
+private void UpdateUIVisibility()
+{
+    if (uiElements == null) return;
+
+    foreach (var element in uiElements)
     {
-        foreach (var element in uiElements)
-        {
-            if (element.uiObject == null)
-                continue;
-            
-            // Flags Enum 비트 연산으로 체크
-            bool shouldShow = (element.sceneType & currentSceneType) != 0;
-            element.uiObject.SetActive(shouldShow);
-            
-            Debug.Log($"[UIManager] {element.name}: {(shouldShow ? "표시" : "숨김")} (SceneType: {element.sceneType})");
-        }
+        if (element == null || element.uiObject == null)
+            continue;
+
+        // ✅ SceneType.None = 수동 UI로 간주하고 자동 토글에서 제외
+        if (element.sceneType == SceneType.None)
+            continue;
+
+        bool shouldShow = (element.sceneType & currentSceneType) != 0;
+        element.uiObject.SetActive(shouldShow);
+
+        Debug.Log($"[UIManager] {element.name}: {(shouldShow ? "표시" : "숨김")} (SceneType: {element.sceneType})");
     }
+}
     
     // ========================================
     // Public API - 특정 UI 표시 (수동)
@@ -152,21 +221,32 @@ public class UIManager : MonoBehaviour
     
     /// <summary>보상 UI 표시</summary>
     public void ShowRewardUI(StageData stage, bool isBoss)
+{
+    RewardUI rewardUI = GetUI<RewardUI>();
+
+    // ✅ 1) uiElements에서 못 찾으면 씬에서 직접 찾기(비활성 포함)
+    if (rewardUI == null)
     {
-        // ⭐ UI Elements 배열에서 찾기
-        RewardUI rewardUI = GetUI<RewardUI>();
-        
-        if (rewardUI == null)
+        rewardUI = Object.FindFirstObjectByType<RewardUI>(FindObjectsInactive.Include);
+
+        if (rewardUI != null)
         {
-            Debug.LogError("[UIManager] RewardUI를 찾을 수 없습니다!");
-            return;
+            Debug.Log("[UIManager] RewardUI를 씬에서 직접 찾아서 사용합니다.");
         }
-        
-        rewardUI.Setup(stage, isBoss);
-        rewardUI.gameObject.SetActive(true);
-        
-        Debug.Log($"[UIManager] RewardUI 표시 - {stage.stageName}");
     }
+
+    if (rewardUI == null)
+    {
+        Debug.LogError("[UIManager] RewardUI를 찾을 수 없습니다! (씬에도 없음)");
+        return;
+    }
+
+    rewardUI.Setup(stage, isBoss);
+    rewardUI.gameObject.SetActive(true);
+
+    Debug.Log($"[UIManager] RewardUI 표시 - {stage.stageName}");
+}
+
     
     /// <summary>보스 강화 UI 표시</summary>
     public void ShowBossUpgradeUI()
@@ -205,22 +285,37 @@ public class UIManager : MonoBehaviour
     /// UI Elements 배열에서 특정 타입의 UI 찾기
     /// </summary>
     public T GetUI<T>() where T : MonoBehaviour
+{
+    if (uiElements == null || uiElements.Length == 0)
     {
-        foreach (var element in uiElements)
-        {
-            if (element.uiObject == null)
-                continue;
-            
-            T component = element.uiObject.GetComponent<T>();
-            if (component != null)
-            {
-                return component;
-            }
-        }
-        
-        Debug.LogWarning($"[UIManager] {typeof(T).Name}을 찾을 수 없습니다!");
+        Debug.LogError($"[UIManager] uiElements가 비어있습니다. ({typeof(T).Name} 요청)");
         return null;
     }
+
+    for (int i = 0; i < uiElements.Length; i++)
+    {
+        var element = uiElements[i];
+        if (element == null)
+        {
+            Debug.LogWarning($"[UIManager] uiElements[{i}]가 null입니다.");
+            continue;
+        }
+
+        if (element.uiObject == null)
+        {
+            // 씬 전환 후 Destroy된 오브젝트를 들고 있을 때 여기로 들어올 수 있음
+            Debug.LogWarning($"[UIManager] uiElements[{i}] uiObject가 null입니다. (sceneType={element.sceneType})");
+            continue;
+        }
+
+        var comp = element.uiObject.GetComponent<T>();
+        if (comp != null) return comp;
+    }
+
+    Debug.LogWarning($"[UIManager] {typeof(T).Name}을(를) 찾지 못했습니다.");
+    return null;
+}
+
     
     /// <summary>
     /// 이름으로 UI 찾기 (대안)

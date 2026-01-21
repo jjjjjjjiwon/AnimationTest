@@ -1,202 +1,218 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 /// <summary>
-/// 스테이지 씬 로드 및 클리어 관리
+/// 스테이지 진행/클리어 관리
+/// - 현재 StageData 보관
+/// - KillTarget 클리어 조건 카운팅
+/// - 클리어 시 RuntimeManager → UIManager로 보상 흐름 연결
 /// </summary>
 public class StageManager : MonoBehaviour
 {
+    // ========================================
+    // Singleton
+    // ========================================
     public static StageManager Instance { get; private set; }
 
+    // ========================================
+    // Current Stage State
+    // ========================================
     private StageData currentStage;
+    private int killCount;
+    private bool clearedOnce;
 
-    [Header("Clear Condition")]
-    [SerializeField] private ClearConditionType clearCondition;
-    [SerializeField] private int targetKillCount;  // 처치 목표 수
-    [SerializeField] private Portal portal;        // 포탈 참조
+    private Portal portal;
 
-    private int currentKillCount = 0;
-
-    public enum ClearConditionType
+    private void OnDisable()
     {
-        KillAll,      // 모든 적 처치
-        KillTarget,   // 특정 수만큼 처치
-        Boss          // 보스 처치
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Stage 씬 들어오면 포탈 재탐색
+        portal = Object.FindFirstObjectByType<Portal>(FindObjectsInactive.Include);
+
+        if (portal == null)
+            Debug.LogWarning("[StageManager] Portal을 씬에서 찾지 못했습니다.");
+        else
+            Debug.Log("[StageManager] Portal 캐시 완료");
     }
 
     // ========================================
-    // 싱글톤
+    // Initialization
     // ========================================
-
-    void Awake()
+    private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
+            Debug.LogWarning($"[StageManager] Duplicate detected. destroy thisID={GetInstanceID()}, keep instanceID={Instance.GetInstanceID()}");
             Destroy(gameObject);
-        }
-
-    }
-
-   void Start()
-{
-    StartCoroutine(InitializeStage());
-}
-
-IEnumerator InitializeStage()
-{
-    yield return null;
-    
-    if (currentStage == null && GameData.Instance != null)
-    {
-        currentStage = GameData.Instance.GetStageByFloor(1);
-        
-        if (currentStage != null)
-        {
-            // ========== 이 부분이 추가됨! ==========
-            if (RuntimeManager.Instance != null)
-            {
-                RuntimeManager.Instance.PrepareFloor(currentStage.stageID);
-                Debug.Log($"[StageManager] 초기화 시 층 {currentStage.stageID} 준비 - 보스: {RuntimeManager.Instance.currentBossName}");
-            }
-        }
-    }
-}
-
-
-    // ========================================
-    // 스테이지 로드
-    // ========================================
-
-    /// <summary>스테이지 씬 로드</summary>
-    public void LoadStage(StageData stageData)
-    {
-
-        // 보스 정보 설정 (추가!)
-if (RuntimeManager.Instance != null)
-{
-    RuntimeManager.Instance.PrepareFloor(stageData.stageID);
-    Debug.Log($"[StageManager] 층 {stageData.stageID} 준비 완료 - 보스: {RuntimeManager.Instance.currentBossName}");
-}
-        if (stageData == null)
-        {
-            Debug.LogError("[StageManager] StageData가 null입니다!");
             return;
         }
 
-        if (string.IsNullOrEmpty(stageData.sceneName))
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        Debug.Log($"[StageManager] Awake thisID={GetInstanceID()}");
+    }
+    // ========================================
+    // Stage Lifecycle API
+    // ========================================
+
+    /// <summary>
+    /// (로비/런타임 등) 외부에서 "이번에 진행할 스테이지"를 지정할 때 호출.
+    /// - 씬 로드 전에 호출하는 걸 권장.
+    /// </summary>
+    /// 
+    private void ParseClearCondition(StageData stage)
+    {
+        if (string.IsNullOrEmpty(stage.clearConditionType))
         {
-            Debug.LogError($"[StageManager] {stageData.stageName}의 sceneName이 비어있습니다!");
+            stage.clearType = ClearConditionType.None;
             return;
         }
 
-        // 현재 스테이지 저장
-        currentStage = stageData;
-
-        Debug.Log($"[StageManager] 씬 로드: {stageData.sceneName}");
-
-        // 씬 로드
-        SceneManager.LoadScene(stageData.sceneName);
-    }
-
-    // ========================================
-    // 적 처치 카운트
-    // ========================================
-
-    /// <summary>적 처치 시 호출</summary>
-    public void OnEnemyKilled()
-    {
-        currentKillCount++;
-
-        Debug.Log($"[StageManager] 적 처치: {currentKillCount}");
-
-        // 클리어 조건 체크
-        CheckClearCondition();
-    }
-
-    private void CheckClearCondition()
-    {
-        Debug.Log($"[CheckClearCondition] 조건: {clearCondition}, 카운트: {currentKillCount}/{targetKillCount}");
-
-        bool cleared = false;
-
-        switch (clearCondition)
+        if (!System.Enum.TryParse(stage.clearConditionType, true, out ClearConditionType parsed))
         {
-            case ClearConditionType.KillAll:
-                int remainingEnemies = FindObjectsOfType<EnemyController>().Length;
-                Debug.Log($"[KillAll] 남은 적: {remainingEnemies}");
-                if (remainingEnemies == 0)
-                    cleared = true;
-                break;
-
-            case ClearConditionType.KillTarget:
-                Debug.Log($"[KillTarget] {currentKillCount} >= {targetKillCount}?");
-                if (currentKillCount >= targetKillCount)
-                    cleared = true;
-                break;
-
-            case ClearConditionType.Boss:
-                Debug.Log("[Boss] 보스 모드");
-                break;
+            Debug.LogError($"[Stage] clearConditionType 파싱 실패: '{stage.clearConditionType}'");
+            parsed = ClearConditionType.None;
         }
 
-        Debug.Log($"[CheckClearCondition] Cleared: {cleared}");
-
-        if (cleared)
-        {
-            ActivatePortal();
-        }
+        stage.clearType = parsed;
     }
 
-    /// <summary>포탈 활성화</summary>
-    public void ActivatePortal()
+
+    public void StartStage(StageData stage)
     {
-        if (portal != null)
+        Debug.Log($"[StageManager] StartStage called on InstanceID={GetInstanceID()}");
+
+        if (stage == null)
         {
-            portal.Activate();
-            Debug.Log("[StageManager] 포탈 활성화!");
+            Debug.LogError("[StageManager] StartStage(stage=null)");
+            return;
         }
+
+        // 1) 스테이지 데이터 세팅
+        currentStage = stage;
+        ResetStageProgress();
+
+        // 2) clearCondition 파싱/검증 (JSON 누락 즉시 탐지)
+        ParseClearCondition(currentStage);
+
+        if (string.IsNullOrEmpty(currentStage.clearConditionType))
+        {
+            Debug.LogError("[StageManager] clearConditionType이 비어있음 (StageData 로딩/매핑 문제)");
+            return;
+        }
+
+        if (currentStage.targetKillCount <= 0)
+        {
+            Debug.LogError($"[StageManager] targetKillCount가 0 이하임: {currentStage.targetKillCount} (StageData 로딩/매핑 문제)");
+            return;
+        }
+
+        Debug.Log($"[StageManager] StartStage: {currentStage.stageName} (scene={currentStage.sceneName}) clear={currentStage.clearType} target={currentStage.targetKillCount}");
+
+        // 3) 씬 로드
+        if (!string.IsNullOrEmpty(currentStage.sceneName))
+            SceneManager.LoadScene(currentStage.sceneName);
         else
-        {
-            Debug.LogWarning("[StageManager] Portal 참조가 없습니다!");
-        }
+            Debug.LogError("[StageManager] stage.sceneName 비어있음");
     }
 
-    // ========================================
-    // 스테이지 클리어
-    // ========================================
 
-    /// <summary>스테이지 클리어 처리 (Portal에서 호출)</summary>
-    public void OnStageCleared()
+    /// <summary>
+    /// 스테이지 진행 상태 초기화(킬 카운트, 클리어 플래그)
+    /// </summary>
+    public void ResetStageProgress()
     {
+        killCount = 0;
+        clearedOnce = false;
+    }
+
+    /// <summary>
+    /// 적이 죽을 때 Enemy 쪽에서 1회 호출해줘야 함.
+    /// </summary>
+    public void NotifyEnemyKilled()
+    {
+        Debug.Log($"[StageManager] NotifyEnemyKilled called on InstanceID={GetInstanceID()} (currentStage={(currentStage == null ? "null" : currentStage.stageName)})");
+
         if (currentStage == null)
         {
-            Debug.LogError("[StageManager] currentStage가 null입니다!");
+            Debug.LogError("[StageManager] NotifyEnemyKilled: currentStage null");
             return;
         }
 
-        Debug.Log($"[StageManager] 스테이지 클리어: {currentStage.stageName}");
+        Debug.Log($"[StageManager] Condition={currentStage.clearConditionType}, target={currentStage.targetKillCount}");
 
-        // 보상 지급 + UI 표시
-        RuntimeManager.Instance.GiveReward(currentStage);
+        if (currentStage.clearType != ClearConditionType.KillTarget)
+        {
+            Debug.LogWarning("[StageManager] clearType이 KillTarget이 아님 → 카운트 스킵");
+            return;
+        }
+
+        killCount++;
+        Debug.Log($"[StageManager] KillTarget {killCount}/{currentStage.targetKillCount}");
+        Debug.Log($"[StageManager] Condition={currentStage.clearType}, target={currentStage.targetKillCount}");
+
+
+        if (killCount >= currentStage.targetKillCount)
+        {
+            Debug.Log("[StageManager] KillTarget 달성 → OnStageCleared 호출");
+            OnStageCleared();
+        }
     }
 
+
+    /// <summary>
+    /// 클리어 처리(중복 방지 포함)
+    /// - RewardUI 흐름으로 내려가게 만드는 핵심 엔트리
+    /// </summary>
+   public void OnStageCleared()
+{
+    if (clearedOnce)
+    {
+        Debug.LogWarning("[StageManager] OnStageCleared() 중복 호출 무시");
+        return;
+    }
+    clearedOnce = true;
+
+    if (currentStage == null)
+    {
+        Debug.LogError("[StageManager] OnStageCleared() currentStage null");
+        return;
+    }
+
+    Debug.Log($"[StageManager] Stage Cleared: {currentStage.stageName}");
+
+    // ✅ 클리어 시: 포탈만 활성화
+    Portal portal = Object.FindFirstObjectByType<Portal>(FindObjectsInactive.Include);
+    if (portal != null)
+    {
+        portal.Activate();
+    }
+    else
+    {
+        Debug.LogWarning("[StageManager] Portal을 찾지 못했습니다.");
+    }
+}
+
+
+
     // ========================================
-    // 로비 복귀
+    // Navigation
     // ========================================
 
-    /// <summary>로비로 돌아가기</summary>
     public void LoadLobby()
     {
-        Debug.Log("[StageManager] 로비로 복귀");
-
-        // TODO: 로비 씬 이름 확인 필요
+        // 프로젝트 로비 씬 이름에 맞춰 수정
         SceneManager.LoadScene("Lobby");
     }
 
+    // ========================================
+    // Debug / Accessor
+    // ========================================
+    public StageData GetCurrentStage() => currentStage;
+    public int GetKillCount() => killCount;
 }

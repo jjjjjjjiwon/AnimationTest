@@ -59,23 +59,17 @@ public class Portal : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[Portal] Trigger 감지: {other.gameObject.name}, Tag: {other.tag}");
-
-        if (!isActive)
-        {
-            Debug.Log("[Portal] 포탈이 비활성 상태");
+        if (!other.CompareTag("Player"))
             return;
-        }
 
-        if (other.CompareTag("Player"))
-        {
-            playerInRange = true;
-            Debug.Log("[Portal] 플레이어 범위 진입!");
+        playerInRange = true;
 
-            if (interactUI != null)
-                interactUI.SetActive(true);
-        }
+        if (interactUI != null)
+            interactUI.SetActive(true);
+
+        Debug.Log($"[Portal] 플레이어 범위 진입 / 활성 상태 = {isActive}");
     }
+
 
     void OnTriggerExit(Collider other)
     {
@@ -100,22 +94,40 @@ public class Portal : MonoBehaviour
         if (!playerInRange)
             return;
 
-        Debug.Log($"[Portal] Update - 활성: {isActive}, 범위: {playerInRange}");
-        // F키 입력
         if (Input.GetKeyDown(interactKey))
         {
             UsePortal();
         }
     }
-
     private void UsePortal()
-    {
-        Debug.Log("[Portal] 사용!");
+{
+    Debug.Log("[Portal] 사용!");
 
-        // 스테이지 클리어 처리
-        if (StageManager.Instance != null)
-        {
-            StageManager.Instance.OnStageCleared();
-        }
+    if (StageManager.Instance == null)
+    {
+        Debug.LogError("[Portal] StageManager.Instance null");
+        return;
     }
+
+    StageData stage = StageManager.Instance.GetCurrentStage();
+    if (stage == null)
+    {
+        Debug.LogError("[Portal] currentStage null");
+        return;
+    }
+
+    if (UIManager.Instance == null)
+    {
+        Debug.LogError("[Portal] UIManager.Instance null");
+        return;
+    }
+
+    // ✅ 포탈 사용 = 보상 UI 표시
+    UIManager.Instance.ShowRewardUI(stage, stage.isBossStage);
+
+    // ✅ 연타/중복 방지(선택)
+    Deactivate();
+}
+
+
 }

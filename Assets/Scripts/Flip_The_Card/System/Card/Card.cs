@@ -150,30 +150,30 @@ public class Card : MonoBehaviour
     /// 스테이지 시작 및 묘지로 이동
     /// </summary>
     void SecondClick()
+{
+    Debug.Log($"[Card] 스테이지 시작: {stageData.stageName}");
+
+    // 1) 묘지 이동 + 다음 층 (GameData null 방지)
+    if (GameData.Instance != null)
     {
-        Debug.Log($"[Card] 스테이지 시작: {stageData.stageName}");
-        
-        // 묘지로 이동 (내 인덱스 전달)
-        if (GameData.Instance != null)
-        {
-            GameData.Instance.MoveToGraveyard(cardIndex);
-        }
-        
-        // 다음 층으로
+        GameData.Instance.MoveToGraveyard(cardIndex);
         GameData.Instance.NextFloor();
-        
-        // StageManager로 씬 로드
-        StageManager stageManager = FindObjectOfType<StageManager>();
-        if (stageManager != null)
-        {
-            stageManager.LoadStage(stageData);
-        }
-        else
-        {
-            Debug.LogError("[Card] StageManager를 찾을 수 없습니다!");
-        }
-        
     }
+    else
+    {
+        Debug.LogWarning("[Card] GameData.Instance가 null입니다. (묘지/층 진행 스킵)");
+    }
+
+    // 2) StageManager로 스테이지 시작 (FindObjectOfType 대신 Instance 사용 권장)
+    if (StageManager.Instance != null)
+    {
+        StageManager.Instance.StartStage(stageData); // ✅ LoadStage가 아니라 StartStage
+    }
+    else
+    {
+        Debug.LogError("[Card] StageManager.Instance를 찾을 수 없습니다!");
+    }
+}
 
     /// <summary>
     /// 마우스 호버 시작

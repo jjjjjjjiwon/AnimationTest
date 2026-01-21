@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public class StageDataLoader : MonoBehaviour
 {
+
+
+
     void Start()
     {
         LoadStagesFromJSON();
@@ -19,6 +22,7 @@ public class StageDataLoader : MonoBehaviour
     {
         // 1. JSON 파일 읽기
         TextAsset jsonFile = Resources.Load<TextAsset>("Json/stages");
+        
 
         if (jsonFile == null)
         {
@@ -57,12 +61,15 @@ public class StageDataLoader : MonoBehaviour
             stageData.goldReward = jsonData.goldReward;
             stageData.levelUpPoint = jsonData.levelUpPoint;
             stageData.itemRewards = jsonData.itemRewards;
+            stageData.skillReward = jsonData.skillReward;
+
+            stageData.clearConditionType = jsonData.clearConditionType;
+            stageData.targetKillCount = jsonData.targetKillCount;
 
 
             // ⭐ 이 3줄 추가!
             stageData.isBossStage = jsonData.isBossStage;
             stageData.bossName = jsonData.bossName;
-            stageData.skillReward = jsonData.skillReward;
 
             // Sprite 로드
             stageData.stageIcon = Resources.Load<Sprite>(jsonData.iconPath);
@@ -71,6 +78,7 @@ public class StageDataLoader : MonoBehaviour
             {
                 Debug.LogWarning($"[StageDataLoader] '{jsonData.iconPath}' 이미지를 찾을 수 없습니다!");
             }
+            Debug.Log($"[StageLoad] {stageData.stageName} clear='{stageData.clearConditionType}' target={stageData.targetKillCount}");
 
             loadedStages.Add(stageData);
 
@@ -118,9 +126,13 @@ public class StageJsonData
     public int goldReward;
     public int levelUpPoint;
     public string[] itemRewards;
+    public string skillReward;
+
+
+    public string clearConditionType;
+    public int targetKillCount;
 
     // ⭐ 추가
     public bool isBossStage;
     public string bossName;
-    public string skillReward;
 }

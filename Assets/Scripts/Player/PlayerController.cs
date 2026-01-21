@@ -69,49 +69,61 @@ public class PlayerController : MonoBehaviour
     #region Start
 
     void Start()
+{
+    // 컴포넌트 가져오기
+    animator = GetComponent<Animator>();
+    rb = GetComponent<Rigidbody>();
+
+    rb.constraints =
+        RigidbodyConstraints.FreezeRotationX |
+        RigidbodyConstraints.FreezeRotationY |
+        RigidbodyConstraints.FreezeRotationZ;
+
+    // ⭐ RuntimeManager 체크!
+    if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
     {
-        // RuntimeManager 초기화
-        if (RuntimeManager.Instance != null)
-        {
-            if (RuntimeManager.Instance.playerData == null)
-            {
-                RuntimeManager.Instance.Initialize(playerData);
-                Debug.Log("[PlayerController] RuntimeManager 초기화");
-            }
-            else
-            {
-                Debug.Log("[PlayerController] RuntimeManager 이미 초기화됨");
-            }
-        }
-
-        // 컴포넌트 가져오기
-        animator = GetComponent<Animator>();
-        rb = GetComponent<Rigidbody>();
-
-        rb.constraints =
-            RigidbodyConstraints.FreezeRotationX |
-            RigidbodyConstraints.FreezeRotationY |
-            RigidbodyConstraints.FreezeRotationZ;
-
-        // 시스템 생성
-        stateMachine = new PlayerStateMachine();
-        socketManager = RuntimeManager.Instance.socketManager;
-
-        // 모든 State 생성 (중요!)
-        IdleState = new PlayerIdleState(this);
-        MoveState = new PlayerMoveState(this);        // ← 이게 없어서 못 움직였음!
-        AttackState = new PlayerAttackState(this);
-        FinisherState = new PlayerFinisherState(this);
-        DodgeState = new PlayerDodgeState(this);
-        HitState = new PlayerHitState(this);
-        DeadState = new PlayerDeadState(this);
-
-        // 초기 State 설정
-        stateMachine.ChangeState(IdleState);
-
-        Debug.Log("[PlayerController] 초기화 완료!");
-        Debug.Log($"[PlayerController] 소켓 개수: {socketManager?.GetSocketCount() ?? 0}개");
+        Debug.LogWarning("[PlayerController] RuntimeManager가 아직 초기화되지 않았습니다. 대기 중...");
+        StartCoroutine(WaitForRuntimeManager());
+        return;
     }
+
+    InitializePlayer();
+}
+
+// ⭐ RuntimeManager 초기화 대기
+private System.Collections.IEnumerator WaitForRuntimeManager()
+{
+    while (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
+    {
+        yield return null;
+    }
+
+    Debug.Log("[PlayerController] RuntimeManager 초기화 확인!");
+    InitializePlayer();
+}
+
+// ⭐ 플레이어 초기화 (분리)
+private void InitializePlayer()
+{
+    // 시스템 생성
+    stateMachine = new PlayerStateMachine();
+    socketManager = RuntimeManager.Instance.socketManager;
+
+    // 모든 State 생성
+    IdleState = new PlayerIdleState(this);
+    MoveState = new PlayerMoveState(this);
+    AttackState = new PlayerAttackState(this);
+    FinisherState = new PlayerFinisherState(this);
+    DodgeState = new PlayerDodgeState(this);
+    HitState = new PlayerHitState(this);
+    DeadState = new PlayerDeadState(this);
+
+    // 초기 State 설정
+    stateMachine.ChangeState(IdleState);
+
+    Debug.Log("[PlayerController] 초기화 완료!");
+    Debug.Log($"[PlayerController] 소켓 개수: {socketManager?.GetSocketCount() ?? 0}개");
+}
 
 
     #endregion
@@ -177,20 +189,29 @@ public class PlayerController : MonoBehaviour
         if (SocketManagerUI.IsUIOpen)
             return InputTypes.None;
 
-        Debug.Log("ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ");
-
-
         if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
             return InputTypes.LeftClick;
+        }
 
         if (Input.GetMouseButtonDown(1))
+        {
+            Debug.Log("RightRightRightRightRightRightRightRightRightRightRightRightRightRightRightRight");
             return InputTypes.RightClick;
+        }
 
         if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Debug.Log("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
             return InputTypes.QKey;
+        }
 
         if (Input.GetKeyDown(KeyCode.E))
+        {
+            Debug.Log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
             return InputTypes.EKey;
+        }
 
         if (Input.GetKeyDown(KeyCode.R))
             return InputTypes.RKey;
