@@ -9,7 +9,7 @@
     
       "sceneName": "Stage_Volcano",
 
-      "isBossStage": false,
+      "isBossStage": true,
       "bossName": "Flame Titan",
 
       "goldReward": 1000,
@@ -17,7 +17,7 @@
       "itemRewards": [],
       "skillReward": "Sword",
 
-      "clearConditionType": "KillTarget",
+      "clearConditionType": "Boss",
       "targetKillCount": 2
     },
     {

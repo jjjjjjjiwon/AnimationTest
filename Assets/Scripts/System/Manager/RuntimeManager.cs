@@ -25,9 +25,13 @@ public class RuntimeManager : MonoBehaviour
     public PlayerInventory playerInventory;
     public PlayerData playerData;
     public SocketManager socketManager;
-    private bool isInitialized = false; 
+    private BossRuntime currentBossRuntime;
 
-    
+    private readonly List<BossUpgrade> selectedBossUpgrades = new List<BossUpgrade>();
+
+    private bool isInitialized = false;
+
+    // ===== Boss 선택/강화 저장소 =====
 
     [Header("아이템 데이터베이스")]
     public Dictionary<int, ItemData> itemDatabase;
@@ -39,11 +43,15 @@ public class RuntimeManager : MonoBehaviour
     public int currentFloor = 1;                    // 현재 층
     public string currentBossName;                  // 현재 보스 이름
 
-    public void SetCurrentBossName(string bossName)
+    public void SetCurrentBoss(string bossName)
+    {
+        currentBossName = bossName;
+        Debug.Log($"[RuntimeManager] currentBossName set: '{currentBossName}'");
+    }
+public string GetCurrentBossName()
 {
-    currentBossName = bossName;
+    return currentBossName;
 }
-public string GetCurrentBossName() => currentBossName;
 
     // ========================================
     // 초기화
@@ -70,58 +78,58 @@ public string GetCurrentBossName() => currentBossName;
     }
 
     void Start()
-{
-    // ⭐ 이미 초기화되었으면 스킵
-    if (isInitialized)
     {
-        Debug.Log("[RuntimeManager] 이미 초기화됨");
-        return;
-    }
-    
-    // ⭐ GameData에서 PlayerData 가져오기
-    if (GameData.Instance == null)
-    {
-        Debug.LogError("[RuntimeManager] GameData.Instance가 없습니다!");
-        return;
-    }
-    
-    PlayerData defaultData = GameData.Instance.defaultPlayerData;
-    
-    if (defaultData == null)
-    {
-        Debug.LogError("[RuntimeManager] GameData.defaultPlayerData가 없습니다!");
-        return;
-    }
-    
-    // ⭐ 자동으로 초기화!
-    Initialize(defaultData);
-}
+        // ⭐ 이미 초기화되었으면 스킵
+        if (isInitialized)
+        {
+            Debug.Log("[RuntimeManager] 이미 초기화됨");
+            return;
+        }
 
-   public void Initialize(PlayerData playerData)
-{
-    if (playerData == null)
-    {
-        Debug.LogError("[RuntimeManager] playerData가 null입니다!");
-        return;
-    }
-    
-    // ⭐ 이미 초기화되었으면 스킵
-    if (isInitialized)
-    {
-        Debug.Log("[RuntimeManager] 이미 초기화됨 - 스킵");
-        return;
+        // ⭐ GameData에서 PlayerData 가져오기
+        if (GameData.Instance == null)
+        {
+            Debug.LogError("[RuntimeManager] GameData.Instance가 없습니다!");
+            return;
+        }
+
+        PlayerData defaultData = GameData.Instance.defaultPlayerData;
+
+        if (defaultData == null)
+        {
+            Debug.LogError("[RuntimeManager] GameData.defaultPlayerData가 없습니다!");
+            return;
+        }
+
+        // ⭐ 자동으로 초기화!
+        Initialize(defaultData);
     }
 
-    this.playerData = playerData;
-    playerStats = new PlayerStats(playerData);
-    playerInventory = new PlayerInventory();
-    socketManager = new SocketManager(playerData);
-    gold = playerData.startingGold;
-    
-    isInitialized = true;  // ← 플래그 설정
+    public void Initialize(PlayerData playerData)
+    {
+        if (playerData == null)
+        {
+            Debug.LogError("[RuntimeManager] playerData가 null입니다!");
+            return;
+        }
 
-    Debug.Log($"[RuntimeManager] 초기화 완료 - 이름: {playerData.playerName}, 소켓: {socketManager.GetSocketCount()}개");
-}
+        // ⭐ 이미 초기화되었으면 스킵
+        if (isInitialized)
+        {
+            Debug.Log("[RuntimeManager] 이미 초기화됨 - 스킵");
+            return;
+        }
+
+        this.playerData = playerData;
+        playerStats = new PlayerStats(playerData);
+        playerInventory = new PlayerInventory();
+        socketManager = new SocketManager(playerData);
+        gold = playerData.startingGold;
+
+        isInitialized = true;  // ← 플래그 설정
+
+        Debug.Log($"[RuntimeManager] 초기화 완료 - 이름: {playerData.playerName}, 소켓: {socketManager.GetSocketCount()}개");
+    }
 
     // ========================================
     // 아이템 조회 (추가!)
@@ -137,11 +145,6 @@ public string GetCurrentBossName() => currentBossName;
         return null;
     }
 
-
-
-
-    [Header("보스 강화")]
-    public List<string> selectedBossUpgrades = new List<string>();  // 선택된 강화 ID들
 
     // ========================================
     // 층 관리
@@ -175,19 +178,69 @@ public string GetCurrentBossName() => currentBossName;
     {
         PrepareFloor(currentFloor + 1);
     }
-
     // ========================================
     // 보스 강화
     // ========================================
 
-    /// <summary>사용 가능한 강화 목록 (선택 안 한 것들)</summary>
+    /// <summary>선택된 강화 추가</summary>
+    public void AddBossUpgrade(BossUpgrade up)
+    {
+        if (up == null) return;
+        selectedBossUpgrades.Add(up);
+        Debug.Log($"[RuntimeManager] AddBossUpgrade: {up.upgradeID} ({up.upgradeName}) count={selectedBossUpgrades.Count}");
+    }
+
+    public List<BossUpgrade> GetBossUpgradesCopy()
+    {
+        return new List<BossUpgrade>(selectedBossUpgrades);
+    }
+
+    public void ClearBossUpgrades()
+    {
+        selectedBossUpgrades.Clear();
+        Debug.Log("[RuntimeManager] ClearBossUpgrades");
+    }
+
+    /// <summary>선택된 강화 목록 복사본</summary>
+    public List<BossUpgrade> GetSelectedBossUpgradesCopy()
+    {
+        // null 방어 + 복사
+        return selectedBossUpgrades.Where(x => x != null).ToList();
+    }
+
+    /// <summary>선택된 강화 초기화</summary>
+    public void ClearSelectedBossUpgrades()
+    {
+        selectedBossUpgrades.Clear();
+    }
+
+    /// <summary>사용 가능한 강화 목록(아직 선택 안 한 것)</summary>
     public List<BossUpgrade> GetAvailableUpgrades()
     {
+        if (GameData.Instance == null)
+        {
+            Debug.LogError("[RuntimeManager] GameData.Instance null");
+            return new List<BossUpgrade>();
+        }
+
+        // 현재 보스 이름 기준
         string bossName = GetCurrentBossName();
-        var allUpgrades = GameData.Instance.GetUpgradesForBoss(currentBossName);
+        if (string.IsNullOrEmpty(bossName))
+        {
+            Debug.LogWarning("[RuntimeManager] currentBossName 비어있음");
+            return new List<BossUpgrade>();
+        }
+
+        var allUpgrades = GameData.Instance.GetUpgradesForBoss(bossName);
+        if (allUpgrades == null) return new List<BossUpgrade>();
+
+        // 선택된 upgradeID 집합
+        var selectedIds = new HashSet<string>(
+            selectedBossUpgrades.Where(x => x != null).Select(x => x.upgradeID)
+        );
 
         return allUpgrades
-            .Where(u => !selectedBossUpgrades.Contains(u.upgradeID))
+            .Where(u => u != null && !selectedIds.Contains(u.upgradeID))
             .ToList();
     }
 
@@ -199,7 +252,7 @@ public string GetCurrentBossName() => currentBossName;
         if (available.Count <= 3)
             return available;
 
-        // ⭐ Fisher-Yates Shuffle (제대로 된 랜덤)
+        // Fisher-Yates Shuffle
         for (int i = available.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
@@ -210,105 +263,73 @@ public string GetCurrentBossName() => currentBossName;
 
         return available.Take(3).ToList();
     }
-
-    /// <summary>강화 선택</summary>
-    public void SelectUpgrade(string upgradeID)
+    public void SetCurrentBossRuntime(BossRuntime runtime)
     {
-        selectedBossUpgrades.Add(upgradeID);
-        Debug.Log($"[강화 선택] {upgradeID} - 총 {selectedBossUpgrades.Count}개");
+        currentBossRuntime = runtime;
     }
 
-    /// <summary>선택된 강화 목록 가져오기 (보스 생성 시)</summary>
-    public List<BossUpgrade> GetSelectedUpgrades()
+    public string GetCurrentBoss()
     {
-        var allUpgrades = GameData.Instance.GetUpgradesForBoss(currentBossName);
-
-        return allUpgrades
-            .Where(u => selectedBossUpgrades.Contains(u.upgradeID))
-            .ToList();
+        return currentBossName;
     }
 
-
-    // ========================================
-    // 보상
-    // ========================================
-
-/// <summary>
-/// 보상 지급 및 UI 표시
-/// StageManager.OnStageCleared()에서 호출됨
-/// </summary>
-public void GiveReward(StageData stage)
-{
-    if (stage == null)
+    public BossRuntime GetCurrentBossRuntime()
     {
-        Debug.LogError("[RuntimeManager] StageData가 null입니다!");
-        return;
+        return currentBossRuntime;
     }
 
-    Debug.Log($"[RuntimeManager] 보상 지급 - {stage.stageName}");
-
-    // UIManager를 통해 보상 UI 표시
-    if (UIManager.Instance != null)
+    public void GiveReward(StageData stage)
     {
-        UIManager.Instance.ShowRewardUI(stage, stage.isBossStage);
-    }
-    else
-    {
-        Debug.LogError("[RuntimeManager] UIManager.Instance가 null입니다!");
-    }
-}
+        if (stage == null)
+        {
+            Debug.LogError("[RuntimeManager] GiveReward: stage null");
+            return;
+        }
 
-    // 원래 private
+        Debug.Log($"[RuntimeManager] 보상 지급 - {stage.stageName}");
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ShowRewardUI(stage, stage.isBossStage);
+        }
+        else
+        {
+            Debug.LogError("[RuntimeManager] UIManager.Instance null");
+        }
+    }
+
     public void TestBossUpgrade()
     {
         Debug.Log("=== 보스 강화 테스트 ===");
 
-        // ⭐ PrepareFloor() 제거 (리셋하지 않음)
-        // PrepareFloor(1);
-
-        // ⭐ 보스 이름이 없으면 초기화
         if (string.IsNullOrEmpty(currentBossName))
         {
             currentBossName = "Flame Titan";
             currentFloor = 1;
-            selectedBossUpgrades.Clear();
+            ClearSelectedBossUpgrades();
             Debug.Log("[테스트] 초기화 완료");
         }
 
         Debug.Log($"[테스트] 현재 층: {currentFloor}, 보스: {currentBossName}");
 
-        // 사용 가능한 강화 목록
-        var available = GetAvailableUpgrades();
-        Debug.Log($"사용 가능한 강화: {available.Count}개");
-
-        if (available.Count == 0)
-        {
-            Debug.Log("더 이상 선택할 강화가 없습니다!");
-            return;
-        }
-
-        // 랜덤 3개
         var random3 = GetRandomThreeUpgrades();
-        Debug.Log($"랜덤 3개:");
+        Debug.Log($"랜덤 3개: {random3.Count}개");
+
         foreach (var upgrade in random3)
-        {
             Debug.Log($"  - {upgrade.upgradeName}: {upgrade.upgradeDescription}");
-        }
 
-        // 하나 선택
         if (random3.Count > 0)
-        {
-            SelectUpgrade(random3[0].upgradeID);
-
-            // 선택된 강화 확인
-            var selected = GetSelectedUpgrades();
-            Debug.Log($"선택된 강화: {selected.Count}개");
-            foreach (var s in selected)
-            {
-                Debug.Log($"  - {s.upgradeName}");
-            }
-        }
+            AddBossUpgrade(random3[0]);
     }
+
+public void SetCurrentBossName(string bossName)
+{
+    currentBossName = bossName;
+}
+
+
+
+
 
 
 }

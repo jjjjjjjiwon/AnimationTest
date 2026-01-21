@@ -10,9 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b981212a89b6250468b50d4ff5dcf00d, type: 3}
-  m_Name: 3 EnemyData
+  m_Name: FlameTitan
   m_EditorClassIdentifier: 
-  moveSpeed: 3
+  enemyName: FlameTitan
+  enemyType: 1
+  baseHealth: 100
+  moveSpeed: 5
+  damage: 10
   attackRange: 5
   enabledAttacks:
   - 1ATTACK

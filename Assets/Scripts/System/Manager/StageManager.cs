@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+
 
 /// <summary>
 /// 스테이지 진행/클리어 관리
@@ -215,4 +217,53 @@ public class StageManager : MonoBehaviour
     // ========================================
     public StageData GetCurrentStage() => currentStage;
     public int GetKillCount() => killCount;
+    
+
+    public void StartBossStageFromCurrent()
+{
+    if (currentStage == null)
+    {
+        Debug.LogError("[StageManager] StartBossStageFromCurrent: currentStage null");
+        return;
+    }
+
+    if (string.IsNullOrEmpty(currentStage.bossName))
+    {
+        Debug.LogError("[StageManager] StartBossStageFromCurrent: bossName 비어있음");
+        return;
+    }
+
+    // ✅ 1) BossSpawner가 읽을 currentBossName 세팅
+    if (RuntimeManager.Instance != null)
+        RuntimeManager.Instance.SetCurrentBossName(currentStage.bossName);
+    else
+        Debug.LogError("[StageManager] RuntimeManager.Instance null");
+
+    // ✅ 2) BossRuntime 생성(복사본)
+    BossDefinition def = (GameData.Instance != null)
+        ? GameData.Instance.GetBossDefinitionByName(currentStage.bossName)
+        : null;
+
+    if (def == null)
+    {
+        Debug.LogError($"[StageManager] BossDefinition을 찾지 못함: '{currentStage.bossName}'");
+        return;
+    }
+
+    List<BossUpgrade> ups = (RuntimeManager.Instance != null)
+        ? RuntimeManager.Instance.GetSelectedBossUpgradesCopy()
+        : new List<BossUpgrade>();
+
+    BossRuntime runtime = new BossRuntime(def, ups);
+
+    if (RuntimeManager.Instance != null)
+        RuntimeManager.Instance.SetCurrentBossRuntime(runtime);
+
+    Debug.Log($"[StageManager] BossRuntime 생성 완료: boss={runtime.BossName}, upgrades={runtime.upgrades.Count}");
+
+    // ✅ 3) 보스 씬 로드
+    SceneManager.LoadScene("BossStage");
+}
+
+
 }

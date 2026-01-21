@@ -1,0 +1,15 @@
+{
+  "bosses": [
+    {
+      "bossId": "flame_titan",
+      "bossName": "Flame Titan",
+      "prefabPath": "Boss/FlameTitan",
+      "maxHp": 5000,
+      "damage": 35,
+      "moveSpeed": 3.5,
+      "armor": 10,
+      "abilityKeys": ["teleport"],
+      "patternKeys": ["slam"]
+    }
+  ]
+}

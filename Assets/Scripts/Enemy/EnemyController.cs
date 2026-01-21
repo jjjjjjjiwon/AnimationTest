@@ -471,6 +471,44 @@ public void Die()
     Debug.Log($"[{gameObject.name}] 일반 몹 처치 → KillTarget 카운트 증가");
 }
 
+public void SetEnemyData(EnemyData newData)
+{
+    if (newData == null)
+    {
+        Debug.LogError("[EnemyController] SetEnemyData: newData null");
+        return;
+    }
+
+    data = newData;
+
+    // 체력 재초기화(EnemyController 내부 변수명 기준)
+    currentHealth = data.baseHealth;
+
+    Debug.Log($"[EnemyController] EnemyData 교체됨: hp={data.baseHealth}");
+}
+
+public void ApplyBossRuntime(BossRuntime rt)
+    {
+        if (rt == null)
+        {
+            Debug.LogError("[EnemyController] ApplyBossRuntime: rt null");
+            return;
+        }
+
+        if (data == null)
+        {
+            Debug.LogError("[EnemyController] ApplyBossRuntime: EnemyData(data) null");
+            return;
+        }
+
+        // ✅ 여기만 너 EnemyData 필드명에 맞게 맞추면 됨
+        data.baseHealth = rt.MaxHp;
+
+        // EnemyData에 damage 필드가 다르면 여기 수정 (예: baseDamage, attackDamage 등)
+        // 예: data.baseDamage = rt.Damage;
+        // 현재 너 데이터명 모르면 아래처럼 로그로 필드 확인부터 해야 함.
+        Debug.Log($"[EnemyController] Boss applied: hp={data.baseHealth} dmg={rt.Damage} speed={rt.MoveSpeed}");
+    }
 
 
 }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Linq;
 /// <summary>
 /// 게임 전역 데이터 관리 싱글톤
 /// 씬 전환되어도 유지됨 (DontDestroyOnLoad)
@@ -10,7 +10,7 @@ public class GameData : MonoBehaviour
     public static GameData Instance { get; private set; }
 
     [Header("Player Data")]
-    public PlayerData defaultPlayerData; 
+    public PlayerData defaultPlayerData;
 
     [Header("Current Session")]
     public int currentSeed;
@@ -23,6 +23,7 @@ public class GameData : MonoBehaviour
     [Header("Loaded Stage Data")]
     public List<StageData> allStageData = new List<StageData>();  // ← 추가: JSON에서 로드된 전체 스테이지
     public Dictionary<int, ItemData> itemDatabase = new Dictionary<int, ItemData>(); // ← 추가!
+    private List<BossDefinition> bossDefinitions = new List<BossDefinition>();
 
     [Header("보스 강화")]
     public Dictionary<string, List<BossUpgrade>> bossUpgradesDB;
@@ -117,37 +118,63 @@ public class GameData : MonoBehaviour
         {
             return bossUpgradesDB[bossName];
         }
-        
+
         Debug.Log($"boss name : {bossName}");
         Debug.LogWarning($"[GameData] 보스 '{bossName}'의 강화 데이터가 없습니다!");
         return new List<BossUpgrade>();
     }
 
     /// <summary>층 번호로 스테이지 찾기</summary>
-public StageData GetStageByFloor(int floor)
-{
-
-    if (allStageData == null)
+    public StageData GetStageByFloor(int floor)
     {
-        Debug.LogWarning("[GameData] allStageData가 null입니다!");
+
+        if (allStageData == null)
+        {
+            Debug.LogWarning("[GameData] allStageData가 null입니다!");
+            return null;
+        }
+
+        Debug.Log($"[GameData] 스테이지 검색: floor={floor}, 총 {allStageData.Count}개");
+
+        foreach (var stage in allStageData)
+        {
+            Debug.Log($"  - stageID: {stage.stageID}, name: {stage.stageName}");
+        }
+
+        var result = allStageData.Find(s => s.stageID == floor);
+
+        if (result == null)
+        {
+            Debug.LogWarning($"[GameData] stageID {floor}를 찾을 수 없습니다!");
+        }
+
+        return result;
+    }
+
+    public void SetBossDefinitions(List<BossDefinition> defs)
+    {
+        bossDefinitions = defs ?? new List<BossDefinition>();
+    }
+
+ public BossDefinition GetBossDefinitionByName(string bossName)
+{
+    if (bossDefinitions == null || bossDefinitions.Count == 0)
+    {
+        Debug.LogWarning("[GameData] bossDefinitions 비어있음");
         return null;
     }
-    
-    Debug.Log($"[GameData] 스테이지 검색: floor={floor}, 총 {allStageData.Count}개");
-    
-    foreach (var stage in allStageData)
+
+    if (string.IsNullOrEmpty(bossName))
     {
-        Debug.Log($"  - stageID: {stage.stageID}, name: {stage.stageName}");
+        Debug.LogWarning("[GameData] bossName empty");
+        return null;
     }
-    
-    var result = allStageData.Find(s => s.stageID == floor);
-    
-    if (result == null)
-    {
-        Debug.LogWarning($"[GameData] stageID {floor}를 찾을 수 없습니다!");
-    }
-    
-    return result;
+
+    // ✅ bossName으로 찾는다
+    var def = bossDefinitions.FirstOrDefault(d =>
+d != null && string.Equals(d.bossName, bossName, System.StringComparison.OrdinalIgnoreCase));
+
+    return def;
 }
 
 

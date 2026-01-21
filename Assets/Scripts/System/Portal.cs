@@ -103,6 +103,7 @@ public class Portal : MonoBehaviour
 {
     Debug.Log("[Portal] 사용!");
 
+    // StageManager / StageData 확인
     if (StageManager.Instance == null)
     {
         Debug.LogError("[Portal] StageManager.Instance null");
@@ -116,18 +117,20 @@ public class Portal : MonoBehaviour
         return;
     }
 
-    if (UIManager.Instance == null)
+    // ✅ 포탈은 '보상 UI 띄우기'만 담당
+    if (RuntimeManager.Instance != null)
     {
-        Debug.LogError("[Portal] UIManager.Instance null");
-        return;
+        RuntimeManager.Instance.GiveReward(stage);
+    }
+    else
+    {
+        Debug.LogError("[Portal] RuntimeManager.Instance null");
     }
 
-    // ✅ 포탈 사용 = 보상 UI 표시
-    UIManager.Instance.ShowRewardUI(stage, stage.isBossStage);
-
-    // ✅ 연타/중복 방지(선택)
+    // ✅ 포탈은 보상 띄운 뒤 다시 눌려도 중복 호출 안 되게 꺼버리는게 안전
     Deactivate();
 }
+
 
 
 }

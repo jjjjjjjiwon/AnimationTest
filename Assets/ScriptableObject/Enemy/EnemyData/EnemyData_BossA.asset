@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Titan
   enemyType: 0
-  moveSpeed: 5
   baseHealth: 0
+  moveSpeed: 5
+  damage: 0
   attackRange: 2
   enabledAttacks:
   - 1ATTACK

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
+
 /// <summary>
 /// Enemy의 설정 데이터
 /// ScriptableObject로 관리하여 Inspector에서 설정 가능
@@ -16,11 +17,9 @@ public class EnemyData : ScriptableObject
     public string enemyName;
     public EnemyType enemyType;
 
-    [Header("Movement")]
-    public float moveSpeed = 3.5f;
-
-    [Header("체력")]
     public float baseHealth;
+    public float moveSpeed = 3.5f;
+    public float damage;
 
     // ========== 공격 설정 ==========
 
