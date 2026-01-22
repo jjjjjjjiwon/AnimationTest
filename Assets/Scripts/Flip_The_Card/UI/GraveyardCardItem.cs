@@ -1,45 +1,25 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UI; // Image 사용을 위해 추가
 using TMPro;
 
-/// <summary>
-/// 묘지에 표시되는 개별 카드 아이템
-/// </summary>
 public class GraveyardCardItem : MonoBehaviour
 {
     [Header("UI Elements")]
-    [SerializeField] private Image cardImage;          // 카드 이미지
-    [SerializeField] private TextMeshProUGUI nameText; // 이름
-    [SerializeField] private TextMeshProUGUI descText; // 설명
+    [SerializeField] private Image cardImage;          // MeshRenderer 대신 Image
+    [SerializeField] private TextMeshProUGUI nameText;  // TextMeshPro 대신 UGUI
+    [SerializeField] private TextMeshProUGUI descText;  // TextMeshPro 대신 UGUI
     
-    /// <summary>
-    /// 카드 정보 세팅
-    /// </summary>
-    /// <param name="stageData">표시할 스테이지 데이터</param>
     public void Setup(StageData stageData)
     {
-        if (stageData == null)
-        {
-            Debug.LogWarning("[GraveyardCardItem] StageData가 null입니다!");
-            return;
-        }
+        if (stageData == null) return;
         
-        // 이미지
+        // 이미지 설정 (Sprite 사용)
         if (cardImage != null && stageData.stageIcon != null)
         {
             cardImage.sprite = stageData.stageIcon;
         }
         
-        // 이름
-        if (nameText != null)
-        {
-            nameText.text = stageData.stageName;
-        }
-        
-        // 설명
-        if (descText != null)
-        {
-            descText.text = stageData.stageDescription;
-        }
+        if (nameText != null) nameText.text = stageData.stageName;
+        if (descText != null) descText.text = stageData.stageDescription;
     }
 }

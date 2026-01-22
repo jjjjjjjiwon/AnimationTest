@@ -23,8 +23,9 @@ MonoBehaviour:
   base_Agility_Level: 5
   base_Intelligence_Level: 1
   base_Luck_Level: 3
-  base_Move_Speed: 5
+  base_Move_Speed: 10
   rotationSpeed: 10
+  startingGold: 1000
   maxStunGauge: 100
   stunRecoveryRate: 10
   dodgeCooldown: 1

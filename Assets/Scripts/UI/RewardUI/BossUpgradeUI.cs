@@ -100,6 +100,6 @@ public class BossUpgradeUI : MonoBehaviour
     public List<BossUpgradeJsonData> GetUpgradesForBoss(string bossId)
     {
         if (string.IsNullOrEmpty(bossId)) return new List<BossUpgradeJsonData>();
-        return bossUpgrades.FindAll(u => string.IsNullOrEmpty(u.targetBossId) || u.targetBossId == bossId);
+        return bossUpgrades.FindAll(u => string.IsNullOrEmpty(u.bossId) || u.bossId == bossId);
     }
 }

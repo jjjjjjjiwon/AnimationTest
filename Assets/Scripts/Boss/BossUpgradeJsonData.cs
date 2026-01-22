@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public enum BossUpgradeType
 {
+    none,
     Stat,       // 스탯 변경
-    AddState,   // 상태/패턴 추가
-    RemoveState // 상태/패턴 제거 (옵션)
+    ability,   // 상태/패턴 추가
+    removeState // 상태/패턴 제거 (옵션)
 }
 
 public enum BossStatType
@@ -25,18 +27,34 @@ public class BossUpgradeJsonList
 [Serializable]
 public class BossUpgradeJsonData
 {
+    public string bossId;       // ""이면 전체 보스 공용도 가능
+
     public string upgradeID;
     public string upgradeName;
     public string upgradeDescription;
 
-    public string targetBossId;          // ""이면 전체 보스 공용도 가능
+// JSON의 문자열을 그대로 받아오는 변수
+    [SerializeField] private string upgradeType; 
 
-    public BossUpgradeType type;
+    // 코드에서 실제로 사용할 안전한 변수 (Enum 변환)
+    public BossUpgradeType Type
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(upgradeType)) return BossUpgradeType.none;
+            
+            // 문자열을 Enum으로 변환 (대소문자 무시)
+            if (Enum.TryParse(upgradeType, true, out BossUpgradeType result))
+                return result;
+            
+            return BossUpgradeType.none;
+        }
+    }
 
     // type == Stat
-    public BossStatType stat;
+    public BossStatType statType;
     public float value;
 
     // type == AddState/RemoveState
-    public string stateKey;
+    public string abilityID;
 }

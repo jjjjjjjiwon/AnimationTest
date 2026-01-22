@@ -9,10 +9,10 @@ Properties {
 
 	[HDR]_OutlineColor	("Outline Color", Color) = (0,0,0,1)
 	_OutlineTex			("Outline Texture", 2D) = "white" {}
-	_OutlineUVSpeedX	("Outline UV Speed X", Range(-5, 5)) = 0.0
-	_OutlineUVSpeedY	("Outline UV Speed Y", Range(-5, 5)) = 0.0
-	_OutlineWidth		("Outline Thickness", Range(0, 1)) = 0
-	_OutlineSoftness	("Outline Softness", Range(0,1)) = 0
+	_OutlineUVSpeedX	("Outline UV Speed X", Range(0, 0)) = 0.0
+	_OutlineUVSpeedY	("Outline UV Speed Y", Range(0, 0)) = 0.0
+	_OutlineWidth		("Outline Thickness", Range(0, 0)) = 0
+	_OutlineSoftness	("Outline Softness", Range(0,0)) = 0
 
 	_Bevel				("Bevel", Range(0,1)) = 0.5
 	_BevelOffset		("Bevel Offset", Range(-0.5,0.5)) = 0

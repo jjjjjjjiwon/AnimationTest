@@ -167,7 +167,7 @@ public class GameData : MonoBehaviour
 
         // targetBossId가 비어있으면 공용 강화로 취급
         return bossUpgrades.FindAll(u =>
-            u != null && (string.IsNullOrEmpty(u.targetBossId) || u.targetBossId == bossId)
+            u != null && (string.IsNullOrEmpty(u.bossId) || u.bossId == bossId)
         );
     }
 }

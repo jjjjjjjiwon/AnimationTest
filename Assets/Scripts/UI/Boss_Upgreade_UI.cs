@@ -29,6 +29,8 @@ public class Boss_Upgreade_UI : MonoBehaviour
             close_Button.onClick.AddListener(CloseUpgradeUI);
     }
 
+    
+
     public void OpenUpgradeUI()
     {
         // 패널을 먼저 켜고
@@ -49,7 +51,7 @@ public class Boss_Upgreade_UI : MonoBehaviour
         // 1. 싱글톤에서 데이터 가져오기
         var upgrades = RuntimeManager.Instance?.SelectedBossUpgrades ?? new List<BossUpgradeJsonData>();
 
-        // 2. 기존 그리드 아이템 삭제 (중복 생성 방지)
+        // 2. 기존 그리드 아이템 삭제
         foreach (Transform child in container)
         {
             Destroy(child.gameObject);
@@ -58,13 +60,20 @@ public class Boss_Upgreade_UI : MonoBehaviour
         // 3. 데이터만큼 새 아이템 생성
         foreach (var data in upgrades)
         {
+
+            if (data.Type == BossUpgradeType.none)
+            {
+                continue;
+            }
+
             GameObject item = Instantiate(boss_Upgrade_Prefab, container);
             TextMeshProUGUI txt = item.GetComponentInChildren<TextMeshProUGUI>();
-            
+
             if (txt != null)
             {
                 txt.text = $"{data.upgradeDescription}";
             }
         }
     }
+
 }

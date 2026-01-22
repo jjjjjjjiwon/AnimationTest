@@ -13,7 +13,6 @@ public class BossDefinitionLoader : MonoBehaviour
     public void LoadBosses()
     {
         TextAsset json = Resources.Load<TextAsset>(jsonPath);
-
         if (json == null)
         {
             Debug.LogError($"[BossDefinitionLoader] JSON not found: Resources/{jsonPath}.json");
@@ -21,7 +20,6 @@ public class BossDefinitionLoader : MonoBehaviour
         }
 
         BossJsonList list = JsonUtility.FromJson<BossJsonList>(json.text);
-
         if (list == null || list.boss == null)
         {
             Debug.LogError("[BossDefinitionLoader] JSON parse failed");

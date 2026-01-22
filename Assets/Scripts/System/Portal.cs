@@ -16,6 +16,8 @@ public class Portal : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject interactUI;
 
+    [SerializeField] private GameObject locationGuide;
+
     private bool isActive = false;
     private bool playerInRange = false;
 
@@ -38,6 +40,9 @@ public class Portal : MonoBehaviour
 
         if (portalEffect != null)
             portalEffect.SetActive(true);
+        
+        if (locationGuide != null) 
+        locationGuide.SetActive(true);
 
         Debug.Log("[Portal] 활성화");
     }
@@ -52,6 +57,9 @@ public class Portal : MonoBehaviour
 
         if (interactUI != null)
             interactUI.SetActive(false);
+
+        if (locationGuide != null) 
+         locationGuide.SetActive(false);
     }
 
     // ========================================
@@ -60,11 +68,7 @@ public class Portal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isActive)
-            return;
-
-        if (!other.CompareTag("Player"))
-            return;
+        if (!isActive || !other.CompareTag("Player")) return;
 
         playerInRange = true;
 
@@ -83,6 +87,7 @@ public class Portal : MonoBehaviour
 
         if (interactUI != null)
             interactUI.SetActive(false);
+
     }
 
     // ========================================
