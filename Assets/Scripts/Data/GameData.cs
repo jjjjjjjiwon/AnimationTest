@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
+
+using System.Linq; // 현재는 없어도 되지만, 너가 다른 곳에서 쓰면 유지해도 됨
+
 /// <summary>
 /// 게임 전역 데이터 관리 싱글톤
 /// 씬 전환되어도 유지됨 (DontDestroyOnLoad)
@@ -21,15 +23,16 @@ public class GameData : MonoBehaviour
     public List<StageData> clearedStages = new List<StageData>();
 
     [Header("Loaded Stage Data")]
-    public List<StageData> allStageData = new List<StageData>();  // ← 추가: JSON에서 로드된 전체 스테이지
-    public Dictionary<int, ItemData> itemDatabase = new Dictionary<int, ItemData>(); // ← 추가!
-    private List<BossDefinition> bossDefinitions = new List<BossDefinition>();
+    public List<StageData> allStageData = new List<StageData>();
+    public Dictionary<int, ItemData> itemDatabase = new Dictionary<int, ItemData>();
 
-    [Header("보스 강화")]
-    public Dictionary<string, List<BossUpgrade>> bossUpgradesDB;
+    // =========================
+    // Boss JSON 데이터 저장 (새 설계)
+    // =========================
+    private List<BossJsonData> bossDefs = new List<BossJsonData>();
+    private List<BossUpgradeJsonData> bossUpgrades = new List<BossUpgradeJsonData>();
 
-
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
@@ -43,7 +46,7 @@ public class GameData : MonoBehaviour
         }
     }
 
-    void InitializeSeed()
+    private void InitializeSeed()
     {
         currentSeed = Random.Range(int.MinValue, int.MaxValue);
         Debug.Log($"[GameData] 시드 생성: {currentSeed}");
@@ -87,10 +90,8 @@ public class GameData : MonoBehaviour
     }
 
     // ========================================
-    // 아이템 조회 (추가!)
+    // 아이템 조회
     // ========================================
-
-    /// <summary>ID로 아이템 데이터 가져오기</summary>
     public ItemData GetItem(int itemID)
     {
         if (itemDatabase.TryGetValue(itemID, out ItemData item))
@@ -100,82 +101,73 @@ public class GameData : MonoBehaviour
         return null;
     }
 
-
     // ========================================
-    // 보스 강화 조회
+    // 스테이지 조회
     // ========================================
-
-    /// <summary>보스 이름으로 강화 목록 가져오기</summary>
-    public List<BossUpgrade> GetUpgradesForBoss(string bossName)
-    {
-        if (bossUpgradesDB == null)
-        {
-            Debug.LogWarning("[GameData] bossUpgradesDB가 null입니다!");
-            return new List<BossUpgrade>();
-        }
-
-        if (bossUpgradesDB.ContainsKey(bossName))
-        {
-            return bossUpgradesDB[bossName];
-        }
-
-        Debug.Log($"boss name : {bossName}");
-        Debug.LogWarning($"[GameData] 보스 '{bossName}'의 강화 데이터가 없습니다!");
-        return new List<BossUpgrade>();
-    }
-
-    /// <summary>층 번호로 스테이지 찾기</summary>
     public StageData GetStageByFloor(int floor)
     {
-
         if (allStageData == null)
         {
             Debug.LogWarning("[GameData] allStageData가 null입니다!");
             return null;
         }
 
-        Debug.Log($"[GameData] 스테이지 검색: floor={floor}, 총 {allStageData.Count}개");
-
-        foreach (var stage in allStageData)
-        {
-            Debug.Log($"  - stageID: {stage.stageID}, name: {stage.stageName}");
-        }
-
-        var result = allStageData.Find(s => s.stageID == floor);
+        var result = allStageData.Find(s => s != null && s.stageID == floor);
 
         if (result == null)
-        {
             Debug.LogWarning($"[GameData] stageID {floor}를 찾을 수 없습니다!");
-        }
 
         return result;
     }
 
-    public void SetBossDefinitions(List<BossDefinition> defs)
+    // ========================================
+    // Boss JSON 데이터 저장/조회 (새 설계)
+    // ========================================
+
+    /// <summary>BossDefinitionLoader가 호출: 보스 기본 JSON 리스트 저장</summary>
+    public void SetBossJson(List<BossJsonData> defs)
     {
-        bossDefinitions = defs ?? new List<BossDefinition>();
+        bossDefs = defs ?? new List<BossJsonData>();
+        Debug.Log($"[GameData] bossDefs 저장 완료: {bossDefs.Count}개");
     }
 
- public BossDefinition GetBossDefinitionByName(string bossName)
-{
-    if (bossDefinitions == null || bossDefinitions.Count == 0)
+    /// <summary>BossUpgradeLoader가 호출: 보스 강화 JSON 리스트 저장</summary>
+    public void SetBossUpgradeJson(List<BossUpgradeJsonData> ups)
     {
-        Debug.LogWarning("[GameData] bossDefinitions 비어있음");
-        return null;
+        bossUpgrades = ups ?? new List<BossUpgradeJsonData>();
+        Debug.Log($"[GameData] bossUpgrades 저장 완료: {bossUpgrades.Count}개");
     }
 
-    if (string.IsNullOrEmpty(bossName))
+    /// <summary>bossId로 보스 정의 찾기</summary>
+    public BossJsonData GetBossById(string bossId)
     {
-        Debug.LogWarning("[GameData] bossName empty");
-        return null;
+        if (string.IsNullOrEmpty(bossId))
+            return null;
+
+        if (bossDefs == null || bossDefs.Count == 0)
+        {
+            Debug.LogWarning("[GameData] bossDefs 비어있음 (BossDefinitionLoader 로드 확인)");
+            return null;
+        }
+
+        return bossDefs.Find(b => b != null && b.bossId == bossId);
     }
 
-    // ✅ bossName으로 찾는다
-    var def = bossDefinitions.FirstOrDefault(d =>
-d != null && string.Equals(d.bossName, bossName, System.StringComparison.OrdinalIgnoreCase));
+    /// <summary>bossId로 해당 보스에 적용 가능한 강화 목록 가져오기</summary>
+    public List<BossUpgradeJsonData> GetUpgradesForBoss(string bossId)
+    {
+        if (string.IsNullOrEmpty(bossId))
+            return new List<BossUpgradeJsonData>();
 
-    return def;
-}
+        if (bossUpgrades == null || bossUpgrades.Count == 0)
+        {
+            Debug.LogWarning("[GameData] bossUpgrades 비어있음 (BossUpgradeLoader 로드 확인)");
+            return new List<BossUpgradeJsonData>();
+        }
 
-
+        // targetBossId가 비어있으면 공용 강화로 취급
+        return bossUpgrades.FindAll(u =>
+            u != null && (string.IsNullOrEmpty(u.targetBossId) || u.targetBossId == bossId)
+        );
+    }
 }

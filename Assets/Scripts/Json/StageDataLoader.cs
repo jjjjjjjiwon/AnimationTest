@@ -7,9 +7,6 @@ using UnityEngine;
 /// </summary>
 public class StageDataLoader : MonoBehaviour
 {
-
-
-
     void Start()
     {
         LoadStagesFromJSON();
@@ -23,7 +20,6 @@ public class StageDataLoader : MonoBehaviour
         // 1. JSON 파일 읽기
         TextAsset jsonFile = Resources.Load<TextAsset>("Json/stages");
         
-
         if (jsonFile == null)
         {
             Debug.LogError("[StageDataLoader] stages.json 파일을 찾을 수 없습니다!");

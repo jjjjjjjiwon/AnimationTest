@@ -57,12 +57,6 @@ public class TestInputHandler : MonoBehaviour
             }
         }
 
-        // ⭐ 보스 강화 테스트 (T 키)
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            runtimeManager.TestBossUpgrade();
-        }
-
         // Z키: 플레이어 추가 스탯
         if (Input.GetKeyDown(KeyCode.Z))
         {

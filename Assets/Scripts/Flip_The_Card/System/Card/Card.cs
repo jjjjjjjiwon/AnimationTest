@@ -31,6 +31,7 @@ public class Card : MonoBehaviour
     private bool isFlipped = false;      // 카드가 뒤집혔는지 여부
     private bool canInteract = true;     // 상호작용 가능 여부 (다른 카드 선택 시 false)
     
+    [SerializeField] private TextMeshPro forntName;
     
     void Awake()
     {
@@ -94,6 +95,7 @@ public class Card : MonoBehaviour
         if (nameText != null)
         {
             nameText.text = stageData.stageName;
+            forntName.text = stageData.stageName;
         }
         
         // 설명

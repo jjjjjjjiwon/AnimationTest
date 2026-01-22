@@ -4,9 +4,17 @@ using System.Collections.Generic;
 
 public class BossUpgradeUI : MonoBehaviour
 {
+    public static GameData Instance { get; private set; }
+
     [Header("UI References")]
     [SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardPrefab;
+
+    private List<BossJsonData> bossDefs = new();
+    private List<BossUpgradeJsonData> bossUpgrades = new();
+
+    public void SetBossJson(List<BossJsonData> defs) => bossDefs = defs ?? new();
+    public void SetBossUpgradeJson(List<BossUpgradeJsonData> ups) => bossUpgrades = ups ?? new();
 
     private void Start()
     {
@@ -15,6 +23,8 @@ public class BossUpgradeUI : MonoBehaviour
 
     public void Setup()
     {
+        Debug.Log($"[BossUpgradeUI] currentBossId = '{RuntimeManager.Instance.GetCurrentBossId()}'");
+
         if (cardContainer == null || cardPrefab == null)
         {
             Debug.LogError("[BossUpgradeUI] cardContainer/cardPrefab 미할당");
@@ -30,11 +40,12 @@ public class BossUpgradeUI : MonoBehaviour
             return;
         }
 
-        List<BossUpgrade> upgrades = RuntimeManager.Instance.GetRandomThreeUpgrades(); // 네가 이미 만든 함수 사용
-
+        List<BossUpgradeJsonData> upgrades = RuntimeManager.Instance.GetRandomThreeUpgrades(); // 네가 이미 만든 함수 사용
         if (upgrades == null || upgrades.Count == 0)
         {
+
             Debug.LogWarning("[BossUpgradeUI] 사용 가능한 강화가 없습니다!");
+            Debug.LogWarning($"count {upgrades.Count}");
             gameObject.SetActive(false);
             return;
         }
@@ -45,7 +56,7 @@ public class BossUpgradeUI : MonoBehaviour
         Debug.Log($"[BossUpgradeUI] Setup 완료 - {upgrades.Count}개");
     }
 
-    private void CreateUpgradeCard(BossUpgrade up)
+    private void CreateUpgradeCard(BossUpgradeJsonData up)
     {
         if (up == null) return;
 
@@ -65,7 +76,7 @@ public class BossUpgradeUI : MonoBehaviour
         );
     }
 
-    private void OnUpgradePicked(BossUpgrade picked)
+    private void OnUpgradePicked(BossUpgradeJsonData picked)
     {
         if (picked == null) return;
 
@@ -77,6 +88,18 @@ public class BossUpgradeUI : MonoBehaviour
 
         // 3) 보스 씬 진입
         Debug.Log("[BossUpgradeUI] LoadScene BossStage");
-        SceneManager.LoadScene("BossStage");
+        SceneManager.LoadScene("Lobby");
+    }
+    
+     public BossJsonData GetBossById(string bossId)
+    {
+        if (string.IsNullOrEmpty(bossId)) return null;
+        return bossDefs.Find(b => b.bossId == bossId);
+    }
+
+    public List<BossUpgradeJsonData> GetUpgradesForBoss(string bossId)
+    {
+        if (string.IsNullOrEmpty(bossId)) return new List<BossUpgradeJsonData>();
+        return bossUpgrades.FindAll(u => string.IsNullOrEmpty(u.targetBossId) || u.targetBossId == bossId);
     }
 }

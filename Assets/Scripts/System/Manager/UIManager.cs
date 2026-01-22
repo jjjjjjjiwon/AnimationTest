@@ -118,7 +118,7 @@ private void RebindSceneUIs()
 
     // PlayerInfoUI (필요하면)
     var info = Object.FindFirstObjectByType<PlayerInfoUI>(FindObjectsInactive.Include);
-    if (info != null) BindUIObject("Player _Info_UI", info.gameObject); // 인스펙터 name에 맞춰
+    if (info != null) BindUIObject("Player_Info_UI", info.gameObject); // 인스펙터 name에 맞춰
 }
 
 private void BindUIObject(string elementName, GameObject go)

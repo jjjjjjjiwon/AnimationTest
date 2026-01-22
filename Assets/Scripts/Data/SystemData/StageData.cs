@@ -10,11 +10,16 @@ public class StageData : ScriptableObject
     public string stageDescription; // 설명
     public string iconPath; // 아이콘
     public int difficulty;  // 난이도
-    public string sceneName;    // 씬의 이름
 
-    [Header("Boss Info")]  // ⭐ 추가
-    public bool isBossStage;    // 보스 스테이지인가?
-    public string bossName;     // 보스의 이름
+    public string sceneName;    // 씬의 이름
+    
+    [Header("Boss Stage (only if isBossStage = true)")]
+    public bool isBossStage;  // ✅ 보스 스테이지 여부
+    [Tooltip("보스 스테이지일 때만 사용. 예: flame_titan")]
+    public string bossId;     // ✅ 내부 식별자(고정키)
+    [Tooltip("표시용 이름(옵션). 보스 스테이지일 때만 쓰는 걸 권장")]
+    public string bossName;   // (선택) UI/로그용
+
 
     [Header("Rewards")]  // ← 새로 추가!
     public int goldReward;          // 돈

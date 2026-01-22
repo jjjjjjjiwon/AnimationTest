@@ -6,100 +6,90 @@
       "stageDescription": "A dangerous dungeon with flowing lava",
       "iconPath": "Image/StageIcons/volcano",
       "difficulty": 3,
-    
       "sceneName": "Stage_Volcano",
-
       "isBossStage": true,
+      "bossId": "flame_titan",
       "bossName": "Flame Titan",
-
       "goldReward": 1000,
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-
       "clearConditionType": "Boss",
-      "targetKillCount": 2
+      "targetKillCount": 0
     },
+
     {
       "stageID": 2,
       "stageName": "Frozen snowfield",
       "stageDescription": "A cold area with snowstorms",
       "iconPath": "Image/StageIcons/snowfield",
       "difficulty": 4,
-
       "sceneName": "Stage_Snowfield",
-
       "isBossStage": false,
-      "bossName": "Flame Titan",
-
+      "bossId": "",
+      "bossName": "",
       "goldReward": 1000,
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-
       "clearConditionType": "KillTarget",
       "targetKillCount": 1
     },
+
     {
       "stageID": 3,
       "stageName": "Dark cave",
       "stageDescription": "A deep cave where no light reaches",
       "iconPath": "Image/StageIcons/cave",
       "difficulty": 2,
-
       "sceneName": "Stage_Cave",
-
       "isBossStage": false,
-      "bossName": "Flame Titan",
-
+      "bossId": "",
+      "bossName": "",
       "goldReward": 1000,
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-
       "clearConditionType": "KillTarget",
       "targetKillCount": 2
     },
+
     {
       "stageID": 4,
       "stageName": "Forest with many trees",
       "stageDescription": "There are a lot of trees",
       "iconPath": "Image/StageIcons/forest",
       "difficulty": 1,
-
       "sceneName": "Stage_Forest",
-
       "isBossStage": false,
-      "bossName": "Flame Titan",
-
+      "bossId": "",
+      "bossName": "",
       "goldReward": 1000,
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-
       "clearConditionType": "KillTarget",
       "targetKillCount": 2
     },
+
     {
       "stageID": 5,
       "stageName": "Watery ocean",
       "stageDescription": "the water is salty",
       "iconPath": "Image/StageIcons/ocean",
       "difficulty": 4,
-
       "sceneName": "Stage_Ocean",
-
       "isBossStage": false,
-      "bossName": "Flame Titan",
-
+      "bossId": "",
+      "bossName": "",
       "goldReward": 1000,
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-
       "clearConditionType": "KillTarget",
       "targetKillCount": 1
     },
+
     {
       "stageID": 6,
       "stageName": "Hot desert",
@@ -110,7 +100,8 @@
       "sceneName": "Stage_Desert",
 
       "isBossStage": false,
-      "bossName": "Flame Titan",
+      "bossId": "",
+      "bossName": "",
 
       "goldReward": 1000,
       "levelUpPoint": 2,
@@ -119,6 +110,96 @@
 
       "clearConditionType": "KillTarget",
       "targetKillCount": 2
+    },
+
+    {
+      "stageID": 7,
+      "stageName": "Castle",
+      "stageDescription": "Castle Castle",
+      "iconPath": "Image/StageIcons/Castle",
+      "difficulty": 10,
+
+      "sceneName": "Stage_Castle",
+
+      "isBossStage": false,
+      "bossId": "",
+      "bossName": "",
+
+      "goldReward": 1000,
+      "levelUpPoint": 2,
+      "itemRewards": [],
+      "skillReward": "Castle",
+
+      "clearConditionType": "KillTarget",
+      "targetKillCount": 2
+    },
+
+    {
+      "stageID": 8,
+      "stageName": "SBS",
+      "stageDescription": "Step By Step",
+      "iconPath": "Image/StageIcons/SBS",
+      "difficulty": 6,
+
+      "sceneName": "Stage_SBS",
+
+      "isBossStage": false,
+      "bossId": "",
+      "bossName": "",
+
+      "goldReward": 1000,
+      "levelUpPoint": 2,
+      "itemRewards": [],
+      "skillReward": "SBS",
+
+      "clearConditionType": "KillTarget",
+      "targetKillCount": 2
+    },
+
+    
+    {
+      "stageID": 9,
+      "stageName": "Crossroads",
+      "stageDescription": "Bang!",
+      "iconPath": "Image/StageIcons/Crossroads",
+      "difficulty": 6,
+
+      "sceneName": "Stage_Crossroads",
+
+      "isBossStage": false,
+      "bossId": "",
+      "bossName": "",
+
+      "goldReward": 1000,
+      "levelUpPoint": 2,
+      "itemRewards": [],
+      "skillReward": "Car",
+
+      "clearConditionType": "KillTarget",
+      "targetKillCount": 2
+    },
+
+    {
+      "stageID": 10,
+      "stageName": "The_Clock_Tower",
+      "stageDescription": "Tick-tock Tick-tock Tick-tock Tick-tock Tick-tock",
+      "iconPath": "Image/StageIcons/The_Clock_Tower",
+      "difficulty": 6,
+
+      "sceneName": "Stage_The_Clock_Tower",
+
+      "isBossStage": false,
+      "bossId": "",
+      "bossName": "",
+
+      "goldReward": 1000,
+      "levelUpPoint": 2,
+      "itemRewards": [],
+      "skillReward": "Clock",
+
+      "clearConditionType": "KillTarget",
+      "targetKillCount": 2
     }
+
   ]
 }

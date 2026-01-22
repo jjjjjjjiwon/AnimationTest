@@ -1,30 +1,64 @@
 {
-  "bosses": [
+  "upgrades": [
     {
-      "bossName": "Flame Titan",
-      "upgrades": [
-        {
-          "upgradeID": "health_20",
-          "upgradeName": "체력 강화",
-          "upgradeDescription": "보스 체력 +20%",
-          "upgradeType": "stat",
-          "statType": "health",
-          "value": 0.2
-        },
-        {
-          "upgradeID": "teleport",
-          "upgradeName": "순간 이동",
-          "upgradeDescription": "대쉬 대신 순간 이동 사용",
-          "upgradeType": "ability",
-          "abilityID": "teleport"
-        },
-        {
-          "upgradeID": "none",
-          "upgradeName": "강화 없음",
-          "upgradeDescription": "보스를 강화하지 않습니다",
-          "upgradeType": "none"
-        }
-      ]
+      "bossId": "flame_titan",
+      "upgradeID": "health_20",
+      "upgradeName": "체력 강화",
+      "upgradeDescription": "보스 체력 +20%",
+      "upgradeType": "stat",
+      "statType": "health",
+      "value": 0.2,
+      "abilityID": ""
+    },
+    {
+      "bossId": "flame_titan",
+      "upgradeID": "teleport",
+      "upgradeName": "순간 이동",
+      "upgradeDescription": "대쉬 대신 순간 이동 사용",
+      "upgradeType": "ability",
+      "statType": "",
+      "value": 0,
+      "abilityID": "teleport"
+    },
+    {
+      "bossId": "flame_titan",
+      "upgradeID": "none",
+      "upgradeName": "강화 없음",
+      "upgradeDescription": "보스를 강화하지 않습니다",
+      "upgradeType": "none",
+      "statType": "",
+      "value": 0,
+      "abilityID": ""
+    },
+    {
+      "bossId": "flame_titan",
+      "upgradeID": "speed_1",
+      "upgradeName": "속도 강화",
+      "upgradeDescription": "보스 속도 + 1%",
+      "upgradeType": "stat",
+      "statType": "MoveSpeed",
+      "value": 0.01,
+      "abilityID": ""
+    },
+    {
+      "bossId": "flame_titan",
+      "upgradeID": "damage_3",
+      "upgradeName": "데미지 강화",
+      "upgradeDescription": "보스 데미지 + 3%",
+      "upgradeType": "stat",
+      "statType": "Damage",
+      "value": 0.03,
+      "abilityID": ""
+    },
+    {
+      "bossId": "flame_titan",
+      "upgradeID": "rush",
+      "upgradeName": "러쉬",
+      "upgradeDescription": "RushRushRushRush",
+      "upgradeType": "ability",
+      "statType": "",
+      "value": 0,
+      "abilityID": "rush"
     }
   ]
 }

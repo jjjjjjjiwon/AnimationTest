@@ -429,14 +429,10 @@ public void Die()
     if (stateMachine.CurrentState == deathState)
         return;
 
-    // ========================================
     // 진행 중인 애니메이션 중단
-    // ========================================
     animator.Play(AnimationConstants.HIT, 0, 0);
 
-    // ========================================
     // 모든 Trigger 리셋
-    // ========================================
     foreach (string attackTrigger in data.enabledAttacks)
         animator.ResetTrigger(attackTrigger);
 
@@ -444,32 +440,31 @@ public void Die()
     animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
     animator.ResetTrigger(AnimationConstants.DEATH_TRIGGER);
 
-    // ========================================
     // 사망 상태로 전환
-    // ========================================
     stateMachine.ChangeState(deathState);
 
     Debug.Log($"{gameObject.name} 사망!");
 
-    // ========================================
-    // StageManager 알림 (중복 없이 단일 진입점)
-    // ========================================
+    // StageManager 알림
     if (StageManager.Instance == null)
     {
         Debug.LogWarning("[EnemyController] StageManager.Instance null");
         return;
     }
 
-    // 보스는 킬 카운트 제외 + 포탈 처리
-    if (data.enemyType == EnemyType.Boss)
+    // ✅ 보스 / 일반몹 분기 (중복 호출 금지)
+    if (data != null && data.enemyType == EnemyType.Boss)
     {
-        Debug.Log($"[{gameObject.name}] 보스 처치 → 포탈 활성화");
+        Debug.Log($"[{gameObject.name}] 보스 처치 → NotifyBossKilled()");
+        StageManager.Instance.NotifyBossKilled();
     }
-
-    // 일반 몹만 KillTarget 카운트
-    StageManager.Instance.NotifyEnemyKilled();
-    Debug.Log($"[{gameObject.name}] 일반 몹 처치 → KillTarget 카운트 증가");
+    else
+    {
+        Debug.Log($"[{gameObject.name}] 일반 몹 처치 → NotifyEnemyKilled()");
+        StageManager.Instance.NotifyEnemyKilled();
+    }
 }
+
 
 public void SetEnemyData(EnemyData newData)
 {
@@ -487,28 +482,6 @@ public void SetEnemyData(EnemyData newData)
     Debug.Log($"[EnemyController] EnemyData 교체됨: hp={data.baseHealth}");
 }
 
-public void ApplyBossRuntime(BossRuntime rt)
-    {
-        if (rt == null)
-        {
-            Debug.LogError("[EnemyController] ApplyBossRuntime: rt null");
-            return;
-        }
-
-        if (data == null)
-        {
-            Debug.LogError("[EnemyController] ApplyBossRuntime: EnemyData(data) null");
-            return;
-        }
-
-        // ✅ 여기만 너 EnemyData 필드명에 맞게 맞추면 됨
-        data.baseHealth = rt.MaxHp;
-
-        // EnemyData에 damage 필드가 다르면 여기 수정 (예: baseDamage, attackDamage 등)
-        // 예: data.baseDamage = rt.Damage;
-        // 현재 너 데이터명 모르면 아래처럼 로그로 필드 확인부터 해야 함.
-        Debug.Log($"[EnemyController] Boss applied: hp={data.baseHealth} dmg={rt.Damage} speed={rt.MoveSpeed}");
-    }
 
 
 }

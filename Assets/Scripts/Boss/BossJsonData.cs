@@ -1,24 +1,23 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
 
-
-[System.Serializable]
+[Serializable]
 public class BossJsonList
 {
-    public List<BossJsonData> bosses;
+    public List<BossJsonData> boss;
 }
 
-[System.Serializable]
+[Serializable]
 public class BossJsonData
 {
     public string bossId;
     public string bossName;
     public string prefabPath;
 
-    public float maxHp;
-    public float damage;
-    public float moveSpeed;
-    public float armor;
+    public int baseHp;
+    public int baseDamage;
+    public float baseMoveSpeed;
+    public int baseArmor;
 
     public List<string> abilityKeys;
     public List<string> patternKeys;
