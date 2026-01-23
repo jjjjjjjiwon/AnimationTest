@@ -69,61 +69,61 @@ public class PlayerController : MonoBehaviour
     #region Start
 
     void Start()
-{
-    // 컴포넌트 가져오기
-    animator = GetComponent<Animator>();
-    rb = GetComponent<Rigidbody>();
-
-    rb.constraints =
-        RigidbodyConstraints.FreezeRotationX |
-        RigidbodyConstraints.FreezeRotationY |
-        RigidbodyConstraints.FreezeRotationZ;
-
-    // ⭐ RuntimeManager 체크!
-    if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
     {
-        Debug.LogWarning("[PlayerController] RuntimeManager가 아직 초기화되지 않았습니다. 대기 중...");
-        StartCoroutine(WaitForRuntimeManager());
-        return;
+        // 컴포넌트 가져오기
+        animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
+
+        rb.constraints =
+            RigidbodyConstraints.FreezeRotationX |
+            RigidbodyConstraints.FreezeRotationY |
+            RigidbodyConstraints.FreezeRotationZ;
+
+        // ⭐ RuntimeManager 체크!
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
+        {
+            Debug.LogWarning("[PlayerController] RuntimeManager가 아직 초기화되지 않았습니다. 대기 중...");
+            StartCoroutine(WaitForRuntimeManager());
+            return;
+        }
+
+        InitializePlayer();
     }
 
-    InitializePlayer();
-}
-
-// ⭐ RuntimeManager 초기화 대기
-private System.Collections.IEnumerator WaitForRuntimeManager()
-{
-    while (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
+    // ⭐ RuntimeManager 초기화 대기
+    private System.Collections.IEnumerator WaitForRuntimeManager()
     {
-        yield return null;
+        while (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null)
+        {
+            yield return null;
+        }
+
+        Debug.Log("[PlayerController] RuntimeManager 초기화 확인!");
+        InitializePlayer();
     }
 
-    Debug.Log("[PlayerController] RuntimeManager 초기화 확인!");
-    InitializePlayer();
-}
+    // ⭐ 플레이어 초기화 (분리)
+    private void InitializePlayer()
+    {
+        // 시스템 생성
+        stateMachine = new PlayerStateMachine();
+        socketManager = RuntimeManager.Instance.socketManager;
 
-// ⭐ 플레이어 초기화 (분리)
-private void InitializePlayer()
-{
-    // 시스템 생성
-    stateMachine = new PlayerStateMachine();
-    socketManager = RuntimeManager.Instance.socketManager;
+        // 모든 State 생성
+        IdleState = new PlayerIdleState(this);
+        MoveState = new PlayerMoveState(this);
+        AttackState = new PlayerAttackState(this);
+        FinisherState = new PlayerFinisherState(this);
+        DodgeState = new PlayerDodgeState(this);
+        HitState = new PlayerHitState(this);
+        DeadState = new PlayerDeadState(this);
 
-    // 모든 State 생성
-    IdleState = new PlayerIdleState(this);
-    MoveState = new PlayerMoveState(this);
-    AttackState = new PlayerAttackState(this);
-    FinisherState = new PlayerFinisherState(this);
-    DodgeState = new PlayerDodgeState(this);
-    HitState = new PlayerHitState(this);
-    DeadState = new PlayerDeadState(this);
+        // 초기 State 설정
+        stateMachine.ChangeState(IdleState);
 
-    // 초기 State 설정
-    stateMachine.ChangeState(IdleState);
-
-    Debug.Log("[PlayerController] 초기화 완료!");
-    Debug.Log($"[PlayerController] 소켓 개수: {socketManager?.GetSocketCount() ?? 0}개");
-}
+        Debug.Log("[PlayerController] 초기화 완료!");
+        Debug.Log($"[PlayerController] 소켓 개수: {socketManager?.GetSocketCount() ?? 0}개");
+    }
 
 
     #endregion
@@ -272,48 +272,48 @@ private void InitializePlayer()
     }
 
     /// <summary>
-/// 공격 시도
-/// </summary>
-void TryAttack(InputTypes inputType)
-{
-    // ⭐ socketManager null 체크 추가!
-    if (socketManager == null)
+    /// 공격 시도
+    /// </summary>
+    void TryAttack(InputTypes inputType)
     {
-        Debug.LogWarning("[PlayerController] socketManager가 null입니다!");
-        return;
-    }
-    
-    PlayerState currentState = stateMachine.CurrentState;
+        // ⭐ socketManager null 체크 추가!
+        if (socketManager == null)
+        {
+            Debug.LogWarning("[PlayerController] socketManager가 null입니다!");
+            return;
+        }
 
-    // Idle 또는 Move에서 시작
-    if (currentState == IdleState || currentState == MoveState)
-    {
-        bool success = socketManager.StartCombo(inputType);
+        PlayerState currentState = stateMachine.CurrentState;
 
-        if (success)
+        // Idle 또는 Move에서 시작
+        if (currentState == IdleState || currentState == MoveState)
         {
-            stateMachine.ChangeState(AttackState);
+            bool success = socketManager.StartCombo(inputType);
+
+            if (success)
+            {
+                stateMachine.ChangeState(AttackState);
+            }
+            else
+            {
+                Debug.Log("콤보 시작 실패!");
+            }
         }
-        else
+        // Attack 중
+        else if (currentState == AttackState)
         {
-            Debug.Log("콤보 시작 실패!");
+            bool success = socketManager.ProcessNext(inputType);
+
+            if (success)
+            {
+                AttackState.PlayNextStep();
+            }
+            else
+            {
+                AttackState.OnComboFailed();
+            }
         }
     }
-    // Attack 중
-    else if (currentState == AttackState)
-    {
-        bool success = socketManager.ProcessNext(inputType);
-
-        if (success)
-        {
-            AttackState.PlayNextStep();
-        }
-        else
-        {
-            AttackState.OnComboFailed();
-        }
-    }
-}
 
     /// <summary>
     /// 현재 공격의 데미지 반환

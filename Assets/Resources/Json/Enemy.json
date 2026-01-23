@@ -1,0 +1,26 @@
+
+{
+    "Enemy" : [
+
+        {
+            "enemy_Id": "frist",
+            "enemy_Name": "Frist",
+
+            "base_Health": 100.0,
+            "base_Damage": 10.0,
+            "base_Speed": 3.5,
+            "base_Defense": 5.0,
+
+            "prefab_Path": "",
+
+            "idle_Animation_Id": "",
+            "chase_Animation_Id": "",
+            "dash_Animation_Id": "",
+            "teleport_Animation_Id": "",
+            "attack_Animation_Id": "",
+            "stun_Animation_Id": "",
+            "death_Animation_Id": ""
+        }
+
+    ]
+}

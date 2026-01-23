@@ -1,0 +1,9 @@
+{
+    "EnemyIdleState" : [
+        {
+            "EnemyIdleState_Id" : "stand",
+            "EnemyIdleState_Name" : "Stand",
+            "animationName" : ""
+        }
+    ]
+}
