@@ -22,6 +22,7 @@ public class StateMachine
     /// </summary>
     public void ChangeState(State newState)
     {
+        if (CurrentState == newState) return;
         // 이전 State 종료
         CurrentState?.Exit();
 

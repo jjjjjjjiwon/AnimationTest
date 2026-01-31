@@ -35,7 +35,6 @@ public class PlayerController : MonoBehaviour
     [Header("Hitbox")]
 
     [SerializeField] private Collider hitboxCollider;
-    private HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>(); // 변경!
     private WeaponHitbox weaponHitbox;
 
 
@@ -441,7 +440,6 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        hitEnemies.Clear(); // 변경!
         hitboxCollider.enabled = true;
         Debug.Log("[Player] Hitbox ON");
     }
@@ -501,20 +499,18 @@ public class PlayerController : MonoBehaviour
             return;
 
         hitboxCollider.enabled = false;
-        Debug.Log($"[Player] Hitbox OFF - {hitEnemies.Count}명의 적 타격"); // 변경!
 
         // 적 단위로 순회
-        foreach (EnemyController enemy in hitEnemies)
-        {
-            if (enemy == null)
-                continue;
+        // foreach (EnemyController enemy in hitEnemies)
+        // {
+        //     if (enemy == null)
+        //         continue;
 
-            float damage = GetCurrentAttackDamage();
-            Debug.Log($"[Player] {enemy.name} 타격! 데미지: {damage}");
-            enemy.TakeDamage(damage);
-        }
+        //     float damage = GetCurrentAttackDamage();
+        //     Debug.Log($"[Player] {enemy.name} 타격! 데미지: {damage}");
+        //     enemy.TakeDamage(damage);
+        // }
 
-        hitEnemies.Clear(); // 변경!
     }
 
     public void ForceDisableHitbox()
@@ -523,17 +519,16 @@ public class PlayerController : MonoBehaviour
         {
             hitboxCollider.enabled = false;
         }
-        hitEnemies.Clear(); // 변경!
     }
 
-    public void AddHitEnemy(EnemyController enemy) // 메서드 이름 및 파라미터 변경!
-    {
-        if (enemy != null && !hitEnemies.Contains(enemy))
-        {
-            hitEnemies.Add(enemy);
-            Debug.Log($"[Player] Enemy 추가: {enemy.name}");
-        }
-    }
+    // public void AddHitEnemy(EnemyController enemy) // 메서드 이름 및 파라미터 변경!
+    // {
+    //     if (enemy != null && !hitEnemies.Contains(enemy))
+    //     {
+    //         hitEnemies.Add(enemy);
+    //         Debug.Log($"[Player] Enemy 추가: {enemy.name}");
+    //     }
+    // }
 
     #endregion
 

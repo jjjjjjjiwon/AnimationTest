@@ -3,23 +3,23 @@
     "Enemy" : [
 
         {
-            "enemy_Id": "frist",
-            "enemy_Name": "Frist",
+            "enemy_ID": "ZOMBIE_01",
+            "enemy_Name": "Zombie",
 
             "base_Health": 100.0,
             "base_Damage": 10.0,
             "base_Speed": 3.5,
             "base_Defense": 5.0,
 
-            "prefab_Path": "",
+            "prefab_Path": "Prefab/Enemy/Zombie",
 
-            "idle_Animation_Id": "",
-            "chase_Animation_Id": "",
-            "dash_Animation_Id": "",
-            "teleport_Animation_Id": "",
-            "attack_Animation_Id": "",
-            "stun_Animation_Id": "",
-            "death_Animation_Id": ""
+            "Enemy_Idle_State_ID": "STAND_ID",
+            "Enemy_Chase_State_ID": "Base_Chase_ID",
+            "Enemy_Dash_State_ID": "",
+            "Enemy_Teleport_State_ID": "",
+            "Enemy_Attack_State_ID": "",
+            "Enemy_Stun_State_ID": "",
+            "Enemy_Death_State_ID": ""
         }
 
     ]

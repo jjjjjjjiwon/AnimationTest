@@ -2,8 +2,8 @@
   "stages": [
     {
       "stageID": 1,
-      "stageName": "Burning volcano",
-      "stageDescription": "A dangerous dungeon with flowing lava",
+      "stageName": "화산",
+      "stageDescription": "화산이다",
       "iconPath": "Image/StageIcons/volcano",
       "difficulty": 3,
       "sceneName": "Stage_Volcano",
@@ -14,8 +14,32 @@
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-      "clearConditionType": "Boss",
-      "targetKillCount": 0
+      "clearType": "Boss",
+      "targetKillCount": 0,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
+
     },
 
     {
@@ -32,8 +56,31 @@
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 1
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     {
@@ -50,8 +97,31 @@
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     {
@@ -68,8 +138,31 @@
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     {
@@ -86,8 +179,31 @@
       "levelUpPoint": 2,
       "itemRewards": [],
       "skillReward": "Sword",
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 1
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     {
@@ -108,8 +224,31 @@
       "itemRewards": [],
       "skillReward": "Sword",
 
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 100, "y": 0.0, "z": 160 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 100, "y": 0.0, "z": 170 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 100, "y": 0.0, "z": 180 },
+          "spawnRotation": 90.0,
+          "conditionType": 1,
+          "conditionValue": 1
+        }
+      ]
     },
 
     {
@@ -130,8 +269,31 @@
       "itemRewards": [],
       "skillReward": "Castle",
 
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     {
@@ -152,8 +314,31 @@
       "itemRewards": [],
       "skillReward": "SBS",
 
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     
@@ -175,8 +360,31 @@
       "itemRewards": [],
       "skillReward": "Car",
 
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     },
 
     {
@@ -197,8 +405,31 @@
       "itemRewards": [],
       "skillReward": "Clock",
 
-      "clearConditionType": "KillTarget",
-      "targetKillCount": 2
+      "clearType": "KillTarget", 
+      "targetKillCount": 2,
+      "enemySpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 3.5
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
+          "spawnRotation": 180.0,
+          "conditionType": 1,
+          "conditionValue": 7.0
+        },
+        {
+          "enemy_ID": "SKELETON_01",
+          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
+          "spawnRotation": 90.0,
+          "conditionType": 2,
+          "conditionValue": 5.0
+        }
+      ]
     }
 
   ]

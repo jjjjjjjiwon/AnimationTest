@@ -9,24 +9,33 @@ using UnityEngine;
 public class ChaseState : State
 {
     private Rigidbody rb;
+    private EnemyChaseStateJsonData chaseData; // JSON 데이터 저장용
 
-    public ChaseState(IEnemy enemy) : base(enemy)
+    public ChaseState(IEnemy enemy, EnemyChaseStateJsonData data) : base(enemy)
     {
-        rb = enemy.Rigidbody;
+        rb = enemy.EnemyRigidbody;
+        chaseData = data;
     }
 
     public override void Enter()
     {
-        // 추격 시작 (애니메이션은 Move 그대로)
+        if (chaseData != null && !string.IsNullOrEmpty(chaseData.animation_Name))
+        {
+            // JSON에 적힌 이름으로 애니메이션 재생
+            enemy.EnemyAnimator.Play(chaseData.animation_Name);
+            Debug.Log($"[ChaseState] {chaseData.animation_Name} 애니메이션 재생 시작");
+        }
     }
 
     public override void Execute()
     {
+        if (enemy.Player == null) return;
+
         // ========== Player 방향 계산 ==========
-        Vector3 direction = (enemy.Player.position - enemy.Transform.position).normalized;
+        Vector3 direction = (enemy.Player.position - enemy.EnemyTransform.position).normalized;
         direction.y = 0; // 수평 방향만
 
-        float moveSpeed = enemy.Data.moveSpeed;
+        float moveSpeed = chaseData.chaseSpeed;
 
         // ========== Rigidbody로 이동 ==========
         rb.velocity = new Vector3(
@@ -39,8 +48,8 @@ public class ChaseState : State
         if (direction != Vector3.zero)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            enemy.Transform.rotation = Quaternion.Slerp(
-                enemy.Transform.rotation,
+            enemy.EnemyTransform.rotation = Quaternion.Slerp(
+                enemy.EnemyTransform.rotation,
                 targetRotation,
                 0.1f // 부드러운 회전
             );

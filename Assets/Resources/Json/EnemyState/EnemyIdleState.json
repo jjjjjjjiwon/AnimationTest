@@ -1,9 +1,9 @@
 {
-    "EnemyIdleState" : [
-        {
-            "EnemyIdleState_Id" : "stand",
-            "EnemyIdleState_Name" : "Stand",
-            "animationName" : ""
-        }
-    ]
+  "EnemyIdleState": [
+    {
+      "Enemy_Idle_State_ID": "STAND_ID",
+      "Enemy_Idle_State_Name": "Stand",
+      "animation_Name": "Base_Idle"
+    }
+  ]
 }

@@ -1,0 +1,10 @@
+{
+  "EnemyChaseState": [
+    {
+      "Enemy_Chase_State_ID": "Base_Chase_ID",
+      "Enemy_Chase_State_Name": "Base_Chase",
+      "animation_Name": "Base_Chase",
+      "chaseSpeed": 10
+    }
+  ]
+}

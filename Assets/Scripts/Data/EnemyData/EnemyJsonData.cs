@@ -16,7 +16,7 @@ public enum Enemystate
 [Serializable]
 public class EnemyJsonData
 {
-    public string enemy_Id;                     // 적 Id
+    public string enemy_ID;                     // 적 Id
     public string enemy_Name;                   // 적 이름
 
     public float base_Health;                   // 체력
@@ -27,15 +27,12 @@ public class EnemyJsonData
     // 유니티 오브젝트 대신 프리펩 경로를 저장 (Resources/Prefabs/Enemy1.prefab 등)
     public string prefab_Path; 
 
-    public string idle_State_Animaion_Id;   
-
-    public string chase_State_Animaion_Id;     
-    public string dash_State_Animaion_Id;     
-    public string teleport_State_Animaion_Id;     
-
-    public string attack_State_Animaion_Id; 
-
-    public string stu_State_Animaion_Id;      
-    public string Death_State_Animaion_Id;    
+    public string Enemy_Idle_State_ID;   
+    public string Enemy_Chase_State_ID;     
+    public string Enemy_Dash_State_ID;     
+    public string Enemy_Teleport_State_ID;     
+    public string Enemy_Attack_State_ID;  
+    public string Enemy_Stun_State_ID;     
+    public string Enemy_Death_State_ID;     
 
 }

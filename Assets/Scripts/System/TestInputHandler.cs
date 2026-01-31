@@ -7,7 +7,6 @@ public class TestInputHandler : MonoBehaviour
 {
     // ⭐ Inspector 연결 대신 자동으로 찾기
     private RuntimeManager runtimeManager;
-    private EnemyController enemyController;
     private PlayerController playerController;
     private PlayerData playerData;
 
@@ -44,18 +43,6 @@ public class TestInputHandler : MonoBehaviour
             Debug.Log($"[골드] +100 → 총 {runtimeManager.gold}G");
         }
 
-        // K키: 적 데미지
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            if (enemyController == null)
-                enemyController = FindObjectOfType<EnemyController>();
-                
-            if (enemyController != null)
-            {
-                Debug.Log("적에게 데미지!");
-                enemyController.TakeDamage(10);
-            }
-        }
 
         // Z키: 플레이어 추가 스탯
         if (Input.GetKeyDown(KeyCode.Z))
