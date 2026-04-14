@@ -3,29 +3,26 @@ using System.Collections.Generic;
 
 public static class MagicLibrary
 {
-    // 하나가 아닌 리스트로 모든 활성 마법을 기억합니다.
-    private static List<MagicBase> _activeMagics = new List<MagicBase>();
+    // 마법의 오브젝트를 List로 기억
+    private static List<MagicBase> activeMagics = new List<MagicBase>();
 
     public static void Execute(string magicName, Transform caster)
     {
         if (magicName == "SummonElement")
         {
-            ClearAll(); // 칠판 지우기
+            ClearAll();
             var newMagic = SummonElement("SummonElement", caster);
-            if (newMagic != null) _activeMagics.Add(newMagic);
+            if (newMagic != null) activeMagics.Add(newMagic);
         }
         else if (magicName == "MoveForward")
         {
-            // 리스트에 있는 모든 마법에게 명령 (낙오자 없음)
-            foreach (var m in _activeMagics) MoveForward(m);
+            foreach (var m in activeMagics) MoveForward(m);
         }
         else if (magicName == "Split")
         {
-            if (_activeMagics.Count == 0) return;
+            if (activeMagics.Count == 0) return;
 
-            // 1. 현재 세대 복사본 생성 (반복 중 리스트 변경 에러 방지)
-            List<MagicBase> parents = new List<MagicBase>(_activeMagics);
-            // 2. 다음 세대를 담을 임시 리스트
+            List<MagicBase> parents = new List<MagicBase>(activeMagics);
             List<MagicBase> nextGeneration = new List<MagicBase>();
 
             foreach (var p in parents)
@@ -40,17 +37,25 @@ public static class MagicLibrary
             }
 
             // 5. 전체 명단을 다음 세대로 교체!
-            _activeMagics = nextGeneration;
+            activeMagics = nextGeneration;
         }
     }
 
     private static readonly Dictionary<string, Dictionary<string, float>> _wordStats = new Dictionary<string, Dictionary<string, float>>
     {
-        { "Summon",      new Dictionary<string, float> { { "Dist", 10.0f }} },
+        { "Summon",      new Dictionary<string, float> { { "Dist",  5.0f }} },
         { "MoveForward", new Dictionary<string, float> { { "Speed", 10.0f } } },
         { "Split",       new Dictionary<string, float> { { "ScaleMult", 0.5f }, { "SpeedMult", 1.2f } } }
     };
 
+        private static void ClearAll()
+    {
+        foreach (var m in activeMagics)
+            if (m != null) Object.Destroy(m.gameObject);
+        activeMagics.Clear();
+    }
+
+#region 소환
     public static MagicBase SummonElement(string prefabName, Transform caster)
     {
         GameObject prefab = Resources.Load<GameObject>($"Prefab/Magic/{prefabName}");
@@ -68,7 +73,9 @@ public static class MagicLibrary
         mb.Init(caster);
         return mb;
     }
+#endregion
 
+#region 나아가다
     public static void MoveForward(MagicBase target)
     {
         if (target == null) return;
@@ -78,7 +85,6 @@ public static class MagicLibrary
             target.Launch();
             target.moveSpeed += stats["Speed"];
 
-            // 💡 Y축 값을 0으로 만들어 수평으로만 날아가게 설정 (선택 사항)
             Vector3 shootDir = target.transform.forward;
             shootDir.y = 0;
             shootDir.Normalize();
@@ -90,8 +96,9 @@ public static class MagicLibrary
             });
         }
     }
+#endregion
 
-    // 💡 Split의 역할을 '생성'과 '명단 반환'으로 분리했습니다.
+#region 분열
     public static List<MagicBase> Split(MagicBase target)
     {
         List<MagicBase> children = new List<MagicBase>();
@@ -140,11 +147,60 @@ public static class MagicLibrary
         Debug.Log($"{splitCount}개로 분열 완료!");
         return children;
     }
+#endregion
 
-    private static void ClearAll()
+#region 역행
+    private static void Rewind(MagicBase target)
     {
-        foreach (var m in _activeMagics)
-            if (m != null) Object.Destroy(m.gameObject);
-        _activeMagics.Clear();
+        
     }
+    #endregion
+
+
+#region 나선
+    public static void Spiral(MagicBase target, bool isClockwise = true)
+    {
+        if (target == null) return;
+
+        target.Launch();
+        // 데이터 시트에서 속도와 회전 반경 등을 가져온다고 가정
+        float speed = 5.0f;
+        float spiralRadius = 2.0f; // 원의 크기
+        float spiralSpeed = 10.0f; // 회전 속도
+
+        Vector3 forwardDir = target.transform.forward;
+        Vector3 rightDir = target.transform.right;
+        Vector3 upDir = target.transform.up;
+
+        float elapsedTime = 0f;
+        int direction = isClockwise ? 1 : -1;
+
+        target.AddLogic(() =>
+        {
+            if (target == null) return;
+            elapsedTime += Time.deltaTime;
+
+            // 1. 기준점 이동 (중심축이 앞으로 나아감)
+            Vector3 centerPos = forwardDir * speed * Time.deltaTime;
+
+            // 2. 나선 회전 계산 (Sin, Cos)
+            // 시간에 따라 Right와 Up 방향으로 위치를 변형
+            float x = Mathf.Cos(elapsedTime * spiralSpeed) * spiralRadius;
+            float y = Mathf.Sin(elapsedTime * spiralSpeed) * spiralRadius * direction;
+
+            // 새로운 위치 = 현재 위치 + 전진량 + (회전 보정치)
+            // 다만 단순히 더하면 축이 꼬이므로, '중심축'을 기준으로 오프셋을 계산하는 게 깔끔합니다.
+            Vector3 offset = (rightDir * x) + (upDir * y);
+
+            // 실제 이동: 축 방향 전진 + 회전 오프셋 적용
+            // (이 방식은 물체가 나선을 그리며 '진행 방향'을 바라보게 하려면 추가 회전이 필요합니다)
+            target.transform.position += centerPos + (offset * 0.1f); // 0.1f는 부드러운 전이를 위한 계수
+
+            // 3. 방향 정렬 (나선 궤적의 접선 방향을 바라보게 함)
+            target.transform.forward = forwardDir; // 일단은 중심축 유지
+        });
+    }
+#endregion
+
+
 }

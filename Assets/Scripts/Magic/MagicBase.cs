@@ -13,9 +13,12 @@ public class MagicBase : MonoBehaviour
     private Dictionary<string, float> _params = new Dictionary<string, float>();
 
     [Header("Stat")]
+    public float size = 0f;
     public float moveSpeed = 0f;      // 이동 속도
-    public float followDistance = 0f; // 플레이어와의 간격
-    public float floatingHeight = 1.5f; // 💡 바닥에서 1.5m 띄우기
+
+    [Header("spawn")]
+    public float followDistance = 0f;   // 플레이어와의 간격
+    public float floatingHeight = 1.5f; // 바닥에서 1.5m 
 
 
     [Header("Rules")]
@@ -79,11 +82,11 @@ public class MagicBase : MonoBehaviour
 
     private void UpdateElementState()
     {
-if (caster == null) return;
+        if (caster == null) return;
 
         // 💡 플레이어의 위치에 floatingHeight만큼 더해줍니다.
         Vector3 targetPos = caster.position + (caster.forward * followDistance) + (Vector3.up * floatingHeight);
-        
+
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 5f);
         transform.rotation = Quaternion.Lerp(transform.rotation, caster.rotation, Time.deltaTime * 5f);
     }
@@ -103,6 +106,6 @@ if (caster == null) return;
         }
     }
 
-    
+
     #endregion
 }
