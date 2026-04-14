@@ -2,59 +2,46 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BossUpgradeType
-{
-    none,
-    Stat,       // 스탯 변경
-    ability,   // 상태/패턴 추가
-    removeState // 상태/패턴 제거 (옵션)
+// 어떤 종류의 업그레이드인가?
+public enum BossUpgradeType { none, stat, ability, removeState }
+
+// 어떤 스탯을 건드리는가?
+public enum BossStatType 
+{ 
+    none, 
+    health,   // base_Health와 매칭
+    damage,   // base_Damage와 매칭
+    speed,    // base_Speed와 매칭
+    defense   // base_Defense와 매칭
 }
 
-public enum BossStatType
-{
-    Hp,
-    Damage,
-    MoveSpeed,
-    Armor
-}
+// 어떤 행동(스테이트)을 타겟으로 하는가?
+public enum BossActionType { none, idle, chase, attack, dash, teleport, fly, stun, death }
 
 [Serializable]
 public class BossUpgradeJsonList
 {
+    // 중요: JSON의 키값이 "upgrades"이므로 변수명도 똑같이 upgrades여야 합니다!
     public List<BossUpgradeJsonData> upgrades;
 }
 
 [Serializable]
 public class BossUpgradeJsonData
 {
-    public string bossId;       // ""이면 전체 보스 공용도 가능
+    public string boss_ID;
+    public string upgrade_ID;
+    public string upgrade_Name;
+    public string upgrade_Description;
 
-    public string upgradeID;
-    public string upgradeName;
-    public string upgradeDescription;
+    public string upgrade_Type; 
+    public BossUpgradeType type => Enum.TryParse(upgrade_Type, true, out BossUpgradeType result) ? result : BossUpgradeType.none;
 
-// JSON의 문자열을 그대로 받아오는 변수
-    [SerializeField] private string upgradeType; 
+    public string target_Action;
+    public BossActionType target_action_type => Enum.TryParse(target_Action, true, out BossActionType result) ? result : BossActionType.none;
+    public string ability_ID;
 
-    // 코드에서 실제로 사용할 안전한 변수 (Enum 변환)
-    public BossUpgradeType Type
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(upgradeType)) return BossUpgradeType.none;
-            
-            // 문자열을 Enum으로 변환 (대소문자 무시)
-            if (Enum.TryParse(upgradeType, true, out BossUpgradeType result))
-                return result;
-            
-            return BossUpgradeType.none;
-        }
-    }
+    public string stat_Type; 
+    public BossStatType stat_type_enum => Enum.TryParse(stat_Type, true, out BossStatType result) ? result : BossStatType.none;
 
-    // type == Stat
-    public BossStatType statType;
     public float value;
-
-    // type == AddState/RemoveState
-    public string abilityID;
 }

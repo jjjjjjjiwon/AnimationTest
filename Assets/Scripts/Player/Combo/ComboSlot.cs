@@ -6,21 +6,14 @@ using UnityEngine;
 [System.Serializable]
 public class ComboSlot
 {
-    /// <summary>이 슬롯에 할당된 입력키</summary>
     public InputTypes assignedInput;
-    
-    /// <summary>이 슬롯에 장착된 스킬</summary>
-    public AttackSkillData equippedSkill;
-    
+    public string equippedSkillID; // [수정] 스크립터블 오브젝트 대신 ID 저장
+
     public ComboSlot(InputTypes input)
     {
         assignedInput = input;
-        equippedSkill = null;
+        equippedSkillID = ""; 
     }
-    
-    /// <summary>스킬이 장착되어 있는가?</summary>
-    public bool HasSkill()
-    {
-        return equippedSkill != null;
-    }
+
+    public bool HasSkill() => !string.IsNullOrEmpty(equippedSkillID);
 }

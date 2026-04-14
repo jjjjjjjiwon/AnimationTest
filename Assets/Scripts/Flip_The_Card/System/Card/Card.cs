@@ -58,7 +58,7 @@ public class Card : MonoBehaviour
         cardIndex = index;  // 인덱스 저장
         SetupFrontSide();
         
-        Debug.Log($"[Card] 초기화: {data.stageName} (인덱스: {index})");
+        Debug.Log($"[Card] 초기화: {data.stage_Name} (인덱스: {index})");
     }
 
     
@@ -86,22 +86,22 @@ public class Card : MonoBehaviour
         if (stageData == null) return;
         
         // 이미지
-        if (cardImageRenderer != null && stageData.stageIcon != null)
+        if (cardImageRenderer != null && stageData.stage_Icon != null)
         {
-            cardImageRenderer.material.mainTexture = stageData.stageIcon.texture;
+            cardImageRenderer.material.mainTexture = stageData.stage_Icon.texture;
         }
         
         // 이름
         if (nameText != null)
         {
-            nameText.text = stageData.stageName;
-            forntName.text = stageData.stageName;
+            nameText.text = stageData.stage_Name;
+            forntName.text = stageData.stage_Name;
         }
         
         // 설명
         if (descText != null)
         {
-            descText.text = stageData.stageDescription;
+            descText.text = stageData.stage_Description;
         }
     }
     
@@ -143,7 +143,7 @@ public class Card : MonoBehaviour
             cardManager.OnCardSelected(this);
         }
         
-        Debug.Log($"[Card] 선택됨: {stageData.stageName}");
+        Debug.Log($"[Card] 선택됨: {stageData.stage_Name}");
         transform.localScale = new Vector3(2f, 2f, 2f);
     }
 
@@ -153,7 +153,7 @@ public class Card : MonoBehaviour
     /// </summary>
     void SecondClick()
 {
-    Debug.Log($"[Card] 스테이지 시작: {stageData.stageName}");
+    Debug.Log($"[Card] 스테이지 시작: {stageData.stage_Name}");
 
     // 1) 묘지 이동 + 다음 층 (GameData null 방지)
     if (GameData.Instance != null)

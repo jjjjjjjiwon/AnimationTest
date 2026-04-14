@@ -69,8 +69,8 @@ public class BossUpgradeUI : MonoBehaviour
         }
 
         card.Setup(
-            up.upgradeName,
-            up.upgradeDescription,
+            up.upgrade_Name,
+            up.upgrade_Description,
             null,
             () => OnUpgradePicked(up)
         );
@@ -94,12 +94,12 @@ public class BossUpgradeUI : MonoBehaviour
      public BossJsonData GetBossById(string bossId)
     {
         if (string.IsNullOrEmpty(bossId)) return null;
-        return bossDefs.Find(b => b.bossId == bossId);
+        return bossDefs.Find(b => b.boss_ID == bossId);
     }
 
     public List<BossUpgradeJsonData> GetUpgradesForBoss(string bossId)
     {
         if (string.IsNullOrEmpty(bossId)) return new List<BossUpgradeJsonData>();
-        return bossUpgrades.FindAll(u => string.IsNullOrEmpty(u.bossId) || u.bossId == bossId);
+        return bossUpgrades.FindAll(u => string.IsNullOrEmpty(u.boss_ID) || u.boss_ID == bossId);
     }
 }

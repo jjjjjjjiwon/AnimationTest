@@ -1,68 +1,128 @@
-// using UnityEngine;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-// /// <summary>
-// /// 공격 상태
-// /// 랜덤으로 선택된 공격 애니메이션 재생
-// /// 루트 모션을 허용하여 애니메이션에 따라 제자리 또는 전진 공격 가능
-// /// 애니메이션 완료 후 IdleState로 복귀
-// /// </summary>
-// public class AttackState : State
-// {
-//     private Animator animator;
-//     private bool hasStarted; // 애니메이션 시작 여부
+public class AttackState : State
+{
+    private List<EnemyAttackMotionJsonData> currentComboSteps; // 현재 실행 중인 콤보의 모션 리스트
+    private int currentStepIndex = 0;
+    private bool hasStarted = false; // 현재 단계 애니메이션 시작 여부
+    public bool IsExiting => isExiting;
 
-//     public AttackState(IEnemy enemy) : base(enemy)
-//     {
-//         animator = enemy.Animator;
-//     }
+    public AttackState(IEnemy enemy, List<EnemyAttackMotionJsonData> steps) : base(enemy)
+    {
+        this.currentComboSteps = steps;
+    }
 
-//     public override void Enter()
-//     {
-//         hasStarted = false; // 애니메이션 시작 플래그 리셋
+    public override void Enter()
+    {
+        currentStepIndex = 0;
+        hasStarted = false;
+        isExiting = false; // State 클래스의 변수 초기화
 
-//         // ========== 랜덤 공격 선택 ==========
-//         if (enemy.Data.enabledAttacks.Count > 0)
-//         {
-//             int randomIndex = Random.Range(0, enemy.Data.enabledAttacks.Count);
-//             string attackTrigger = enemy.Data.enabledAttacks[randomIndex];
+        Debug.Log($"[AttackState] 진입 - 총 {currentComboSteps.Count}단계 콤보 시작");
+        ExecuteStep();
+    }
 
-//             animator.SetTrigger(attackTrigger);
-//         }
+    public override void Execute()
+    {
+        if (isExiting) return;
 
-//         // 초기 velocity 리셋 (이전 상태의 이동 제거)
-//         enemy.Rigidbody.velocity = new Vector3(0, enemy.Rigidbody.velocity.y, 0);
-//     }
+        // 플레이어를 계속 바라보게 함 (이전 단계에서 만든 로직)
+        RotateTowardsPlayer();
 
-//     public override void Execute()
-//     {
-//         // ========== 루트 모션 허용 ==========
-//         // velocity 설정 안 함!
-//         // 제자리 공격: 루트 모션 없음 → 안 움직임
-//         // 돌진 공격: 루트 모션 있음 → 앞으로 전진
+        AnimatorStateInfo stateInfo;
+        if (!WaitForAnimationStart(enemy.EnemyAnimator, ref hasStarted, out stateInfo)) return;
 
-//         // ========== 1. 애니메이션 시작 대기 ==========
-//         if (!WaitForAnimationStart(animator, ref hasStarted, out AnimatorStateInfo stateInfo))
-//         {
-//             // 아직 공격 애니메이션 시작 안 됨 (Move 중)
-//             return;
-//         }
+        // 애니메이션이 거의 끝났을 때 (95% 이상)
+        if (stateInfo.normalizedTime >= 0.95f && !enemy.EnemyAnimator.IsInTransition(0))
+        {
+            // 1. 다음 공격 단계가 남아있는지 확인
+            if (currentStepIndex < currentComboSteps.Count - 1)
+            {
+                // [핵심 수정] 다음 모션의 데이터를 미리 가져옵니다.
+                var nextMotionData = currentComboSteps[currentStepIndex + 1];
 
-//         // ========== 2. 애니메이션 완료 체크 ==========
-//         if (stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG))
-//         {
-//             // Move로 복귀 = 공격 완료!
-//             enemy.ChangeToIdle();
-//         }
+                // [판단] 플레이어가 다음 모션의 '해제 범위' 안에 있는가?
+                if (IsPlayerInRange(nextMotionData.combo_Release_Range))
+                {
+                    currentStepIndex++;
+                    hasStarted = false; // 다음 애니메이션 대기를 위해 리셋
+                    ExecuteStep();      // 다음 타격 실행
+                }
+                else
+                {
+                    // 플레이어가 너무 멀어지면 콤보 중단
+                    Debug.Log($"[AttackState] 다음 모션({nextMotionData.animation_Name})의 해제 범위를 벗어남. 콤보 종료.");
+                    FinishCombo();
+                }
+            }
+            else
+            {
+                // 모든 콤보 시퀀스 완료
+                FinishCombo();
+            }
+        }
+    }
 
-//         // 공격 진행 중 (ATTACK_TAG)
-//     }
+    private void ExecuteStep()
+    {
+        var currentData = currentComboSteps[currentStepIndex];
 
-//     public override void Exit()
-//     {
-//         // 모든 공격 Trigger 리셋 (다음 공격을 위해)
-//         foreach (string attackTrigger in enemy.Data.enabledAttacks)
-//         {
-//             animator.ResetTrigger(attackTrigger);
-//         }
-//     }
-// }
+        Debug.Log($"[AttackState] 실행 중: {currentStepIndex + 1}타 ({currentData.animation_Name})");
+
+        // 애니메이션 재생 (CrossFade로 부드럽게 연결)
+        enemy.EnemyAnimator.CrossFade(currentData.animation_Name, 0.1f);
+
+        // 필요 시 여기서 데미지 설정이나 회전 제어 로직 추가 가능
+    }
+
+    private void FinishCombo()
+    {
+        if (isExiting) return;
+
+        isExiting = true;
+        Debug.Log("[AttackState] 모든 콤보 시퀀스 종료 -> 상태 전환 요청");
+
+        // 컨트롤러에게 다음 행동 판단을 맡김
+        // 이때 SelectNextState()가 내부적으로 ChangeState(idle) 등을 호출하며 Exit()을 실행함
+        enemy.SelectNextState();
+    }
+
+    public override void Exit()
+    {
+        Debug.Log("[AttackState] Exit 호출 - 리소스 정리");
+        hasStarted = false;
+        // 필요 시 공격 콜라이더 강제 종료 등 처리
+    }
+
+    private bool IsPlayerInRange(float range)
+    {
+        if (enemy.Player == null) return false;
+        float dist = Vector3.Distance(enemy.EnemyTransform.position, enemy.Player.position);
+        return dist <= range + 0.5f; // 0.5f 여유 오차
+    }
+
+    private void RotateTowardsPlayer()
+    {
+        if (enemy.Player == null) return;
+
+        // 플레이어를 향한 방향 계산
+        Vector3 direction = (enemy.Player.position - enemy.EnemyTransform.position).normalized;
+        direction.y = 0; // 위아래로 꺾이는 것 방지
+
+        if (direction != Vector3.zero)
+        {
+            // JSON에서 가져온 rotation_Speed 사용 (없다면 기본값 5.0f)
+            float rotSpeed = currentComboSteps[currentStepIndex].rotation_Speed;
+            if (rotSpeed <= 0) rotSpeed = 5.0f;
+
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            enemy.EnemyTransform.rotation = Quaternion.Slerp(
+                enemy.EnemyTransform.rotation,
+                targetRotation,
+                Time.deltaTime * rotSpeed
+            );
+        }
+    }
+}

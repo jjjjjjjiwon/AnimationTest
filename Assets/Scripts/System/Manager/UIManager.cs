@@ -244,7 +244,7 @@ private void UpdateUIVisibility()
     rewardUI.Setup(stage, isBoss);
     rewardUI.gameObject.SetActive(true);
 
-    Debug.Log($"[UIManager] RewardUI 표시 - {stage.stageName}");
+    Debug.Log($"[UIManager] RewardUI 표시 - {stage.stage_Name}");
 }
 
     

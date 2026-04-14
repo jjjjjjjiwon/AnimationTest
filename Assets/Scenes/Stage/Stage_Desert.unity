@@ -229,7 +229,13 @@ MonoBehaviour:
   playerData: {fileID: 11400000, guid: bad8a758f18c2504ca72889a139f87d5, type: 2}
   cameraTransform: {fileID: 430675940}
   hPBar: {fileID: 0}
+  weapon: {fileID: 1768389495}
   hitboxCollider: {fileID: 1768389496}
+  comboUI: {fileID: 0}
+  currentMode: 0
+  uiManager: {fileID: 0}
+  isMagicMode: 0
+  firePoint: {fileID: 821475352}
 --- !u!65 &75892095
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -533,7 +539,7 @@ Transform:
   m_GameObject: {fileID: 430675937}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13781798, y: -0, z: -0, w: 0.9904576}
-  m_LocalPosition: {x: 100, y: 10.73, z: -10}
+  m_LocalPosition: {x: 0, y: 8, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -830,6 +836,50 @@ CapsuleCollider:
   m_Height: 0.27509242
   m_Direction: 1
   m_Center: {x: -0.010354331, y: 0.11804, z: -0.023481023}
+--- !u!1 &712409890
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 712409892}
+  - component: {fileID: 712409891}
+  m_Layer: 0
+  m_Name: HitEffectManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &712409891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712409890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb76c6e81b8fa9b4c9569ffb21394d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &712409892
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712409890}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &741752651
 GameObject:
   m_ObjectHideFlags: 0
@@ -989,6 +1039,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &821475351
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 821475352}
+  m_Layer: 6
+  m_Name: Magic Location
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &821475352
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821475351}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.688, z: 1.096}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 75892091}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &876379139 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3883429834600913605, guid: 459f79a004eb51144840e79b6950c697, type: 3}
@@ -1164,6 +1245,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   JsonPath: json/Enemy
+  bossJsonPath: Json/Boss
 --- !u!1 &1033420087
 GameObject:
   m_ObjectHideFlags: 0
@@ -1752,6 +1834,9 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 4784887103899088715, guid: 459f79a004eb51144840e79b6950c697, type: 3}
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6048376750277521002, guid: 459f79a004eb51144840e79b6950c697, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 821475352}
     - targetCorrespondingSourceObject: {fileID: 2502511636727270590, guid: 459f79a004eb51144840e79b6950c697, type: 3}
       insertIndex: -1
       addedObject: {fileID: 119871029}
@@ -2397,3 +2482,4 @@ SceneRoots:
   - {fileID: 976394033}
   - {fileID: 1038159276}
   - {fileID: 2064965444}
+  - {fileID: 712409892}

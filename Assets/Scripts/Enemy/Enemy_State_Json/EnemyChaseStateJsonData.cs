@@ -4,8 +4,8 @@ using System.Collections.Generic;
 [Serializable]
 public class EnemyChaseStateJsonData
 {
-    public string Enemy_Chase_State_ID;                 
-    public string Enemy_Chase_State_Name;                 
+    public string enemy_Chase_State_ID;                 
+    public string enemy_Chase_State_Name;                 
     public string animation_Name;
     public float chaseSpeed;
 }

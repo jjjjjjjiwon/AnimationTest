@@ -1,259 +1,251 @@
 {
   "stages": [
     {
-      "stageID": 1,
-      "stageName": "화산",
-      "stageDescription": "화산이다",
-      "iconPath": "Image/StageIcons/volcano",
+      "stage_ID": 1,
+      "stage_Name": "화산",
+      "stage_Description": "화산이다",
       "difficulty": 3,
-      "sceneName": "Stage_Volcano",
+
+      "icon_Path": "Image/StageIcons/volcano",
+      "scene_Name": "0",
+
       "isBossStage": true,
-      "bossId": "flame_titan",
-      "bossName": "Flame Titan",
-      "goldReward": 1000,
-      "levelUpPoint": 2,
-      "itemRewards": [],
-      "skillReward": "Sword",
-      "clearType": "Boss",
-      "targetKillCount": 0,
-      "enemySpawnList": [
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 3.5
-        },
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 7.0
-        },
-        {
-          "enemy_ID": "SKELETON_01",
-          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
-          "spawnRotation": 90.0,
-          "conditionType": 2,
-          "conditionValue": 5.0
-        }
-      ]
+      "boss_ID": "flame_titan",
+      "boss_Name": "Flame Titan",
 
-    },
+      "gold_Reward": 1000,
+      "levelUp_Point": 2,
+      "item_Rewards": [],
+      "skill_Reward": "Sword",
 
-    {
-      "stageID": 2,
-      "stageName": "Frozen snowfield",
-      "stageDescription": "A cold area with snowstorms",
-      "iconPath": "Image/StageIcons/snowfield",
-      "difficulty": 4,
-      "sceneName": "Stage_Snowfield",
-      "isBossStage": false,
-      "bossId": "",
-      "bossName": "",
-      "goldReward": 1000,
-      "levelUpPoint": 2,
-      "itemRewards": [],
-      "skillReward": "Sword",
-      "clearType": "KillTarget", 
-      "targetKillCount": 2,
-      "enemySpawnList": [
+      "clear_Type": 5,
+      "target_KillCount": 0,
+
+
+      "enemy_SpawnList": [
         {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 3.5
-        },
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 7.0
-        },
-        {
-          "enemy_ID": "SKELETON_01",
-          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
-          "spawnRotation": 90.0,
-          "conditionType": 2,
-          "conditionValue": 5.0
+          "enemy_ID": "",
+          "isBoss": true,
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 160 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
         }
       ]
     },
 
-    {
-      "stageID": 3,
-      "stageName": "Dark cave",
-      "stageDescription": "A deep cave where no light reaches",
-      "iconPath": "Image/StageIcons/cave",
-      "difficulty": 2,
-      "sceneName": "Stage_Cave",
-      "isBossStage": false,
-      "bossId": "",
-      "bossName": "",
-      "goldReward": 1000,
-      "levelUpPoint": 2,
-      "itemRewards": [],
-      "skillReward": "Sword",
-      "clearType": "KillTarget", 
-      "targetKillCount": 2,
-      "enemySpawnList": [
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 3.5
-        },
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 7.0
-        },
-        {
-          "enemy_ID": "SKELETON_01",
-          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
-          "spawnRotation": 90.0,
-          "conditionType": 2,
-          "conditionValue": 5.0
-        }
-      ]
-    },
 
-    {
-      "stageID": 4,
-      "stageName": "Forest with many trees",
-      "stageDescription": "There are a lot of trees",
-      "iconPath": "Image/StageIcons/forest",
-      "difficulty": 1,
-      "sceneName": "Stage_Forest",
-      "isBossStage": false,
-      "bossId": "",
-      "bossName": "",
-      "goldReward": 1000,
-      "levelUpPoint": 2,
-      "itemRewards": [],
-      "skillReward": "Sword",
-      "clearType": "KillTarget", 
-      "targetKillCount": 2,
-      "enemySpawnList": [
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 3.5
-        },
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 7.0
-        },
-        {
-          "enemy_ID": "SKELETON_01",
-          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
-          "spawnRotation": 90.0,
-          "conditionType": 2,
-          "conditionValue": 5.0
-        }
-      ]
-    },
-
-    {
-      "stageID": 5,
-      "stageName": "Watery ocean",
-      "stageDescription": "the water is salty",
-      "iconPath": "Image/StageIcons/ocean",
-      "difficulty": 4,
-      "sceneName": "Stage_Ocean",
-      "isBossStage": false,
-      "bossId": "",
-      "bossName": "",
-      "goldReward": 1000,
-      "levelUpPoint": 2,
-      "itemRewards": [],
-      "skillReward": "Sword",
-      "clearType": "KillTarget", 
-      "targetKillCount": 2,
-      "enemySpawnList": [
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 5.0, "y": 0.0, "z": 10.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 3.5
-        },
-        {
-          "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": -5.0, "y": 0.0, "z": 12.0 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 7.0
-        },
-        {
-          "enemy_ID": "SKELETON_01",
-          "spawnPos": { "x": 0.0, "y": 0.0, "z": 15.0 },
-          "spawnRotation": 90.0,
-          "conditionType": 2,
-          "conditionValue": 5.0
-        }
-      ]
-    },
-
-    {
-      "stageID": 6,
-      "stageName": "Hot desert",
-      "stageDescription": "cover a lot",
-      "iconPath": "Image/StageIcons/desert",
+   {
+      "stage_ID": 2,
+      "stage_Name": "0",
+      "stage_Description": "A cold area with snowstorms",
       "difficulty": 3,
 
-      "sceneName": "Stage_Desert",
+      "icon_Path": "Image/StageIcons/snowfield",
+      "scene_Name": "Stage_Snowfield",
 
       "isBossStage": false,
-      "bossId": "",
-      "bossName": "",
+      "boss_ID": "",
+      "boss_Name": "",
 
-      "goldReward": 1000,
-      "levelUpPoint": 2,
-      "itemRewards": [],
-      "skillReward": "Sword",
+      "gold_Reward": 1000,
+      "levelUp_Point": 2,
+      "item_Rewards": [],
+      "skill_Reward": "Sword",
 
-      "clearType": "KillTarget", 
-      "targetKillCount": 2,
-      "enemySpawnList": [
+      "clear_Type": 2, 
+      "target_KillCount": 3,
+      "enemy_SpawnList": [
         {
           "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 100, "y": 0.0, "z": 160 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 1
+          "isBoss": false,
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 160 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
         },
         {
           "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 100, "y": 0.0, "z": 170 },
-          "spawnRotation": 180.0,
-          "conditionType": 1,
-          "conditionValue": 1
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 170 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
         },
         {
           "enemy_ID": "ZOMBIE_01",
-          "spawnPos": { "x": 100, "y": 0.0, "z": 180 },
-          "spawnRotation": 90.0,
-          "conditionType": 1,
-          "conditionValue": 1
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 180 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        }
+      ]
+    },
+
+   {
+      "stage_ID": 3,
+      "stage_Name": "0",
+      "stage_Description": "A deep cave where no light reaches",
+      "difficulty": 2,
+
+      "icon_Path": "Image/StageIcons/cave",
+      "scene_Name": "Stage_Cave",
+
+      "isBossStage": false,
+      "boss_ID": "",
+      "boss_Name": "",
+
+      "gold_Reward": 1000,
+      "levelUp_Point": 2,
+      "item_Rewards": [],
+      "skill_Reward": "Sword",
+
+      "clear_Type": 2, 
+      "target_KillCount": 3,
+      "enemy_SpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "isBoss": false,
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 160 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 170 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 180 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        }
+      ]
+    },
+
+   {
+      "stage_ID": 4,
+      "stage_Name": "Forest",
+      "stage_Description": "There are a lot of trees",
+      "difficulty": 1,
+
+      "icon_Path": "Image/StageIcons/forest",
+      "scene_Name": "Stage_Forest",
+
+      "isBossStage": false,
+      "boss_ID": "",
+      "boss_Name": "",
+
+      "gold_Reward": 1000,
+      "levelUp_Point": 2,
+      "item_Rewards": [],
+      "skill_Reward": "Sword",
+
+      "clear_Type": 2, 
+      "target_KillCount": 3,
+      "enemy_SpawnList": [
+      ]
+    },
+
+ {
+	    "stage_ID": 5,
+      "stage_Name": "0",
+      "stage_Description": "the water is salty",
+      "difficulty": 4,
+
+      "icon_Path": "Image/StageIcons/ocean",
+      "sceneName": "scene_Name",
+
+      "isBossStage": false,
+      "boss_ID": "",
+      "boss_Name": "",
+
+      "gold_Reward": 1000,
+      "levelUp_Point": 2,
+      "item_Rewards": [],
+      "skill_Reward": "Sword",
+
+      "clear_Type": 2, 
+      "target_KillCount": 3,
+      "enemy_SpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "isBoss": false,
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 160 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 170 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 180 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        }
+      ]
+    },
+
+    {
+      "stage_ID": 6,
+      "stage_Name": "Hot desert",
+      "stage_Description": "cover a lot",
+      "difficulty": 3,
+
+      "icon_Path": "Image/StageIcons/desert",
+      "scene_Name": "Stage_Desert",
+
+      "isBossStage": false,
+      "boss_ID": "",
+      "boss_Name": "",
+
+      "gold_Reward": 1000,
+      "levelUp_Point": 2,
+      "item_Rewards": [],
+      "skill_Reward": "Sword",
+
+      "clear_Type": 2, 
+      "target_KillCount": 3,
+      "enemy_SpawnList": [
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "isBoss": false,
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 160 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 170 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
+        },
+        {
+          "enemy_ID": "ZOMBIE_01",
+          "spawn_Pos": { "x": 100, "y": 0.0, "z": 180 },
+          "spawn_Rotation": 180.0,
+          "condition_Type": 1,
+          "condition_Value": 1
         }
       ]
     },
 
     {
       "stageID": 7,
-      "stageName": "Castle",
+      "stageName": "0",
       "stageDescription": "Castle Castle",
       "iconPath": "Image/StageIcons/Castle",
       "difficulty": 10,
@@ -298,7 +290,7 @@
 
     {
       "stageID": 8,
-      "stageName": "SBS",
+      "stageName": "0",
       "stageDescription": "Step By Step",
       "iconPath": "Image/StageIcons/SBS",
       "difficulty": 6,
@@ -344,7 +336,7 @@
     
     {
       "stageID": 9,
-      "stageName": "Crossroads",
+      "stageName": "0",
       "stageDescription": "Bang!",
       "iconPath": "Image/StageIcons/Crossroads",
       "difficulty": 6,
@@ -389,7 +381,7 @@
 
     {
       "stageID": 10,
-      "stageName": "The_Clock_Tower",
+      "stageName": "0",
       "stageDescription": "Tick-tock Tick-tock Tick-tock Tick-tock Tick-tock",
       "iconPath": "Image/StageIcons/The_Clock_Tower",
       "difficulty": 6,

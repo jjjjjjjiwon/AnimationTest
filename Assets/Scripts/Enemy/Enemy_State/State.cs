@@ -7,6 +7,7 @@ using UnityEngine;
 public abstract class State
 {
     protected IEnemy enemy;
+    protected bool isExiting;
 
     public State(IEnemy enemy)
     {

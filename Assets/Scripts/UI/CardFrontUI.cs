@@ -11,6 +11,6 @@ public class CardFrontUI : MonoBehaviour
     {
         // 텍스트 설정
         if (StageName != null)
-            StageName.text = stageData.stageName;
+            StageName.text = stageData.stage_Name;
     }
 }

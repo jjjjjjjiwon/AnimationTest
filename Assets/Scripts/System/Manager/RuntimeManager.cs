@@ -21,6 +21,9 @@ public class RuntimeManager : MonoBehaviour
     [SerializeField] private string currentBossId;   // ✅ bossId ONLY
     public string CurrentBossId => currentBossId;
 
+    [Header("Magic Save Data")]
+    // 키: 슬롯 인덱스(0~8), 값: 마법 데이터
+    public Dictionary<int, MagicData> EquipedMagics = new Dictionary<int, MagicData>();
 
     // ================= Other =================
     public int gold = 0;
@@ -83,7 +86,7 @@ public class RuntimeManager : MonoBehaviour
         if (up == null) return;
         selectedBossUpgrades.Add(up);
 
-        Debug.Log($"[RuntimeManager] AddBossUpgrade: {up.upgradeID}");
+        Debug.Log($"[RuntimeManager] AddBossUpgrade: {up.upgrade_ID}");
     }
 
     public List<BossUpgradeJsonData> GetAvailableUpgrades()
@@ -97,9 +100,9 @@ public class RuntimeManager : MonoBehaviour
         var all = GameData.Instance.GetUpgradesForBoss(currentBossId);
         if (all == null) return new();
 
-        var selectedIds = selectedBossUpgrades.Select(u => u.upgradeID).ToHashSet();
+        var selectedIds = selectedBossUpgrades.Select(u => u.upgrade_ID).ToHashSet();
 
-        return all.Where(u => !selectedIds.Contains(u.upgradeID)).ToList();
+        return all.Where(u => !selectedIds.Contains(u.upgrade_ID)).ToList();
     }
 
     public List<BossUpgradeJsonData> GetRandomThreeUpgrades()
@@ -123,5 +126,20 @@ public class RuntimeManager : MonoBehaviour
     return currentBossId;
 }
 
+
+#region Magic
+
+    // 마법 저장 함수
+    public void SetMagic(int index, MagicData data)
+    {
+        if (EquipedMagics.ContainsKey(index))
+            EquipedMagics[index] = data;
+        else
+            EquipedMagics.Add(index, data);
+            
+        Debug.Log($"[RuntimeManager] {index}번 슬롯에 {data.magic_Name} 저장됨");
+    }
+
+#endregion
 
 }

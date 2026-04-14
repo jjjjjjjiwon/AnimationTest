@@ -1,0 +1,12 @@
+{
+  "EnemyAttackState": [
+    {
+      "Enemy_Attack_State_ID": "Attack_Id",
+      "Enemy_Attack_State_Name": "Horizontal_Slash",
+      "animation_Name": "Horizontal_Slash",
+      "attackRange": 3,
+      "attackDamage": 10,
+      "rotationSpeed": 5
+    }
+  ]
+}

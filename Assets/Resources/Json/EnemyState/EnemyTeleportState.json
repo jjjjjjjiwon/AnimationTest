@@ -1,0 +1,18 @@
+{
+  "EnemyTeleportState": [
+    {
+      "enemy_Teleport_State_ID": "Base_Teleport_ID",
+      "enemy_Teleport_State_Name": "Base_Teleport",
+
+      "start_Animation_Name": "Start_Base_Teleport",
+      "end_Animation_Name": "End_Base_Teleport",
+
+      "max_Trigger_Distance": 30,
+      "min_Teleport_Distance": 5,
+      "arrival_Direction": { "x": 0, "y": 3, "z": 0 },
+      "arrival_Distance": 5,
+
+      "cooldown": 10
+    }
+  ]
+}

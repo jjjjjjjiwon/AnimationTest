@@ -1,0 +1,31 @@
+{
+  "enemyAttackMotion": [
+    {
+      "attack_motion_ID": "Attack1_ID",
+      "animation_Name": "Attack1",
+      "damage": 10.0,
+      "combo_Start_Range": 3,
+      "combo_Release_Range": 20.0,
+      "rotation_Speed": 5.0,
+      "add_Stun_Timer": 1.0
+    },
+    {
+      "attack_motion_ID": "Attack2_ID",
+      "animation_Name": "Attack2",
+      "damage": 10.0,
+      "combo_Start_Range": 2.5,
+      "combo_Release_Range": 30.0,
+      "rotation_Speed": 5.0,
+      "add_Stun_Timer": 1.0
+    },
+    {
+      "attack_motion_ID": "Attack3_ID",
+      "animation_Name": "Attack3",
+      "damage": 10.0,
+      "combo_Start_Range": 2.5,
+      "combo_Release_Range": 20.0,
+      "rotation_Speed": 5.0,
+      "add_Stun_Timer": 1.0
+    }
+  ]
+}

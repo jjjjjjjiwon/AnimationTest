@@ -31,10 +31,4 @@ MonoBehaviour:
   dodgeCooldown: 1
   dodgeDuration: 0.5
   combos: []
-  socketSlots:
-  - assignedInput: 1
-    equippedSkill: {fileID: 11400000, guid: 20c14697b8157a74db763be4550204b3, type: 2}
-  - assignedInput: 2
-    equippedSkill: {fileID: 11400000, guid: 044ab59dff847cb48bdc439c6361cd90, type: 2}
-  - assignedInput: 1
-    equippedSkill: {fileID: 11400000, guid: c9299f2b7b10ec440a3ba50b57cd4084, type: 2}
+  socketSlots: []

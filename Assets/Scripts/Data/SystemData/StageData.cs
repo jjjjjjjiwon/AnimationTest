@@ -25,32 +25,35 @@ public enum SpawnConditionType
 public class StageData
 {
     [Header("Stage Info")]
-    public int stageID;
-    public string stageName;
-    public string stageDescription;
-    public string iconPath;
+    public int stage_ID;
+    public string stage_Name;
+    public string stage_Description;
     public int difficulty;
-    public string sceneName;
+
+    public string icon_Path;
+    public string scene_Name;
 
     [Header("Boss Info")]
     public bool isBossStage;
-    public string bossId;
-    public string bossName;
+    public string boss_ID;
+    public string boss_Name;
 
     [Header("Rewards")]
-    public int goldReward;
-    public int levelUpPoint;
-    public string[] itemRewards;
-    public string skillReward;
+    public int gold_Reward;
+    public int levelUp_Point;
+    public string[] item_Rewards;
+    public string skill_Reward;
 
     [Header("Clear Condition")]
-    public ClearConditionType clearType; // ✅ 복구!
-    public int targetKillCount;
+    public ClearConditionType clear_Type; // ✅ 복구!
+    public int target_KillCount;
 
     [Header("Spawn List")]
-    public List<EnemySpawnInfo> enemySpawnList; // ✅ 적 소환 리스트
+    public List<EnemySpawnInfo> enemy_SpawnList; // ✅ 적 소환 리스트
 
-    [System.NonSerialized] public Sprite stageIcon; 
+
+    [System.NonSerialized] public Sprite stage_Icon; 
+
 }
 
 
@@ -59,8 +62,9 @@ public class StageData
 public class EnemySpawnInfo
 {
     public string enemy_ID;
-    public Vector3 spawnPos;
-    public float spawnRotation;
-    public SpawnConditionType conditionType;
-    public float conditionValue;
+    public bool isBoss;
+    public Vector3 spawn_Pos;
+    public float spawn_Rotation;
+    public SpawnConditionType condition_Type;
+    public float condition_Value;
 }

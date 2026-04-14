@@ -1,0 +1,8 @@
+{
+  "enemyCombo": [
+    {
+      "enemy_Combo_ID": "Base_Combo_ID",
+      "motion_Steps_ID": ["Attack1_ID", "Attack2_ID", "Attack3_ID"]
+    }
+  ]
+}

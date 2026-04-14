@@ -1,52 +1,23 @@
-// PlayerAttackState.cs
-
 using UnityEngine;
 
 public class PlayerAttackState : PlayerState
 {
-    // ========================================
-    // Components
-    // ========================================
-
     private Animator animator;
     private Rigidbody rb;
     private SocketManager socketManager;
 
-    // ========================================
-    // Animation
-    // ========================================
-
     private readonly int isMovingHash = Animator.StringToHash("IsMoving");
     private bool animationStarted = false;
-
-    // ========================================
-    // Timing
-    // ========================================
-
     private float attackTimer = 0f;
 
-    // ========== 추가: Hitbox 타이밍 ==========
-    private bool hitboxFired = false;  // ← 추가!
-    private float hitboxTiming = 0.5f;  // ← 추가!
-
-    // ========================================
-    // Combo State
-    // ========================================
-
-    private bool isComboFinished = false;
-
-    // ========================================
-    // Rotation Limit
-    // ========================================
+    private bool canProcessNext = false;
+    private bool inputReceived = false;
+    private bool isLastInputPerfect = false;
 
     private float attackStartY;
     private const float MAX_ATTACK_ANGLE = 60f;
-    private float currentRotationY;
-    public override bool InterruptsCombo => false;
 
-    // ========================================
-    // Constructor
-    // ========================================
+    public override bool InterruptsCombo => false;
 
     public PlayerAttackState(PlayerController player) : base(player)
     {
@@ -55,183 +26,150 @@ public class PlayerAttackState : PlayerState
         socketManager = player.SocketManager;
     }
 
-    // ========================================
-    // State Lifecycle
-    // ========================================
-
     public override void Enter()
     {
         base.Enter();
-        Debug.Log("PlayerAttackState 진입");
+        animationStarted = false;
+        attackTimer = 0f;
+        canProcessNext = false;
+        inputReceived = false;
 
         animator.SetBool(isMovingHash, false);
         rb.velocity = Vector3.zero;
-
-        // 플래그 초기화
-        animationStarted = false;
-        isComboFinished = false;
-        attackTimer = 0f;
-
-        // 회전 초기화
+        
+        // 공격 시작 시점의 각도 저장
         attackStartY = player.Transform.eulerAngles.y;
-        currentRotationY = attackStartY;
 
-        // ========== 스킬 애니메이션 재생 ==========
-        AttackSkillData skill = socketManager.GetCurrentSkill(); 
+        PlayCurrentSkill();
 
-        if (skill != null)
+        if (player.ComboUI != null)
         {
-            animator.Play(skill.animationName);
-            Debug.Log($"공격: {skill.skillName} (지속: {skill.TotalTime}초, 타격: {skill.HitboxTime:F2}초)");
-        }
-        else
-        {
-            Debug.LogError("스킬이 없습니다!");
-            player.StateMachine.ChangeState(player.IdleState);
+            player.ComboUI.gameObject.SetActive(true);
+            player.ComboUI.RefreshPerfectZone();
         }
     }
 
     public override void Execute()
     {
-        // 공격 중 회전
         HandleRotationDuringAttack();
-
-        // 타이머 증가
         attackTimer += Time.fixedDeltaTime;
 
-        // ========== 스킬 가져오기 ==========
-        AttackSkillData skill = socketManager.GetCurrentSkill(); 
+        PlayerSkillData skill = socketManager.GetCurrentSkill();
+        if (skill == null) return;
 
-        if (skill == null)
+        if (!WaitForAnimationStart(animator, ref animationStarted, out var stateInfo)) return;
+
+        // 입력 가능 구간 (JSON 데이터 기반으로 확장 가능)
+        if (stateInfo.normalizedTime > 0.2f && stateInfo.normalizedTime < 0.95f)
         {
-            Debug.LogError("스킬 없음 → Idle");
-            player.StateMachine.ChangeState(player.IdleState);
+            canProcessNext = true;
+        }
+
+        // 다음 타수 진행
+        if (inputReceived && stateInfo.normalizedTime >= 0.7f)
+        {
+            PlayNextStep();
             return;
         }
 
-        // ========================================
-        // 애니메이션 시작 대기
-        // ========================================
-        if (!WaitForAnimationStart(animator, ref animationStarted, out var stateInfo))
-            return;
-
-        // ========================================
-        // Phase 1: 공격 중 (duration 전)
-        // ========================================
-        if (attackTimer < skill.duration)
-            return;
-
-        // ========================================
-        // Phase 2: 여유 시간 (duration ~ TotalTime)
-        // ========================================
-        if (attackTimer < skill.TotalTime)
-            return;
-
-        // ========================================
-        // Phase 3: 완료 (TotalTime 이상)
-        // ========================================
-
-        // 마지막 타 플래그 체크
-        if (isComboFinished)
+        // 콤보 종료 및 타임아웃 체크
+        if (stateInfo.normalizedTime >= 0.98f)
         {
-            if (stateInfo.normalizedTime >= 0.95f)
+            if (socketManager.IsComboComplete())
             {
-                Debug.Log("마지막 타 완료 → 피니셔");
-                player.StateMachine.ChangeState(player.FinisherState);
-                return;
-            }
-            return;
-        }
-
-        // 애니메이션 종료 체크
-        if (stateInfo.normalizedTime >= 0.95f)
-        {
-             if (socketManager.IsComboComplete())
-            {
-                Debug.Log("콤보 완료 → 피니셔");
                 player.StateMachine.ChangeState(player.FinisherState);
             }
-            else
+            else if (!inputReceived)
             {
-                Debug.Log("공격 종료 → Idle");
-                socketManager.ResetCombo();
-                player.StateMachine.ChangeState(player.IdleState);
+                // 애니메이션 길이 + 설정된 후딜레이(post_Delay) 체크
+                if (attackTimer >= stateInfo.length + skill.post_Delay)
+                {
+                    Debug.Log($"[Reset] 콤보 타임아웃");
+                    socketManager.ResetCombo();
+                    player.StateMachine.ChangeState(player.IdleState);
+                }
             }
         }
     }
 
-    public override void Exit()
+    private void PlayCurrentSkill()
     {
-        Debug.Log("PlayerAttackState 종료");
-
-        // ========== 안전장치: Hitbox 강제 종료 ==========
-        player.ForceDisableHitbox();  // ← 추가!
-
-        rb.angularVelocity = Vector3.zero;
+        PlayerSkillData skill = socketManager.GetCurrentSkill();
+        if (skill != null)
+        {
+            animator.Play(skill.animation_Name, 0, 0f);
+        }
+        else
+        {
+            player.StateMachine.ChangeState(player.IdleState);
+        }
     }
 
-    // ========================================
-    // Public Methods
-    // ========================================
-
-    public void PlayNextStep()
+    private void PlayNextStep()
     {
         animationStarted = false;
         attackTimer = 0f;
-        hitboxFired = false;  // ← 추가!
+        inputReceived = false;
+        canProcessNext = false;
+        PlayCurrentSkill();
+    }
 
-        attackStartY = player.Transform.eulerAngles.y;
-        currentRotationY = attackStartY;
+    public void RegisterInput()
+    {
+        inputReceived = true;
+        var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        float currentTime = stateInfo.normalizedTime % 1.0f;
 
-        AttackSkillData skill = socketManager.GetCurrentSkill();
+        PlayerSkillData skill = socketManager.GetCurrentSkill();
 
-        if (skill != null)
+        if (currentTime >= skill.perfect_Start && currentTime <= skill.perfect_End)
         {
-            hitboxTiming = skill.hitboxTiming;  // ← 추가!
-
-            animator.Play(skill.animationName, 0, 0f);
-            Debug.Log($"다음 타: {skill.skillName} (애니메이션: {skill.animationName})");
+            isLastInputPerfect = true;
+            Debug.Log("<color=cyan>✨ PERFECT! ✨</color>");
+        }
+        else
+        {
+            isLastInputPerfect = false;
         }
     }
 
-    public void OnComboFailed()
-    {
-        Debug.Log("콤보 실패! 현재 공격은 끝까지 재생");
-    }
-
-    // ========================================
-    // Private Methods
-    // ========================================
-
+    // [에러 해결된 회전 로직]
     private void HandleRotationDuringAttack()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
+        Vector3 moveInput = player.MoveInput; 
+        if (moveInput.sqrMagnitude < 0.01f) return;
 
-        if (horizontal == 0 && vertical == 0)
-            return;
+        if (player.CameraTransform == null) return;
 
-        Transform cameraTransform = player.CameraTransform;
-        if (cameraTransform == null)
-            return;
-
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
+        Vector3 forward = player.CameraTransform.forward;
+        Vector3 right = player.CameraTransform.right;
         forward.y = 0f;
         right.y = 0f;
         forward.Normalize();
         right.Normalize();
 
-        Vector3 targetDirection = forward * vertical + right * horizontal;
-        if (targetDirection == Vector3.zero)
-            return;
+        Vector3 desiredDirection = (forward * moveInput.z + right * moveInput.x).normalized;
+        
+        if (desiredDirection != Vector3.zero)
+        {
+            // Mathf.RadDeg로 오타 수정 완료
+            float targetAngle = Mathf.Atan2(desiredDirection.x, desiredDirection.z) * Mathf.Rad2Deg;
+            
+            // 시작 각도 기준으로 제한된 회전 적용
+            float angleDiff = Mathf.DeltaAngle(attackStartY, targetAngle);
+            angleDiff = Mathf.Clamp(angleDiff, -MAX_ATTACK_ANGLE, MAX_ATTACK_ANGLE);
+            
+            float finalAngle = attackStartY + angleDiff;
+            Quaternion targetRotation = Quaternion.Euler(0, finalAngle, 0);
 
-        float targetY = Quaternion.LookRotation(targetDirection).eulerAngles.y;
-        float deltaFromStart = Mathf.DeltaAngle(attackStartY, targetY);
-        float clampedDelta = Mathf.Clamp(deltaFromStart, -MAX_ATTACK_ANGLE, MAX_ATTACK_ANGLE);
-        float finalY = attackStartY + clampedDelta;
-
-        currentRotationY = Mathf.LerpAngle(currentRotationY, finalY, 10f * Time.fixedDeltaTime);
-        player.Transform.rotation = Quaternion.Euler(0f, currentRotationY, 0f);
+            player.Transform.rotation = Quaternion.Slerp(
+                player.Transform.rotation, 
+                targetRotation, 
+                Time.fixedDeltaTime * 10f
+            );
+        }
     }
+
+    // Controller에서 호출하는 입력 가능 여부 체크
+    public bool CanInputCombo() => canProcessNext && !inputReceived;
 }

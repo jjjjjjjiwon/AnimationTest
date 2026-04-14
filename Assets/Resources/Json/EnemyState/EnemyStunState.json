@@ -1,0 +1,10 @@
+{
+  "EnemyStunState": [  
+    {
+      "enemy_Stun_State_ID": "Base_Stun_ID",
+      "enemy_Stun_State_Name": "Base_Stun",
+      "animation_Name": "Base_Stun",
+      "stun_Timer": 10.0
+    }
+  ]
+}

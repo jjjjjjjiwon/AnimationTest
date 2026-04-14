@@ -1,0 +1,9 @@
+{
+  "EnemyDeathState": [  
+    {
+      "enemy_Death_State_ID": "Base_Death_ID",
+      "enemy_Death_State_Name": "Base_Death",
+      "animation_Name": "Base_Death"
+    }
+  ]
+}

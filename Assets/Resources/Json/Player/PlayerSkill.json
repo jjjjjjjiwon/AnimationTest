@@ -1,0 +1,104 @@
+{
+  "PlayerSkills": [
+    {
+      "player_Skill_ID": "Attack1_ID",
+      "type": "Attack",
+      "skill_Name": "Attack1",
+      "skill_Description": "Attack1 사용.",
+      "skill_Icon_Path": "Image/Skill_Icon/Skill1",
+      "Rarity": "Common",
+      "price": 0,
+
+      "animation_Name": "Attack1",
+      "coolTime": 0.0,
+      "post_Delay": 0.5,
+      "arrival_Direction": { "x": 0.0, "y": 0.0, "z": 1.0 },
+      "skill_Damage": 10.0,
+      "skill_Stun_Duration": 0.3,
+
+      "perfect_Start": 0.4,
+      "perfect_End": 0.6,
+      "perfect_Damage_Mult": 1.5,
+      "perfect_Stun_Add": 10.0,
+
+      "skill_Speed": 2.0,
+      "skill_Distance": 1.2,
+      "skill_IsInvincible": false
+    },
+    {
+      "player_Skill_ID": "Attack2_ID",
+      "type": "Attack",
+      "skill_Name": "Attack2",
+      "skill_Description": "Attack2 사용.",
+      "skill_Icon_Path": "Image/Skill_Icon/Skill2",
+      "Rarity": "Rare",
+      "price": 0,
+
+      "animation_Name": "Attack2",
+      "coolTime": 2.0,
+      "post_Delay": 0.8,
+      "arrival_Direction": { "x": 0.0, "y": 0.0, "z": 1.0 },
+      "skill_Damage": 25.0,
+      "skill_Stun_Duration": 1.0,
+
+      "perfect_Start": 0.6,
+      "perfect_End": 0.8,
+      "perfect_Damage_Mult": 2.0,
+      "perfect_Stun_Add": 30.0,
+
+      "skill_Speed": 1.0,
+      "skill_Distance": 0.8,
+      "skill_IsInvincible": false
+    },
+    {
+      "player_Skill_ID": "Attack3_ID",
+      "type": "Attack",
+      "skill_Name": "Attack3",
+      "skill_Description": "Attack3 사용.",
+      "skill_Icon_Path": "Image/Skill_Icon/Skill3",
+      "Rarity": "Common",
+      "price": 0,
+
+      "animation_Name": "Attack3",
+      "coolTime": 0.0,
+      "post_Delay": 0.5,
+      "arrival_Direction": { "x": 0.0, "y": 0.0, "z": 1.0 },
+      "skill_Damage": 10.0,
+      "skill_Stun_Duration": 0.3,
+
+      "perfect_Start": 0.4,
+      "perfect_End": 0.6,
+      "perfect_Damage_Mult": 1.5,
+      "perfect_Stun_Add": 10.0,
+
+      "skill_Speed": 2.0,
+      "skill_Distance": 1.2,
+      "skill_IsInvincible": false
+    },
+    {
+      "player_Skill_ID": "DASH_NORMAL_01",
+      "type": "Dash",
+      "skill_Name": "긴급 회피",
+      "skill_Description": "신속하게 몸을 날려 공격을 피합니다.",
+      "skill_Icon_Path": "Icons/Dash_Normal",
+      "Rarity": "Common",
+      "price": 500,
+
+      "animation_Name": "Dash_Roll",
+      "coolTime": 1.0,
+      "post_Delay": 0.2,
+      "arrival_Direction": { "x": 0.0, "y": 0.0, "z": 1.0 },
+      "skill_Damage": 0.0,
+      "skill_Stun_Duration": 0.0,
+
+      "perfect_Start": 0.0,
+      "perfect_End": 0.0,
+      "perfect_Damage_Mult": 1.0,
+      "perfect_Stun_Add": 0.0,
+
+      "skill_Speed": 12.0,
+      "skill_Distance": 4.0,
+      "skill_IsInvincible": true
+    }
+  ]
+}

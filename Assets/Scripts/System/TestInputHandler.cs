@@ -10,11 +10,13 @@ public class TestInputHandler : MonoBehaviour
     private PlayerController playerController;
     private PlayerData playerData;
 
+    private TestEnemyController testEnemyController;
+
     void Start()
     {
         // ⭐ 자동으로 찾기
         runtimeManager = RuntimeManager.Instance;
-        
+
         if (runtimeManager == null)
         {
             Debug.LogWarning("[TestInputHandler] RuntimeManager를 찾을 수 없습니다!");
@@ -43,26 +45,38 @@ public class TestInputHandler : MonoBehaviour
             Debug.Log($"[골드] +100 → 총 {runtimeManager.gold}G");
         }
 
-
-        // Z키: 플레이어 추가 스탯
-        if (Input.GetKeyDown(KeyCode.Z))
+        // L 키: 적 스턴
+        if (Input.GetKeyDown(KeyCode.L))
         {
-            if (playerController == null)
-                playerController = FindObjectOfType<PlayerController>();
-                
-            if (playerController != null)
+            // 1. 씬에 있는 모든 TestEnemyController를 배열로 가져옵니다.
+            TestEnemyController[] allEnemies = GameObject.FindObjectsByType<TestEnemyController>(FindObjectsSortMode.None);
+
+            if (allEnemies.Length > 0)
             {
-                Debug.Log("플레이어 스탯 포인트 +5");
-                playerController.AddStatPoints(5);
+                float testDamage = 10f;
+                float testAddStun = 0.5f;
+
+                // 2. 루프를 돌며 모든 적의 TakeDamage를 호출합니다.
+                foreach (var enemy in allEnemies)
+                {
+                    enemy.TakeDamage(testDamage, testAddStun);
+                }
+
+                Debug.Log($"[테스트] 총 {allEnemies.Length}명의 적에게 데미지를 전달했습니다.");
+            }
+            else
+            {
+                Debug.LogWarning("씬에 적이 하나도 없습니다!");
             }
         }
+
 
         // Y키: 플레이어 데미지
         if (Input.GetKeyDown(KeyCode.Y))
         {
             if (playerController == null)
                 playerController = FindObjectOfType<PlayerController>();
-                
+
             if (playerController != null)
             {
                 playerController.TakeDamage(10);
@@ -74,10 +88,23 @@ public class TestInputHandler : MonoBehaviour
         {
             if (playerData == null)
                 playerData = FindObjectOfType<PlayerData>();
-                
+
             if (playerData != null && playerData.stats != null)
             {
                 playerData.stats.PrintStats();
+            }
+        }
+
+        // Z키: 플레이어 추가 스탯
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            if (playerController == null)
+                playerController = FindObjectOfType<PlayerController>();
+
+            if (playerController != null)
+            {
+                Debug.Log("플레이어 스탯 포인트 +5");
+                playerController.AddStatPoints(5);
             }
         }
 

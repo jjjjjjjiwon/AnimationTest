@@ -1,64 +1,48 @@
 {
   "upgrades": [
     {
-      "bossId": "flame_titan",
-      "upgradeID": "health_20",
-      "upgradeName": "체력 강화",
-      "upgradeDescription": "보스 체력 +20%",
-      "upgradeType": "stat",
-      "statType": "health",
-      "value": 0.2,
-      "abilityID": ""
+      "boss_ID": "flame_titan",
+      "upgrade_ID": "ft_hp_01",
+      "upgrade_Name": "고밀도 장갑",
+      "upgrade_Description": "최대 체력 20% 증가",
+      "upgrade_Type": "stat",
+      "target_Action": "none",
+      "ability_ID": "",
+      "stat_Type": "health",
+      "value": 0.2
     },
     {
-      "bossId": "flame_titan",
-      "upgradeID": "teleport",
-      "upgradeName": "순간 이동",
-      "upgradeDescription": "대쉬 대신 순간 이동 사용",
-      "upgradeType": "ability",
-      "statType": "",
-      "value": 0,
-      "abilityID": "teleport"
+      "boss_ID": "flame_titan",
+      "upgrade_ID": "ft_tp_01",
+      "upgrade_Name": "차원 간섭",
+      "upgrade_Description": "대쉬가 순간 이동으로 변경",
+      "upgrade_Type": "ability",
+      "target_Action": "teleport",
+      "ability_ID": "Base_Teleport_ID",
+      "stat_Type": "none",
+      "value": 0
     },
     {
-      "bossId": "flame_titan",
-      "upgradeID": "none",
-      "upgradeName": "강화 없음",
-      "upgradeDescription": "보스를 강화하지 않습니다",
-      "upgradeType": "none",
-      "statType": "",
-      "value": 0,
-      "abilityID": ""
+      "boss_ID": "flame_titan",
+      "upgrade_ID": "ft_atk_01",
+      "upgrade_Name": "과열된 주먹",
+      "upgrade_Description": "공격력 15% 증가",
+      "upgrade_Type": "stat",
+      "target_Action": "none",
+      "ability_ID": "",
+      "stat_Type": "damage",
+      "value": 0.15
     },
     {
-      "bossId": "flame_titan",
-      "upgradeID": "speed_1",
-      "upgradeName": "속도 강화",
-      "upgradeDescription": "보스 속도 + 1%",
-      "upgradeType": "stat",
-      "statType": "MoveSpeed",
-      "value": 0.01,
-      "abilityID": ""
-    },
-    {
-      "bossId": "flame_titan",
-      "upgradeID": "damage_3",
-      "upgradeName": "데미지 강화",
-      "upgradeDescription": "보스 데미지 + 3%",
-      "upgradeType": "stat",
-      "statType": "Damage",
-      "value": 0.03,
-      "abilityID": ""
-    },
-    {
-      "bossId": "flame_titan",
-      "upgradeID": "rush",
-      "upgradeName": "러쉬",
-      "upgradeDescription": "RushRushRushRush",
-      "upgradeType": "ability",
-      "statType": "",
-      "value": 0,
-      "abilityID": "rush"
+      "boss_ID": "flame_titan",
+      "upgrade_ID": "ft_def_01",
+      "upgrade_Name": "냉각 장치",
+      "upgrade_Description": "방어력 +5 (고정치)",
+      "upgrade_Type": "stat",
+      "target_Action": "none",
+      "ability_ID": "",
+      "stat_Type": "defense",
+      "value": 5
     }
   ]
 }

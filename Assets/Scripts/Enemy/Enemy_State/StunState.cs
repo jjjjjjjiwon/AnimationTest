@@ -1,64 +1,70 @@
-// using UnityEngine;
+using UnityEngine;
 
-// /// <summary>
-// /// 기절 상태
-// /// 일정 시간 동안 기절 애니메이션 재생
-// /// 시간 경과 + 애니메이션 완료 시 IdleState로 복귀
-// /// </summary>
-// public class StunState : State
-// {
-//     private Animator animator;
-//     private float stunTimer; // 기절 경과 시간
-//     private bool hasStarted; // 애니메이션 시작 여부
+public class StunState : State
+{
+    private float remainingTime; // 남은 시간 (타이머)
+    private bool hasStarted;     // 애니메이션 재생 확인용
+    private string animName;     // 재생할 애니메이션 이름
 
-//     public StunState(IEnemy enemy) : base(enemy)
-//     {
-//         animator = enemy.Animator;
-//     }
+    // 외부에서 남은 시간을 조회하기 위한 속성 (Property)
+    public float CurrentRemainingTime => Mathf.Max(0, remainingTime);
 
-//     public override void Enter()
-//     {
-//         hasStarted = false; // 애니메이션 시작 플래그 리셋
-//         stunTimer = 0f; // 타이머 초기화
+    public StunState(IEnemy enemy, float duration) : base(enemy)
+    {
+        this.remainingTime = duration;
+        this.animName = enemy.DataPackage.stunData.animation_Name;
+    }
 
-//         // 기절 애니메이션 시작
-//         animator.SetTrigger(AnimationConstants.STUN_TRIGGER);
+    public override void Enter()
+    {
+        hasStarted = false;
 
-//         // 움직임 정지
-//         enemy.Rigidbody.velocity = new Vector3(0, enemy.Rigidbody.velocity.y, 0);
-//     }
+        // 리액션 재생 및 물리 정지
+        PlayStunAnimation();
+        enemy.EnemyRigidbody.velocity = Vector3.zero;
 
-//     public override void Execute()
-//     {
-//         // 기절 중 움직임 방지 (매 프레임)
-//         enemy.Rigidbody.velocity = new Vector3(0, enemy.Rigidbody.velocity.y, 0);
+        Debug.Log($"<color=purple>[Stun 진입]</color> 설정 시간: {remainingTime}초");
+    }
 
-//         // ========== 1. 애니메이션 시작 대기 ==========
-//         if (!WaitForAnimationStart(animator, ref hasStarted, out AnimatorStateInfo stateInfo))
-//         {
-//             // 아직 기절 애니메이션 시작 안 됨 (Move 중)
-//             return;
-//         }
+    public override void Execute()
+    {
+        // 1. 타이머 감소
+        remainingTime -= Time.deltaTime;
 
-//         // ========== 2. 기절 시간 측정 ==========
-//         stunTimer += Time.deltaTime;
+        /* 잠시 주석 처리하여 애니메이션 로직 배제
+        if (!WaitForAnimationStart(enemy.EnemyAnimator, ref hasStarted, out AnimatorStateInfo stateInfo))
+        {
+            return;
+        }
+        */
 
-//         // ========== 3. 완료 조건 체크 ==========
-//         bool timeFinished = stunTimer >= enemy.Data.stunDuration;
-//         bool animationFinished = stateInfo.IsTag(AnimationConstants.MOVEMENT_TAG);
+        // 2. 오직 시간만 체크
+        if (remainingTime <= 0)
+        {
+            Debug.Log("<color=red>[Stun]</color> 시간 종료!");
+            enemy.SelectNextState();
+        }
+    }
 
-//         // 시간 경과 AND 애니메이션 완료 = 기절 완료
-//         if (timeFinished && animationFinished)
-//         {
-//             enemy.ChangeToIdle();
-//         }
+    public void AddStunTime(float extraTime)
+    {
+        // [핵심] 기존 남은 시간에 새로운 시간을 더함 (누적)
+        remainingTime += extraTime;
 
-//         // 기절 진행 중 (STUN_TAG)
-//     }
+        // 리액션 갱신을 위해 애니메이션 다시 재생
+        hasStarted = false;
+        PlayStunAnimation();
 
-//     public override void Exit()
-//     {
-//         // Trigger 리셋
-//         animator.ResetTrigger(AnimationConstants.STUN_TRIGGER);
-//     }
-// }
+        Debug.Log($"<color=purple>[Stun 연장]</color> +{extraTime}s | 현재 총 남은 시간: {remainingTime:F1}s");
+    }
+
+    private void PlayStunAnimation()
+    {
+        enemy.EnemyAnimator.Play(animName, 0, 0f);
+    }
+
+    public override void Exit()
+    {
+        Debug.Log("<color=purple>[Stun 해제]</color>");
+    }
+}

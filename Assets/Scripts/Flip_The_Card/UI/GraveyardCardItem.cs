@@ -14,12 +14,12 @@ public class GraveyardCardItem : MonoBehaviour
         if (stageData == null) return;
         
         // 이미지 설정 (Sprite 사용)
-        if (cardImage != null && stageData.stageIcon != null)
+        if (cardImage != null && stageData.stage_Icon != null)
         {
-            cardImage.sprite = stageData.stageIcon;
+            cardImage.sprite = stageData.stage_Icon;
         }
         
-        if (nameText != null) nameText.text = stageData.stageName;
-        if (descText != null) descText.text = stageData.stageDescription;
+        if (nameText != null) nameText.text = stageData.stage_Name;
+        if (descText != null) descText.text = stageData.stage_Description;
     }
 }

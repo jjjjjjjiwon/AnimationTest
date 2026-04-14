@@ -61,7 +61,7 @@ public class Boss_Upgreade_UI : MonoBehaviour
         foreach (var data in upgrades)
         {
 
-            if (data.Type == BossUpgradeType.none)
+            if (data.type == BossUpgradeType.none)
             {
                 continue;
             }
@@ -71,7 +71,7 @@ public class Boss_Upgreade_UI : MonoBehaviour
 
             if (txt != null)
             {
-                txt.text = $"{data.upgradeDescription}";
+                txt.text = $"{data.upgrade_Description}";
             }
         }
     }

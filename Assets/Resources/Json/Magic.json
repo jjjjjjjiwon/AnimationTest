@@ -1,0 +1,21 @@
+{
+    "magic" : [
+    {
+        "magic_Name" : "SummonElement",
+        "type" : "Element",
+        "Icon_Path" : "Image/Magic_Icon/Magic_1"
+    },
+    {
+        "magic_Name" : "MoveForward",
+        "type" : "Word",
+        "Icon_Path" : "Image/Magic_Icon/Magic_3"
+
+    },
+    {
+        "magic_Name" : "Split",
+        "type" : "Word",
+        "Icon_Path" : "Image/Magic_Icon/Magic_2"
+    }
+    
+    ]
+}

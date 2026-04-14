@@ -75,30 +75,30 @@ public class RewardUI : MonoBehaviour
     private void CreateRewardCards()
     {
         // 골드 카드
-        if (currentStage.goldReward > 0)
+        if (currentStage.gold_Reward > 0)
         {
             CreateGoldCard();
         }
 
         // 스탯 포인트 카드
-        if (currentStage.levelUpPoint > 0)
+        if (currentStage.levelUp_Point > 0)
         {
             CreateStatPointCard();
         }
 
         // 아이템 카드들
-        if (currentStage.itemRewards != null)
+        if (currentStage.item_Rewards != null)
         {
-            foreach (string itemID in currentStage.itemRewards)
+            foreach (string itemID in currentStage.item_Rewards)
             {
                 CreateItemCard(itemID);
             }
         }
 
         // 스킬 카드
-        if (!string.IsNullOrEmpty(currentStage.skillReward))
+        if (!string.IsNullOrEmpty(currentStage.skill_Reward))
         {
-            CreateSkillCard(currentStage.skillReward);
+            CreateSkillCard(currentStage.skill_Reward);
         }
     }
 
@@ -113,7 +113,7 @@ public class RewardUI : MonoBehaviour
 
         if (card != null)
         {
-            int goldAmount = currentStage.goldReward;
+            int goldAmount = currentStage.gold_Reward;
 
             card.Setup(
                 "골드",
@@ -133,7 +133,7 @@ public class RewardUI : MonoBehaviour
 
         if (card != null)
         {
-            int points = currentStage.levelUpPoint;
+            int points = currentStage.levelUp_Point;
 
             card.Setup(
                 "스탯 포인트",

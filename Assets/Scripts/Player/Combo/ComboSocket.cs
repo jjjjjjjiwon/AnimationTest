@@ -1,280 +1,185 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// 소켓 = 5개 슬롯의 묶음 = 1개의 콤보 세트
-/// 모든 슬롯의 입력키가 랜덤으로 배치됨
-/// </summary>
 [System.Serializable]
 public class ComboSocket
 {
-    /// <summary>소켓 이름 (식별용)</summary>
     public string socketName;
-
-    /// <summary>5개의 슬롯</summary>
     public List<ComboSlot> slots;
+    private int currentSlotIndex = -1;
+    private const int SLOT_COUNT = 5;
+    private float lastProcessTime = 0f;
 
-    /// <summary>현재 실행 중인 슬롯 인덱스 (-1 = 콤보 시작 전)</summary>
-    private int currentSlotIndex;
+    
 
-    private const int SLOT_COUNT = 5; // 슬롯의 수
-
-    // ========================================
-    // 생성자
-    // ========================================
-
-    /// <summary>
-    /// 완전 랜덤 입력키로 소켓 생성
-    /// 슬롯1~5 모두 랜덤 배치
-    /// </summary>
     public ComboSocket(string name = "")
     {
         socketName = string.IsNullOrEmpty(name) ? $"콤보 #{Random.Range(1000, 9999)}" : name;
-
         slots = new List<ComboSlot>();
         currentSlotIndex = -1;
 
-        // 5개 입력키 리스트
-        InputTypes[] inputPool =
-            {
-        InputTypes.LeftClick,
-        InputTypes.RightClick,
-        InputTypes.QKey,
-        InputTypes.EKey,
-        InputTypes.RKey
-    };
+        InputTypes[] inputPool = {
+            InputTypes.LeftClick,
+            InputTypes.RightClick,
+            InputTypes.QKey,
+            InputTypes.EKey,
+            InputTypes.RKey
+        };
 
-        // Fisher-Yates 셔플 (완전 랜덤 섞기)
         for (int i = 0; i < SLOT_COUNT; i++)
         {
-            InputTypes randomInput =
-                inputPool[Random.Range(0, inputPool.Length)];
-
+            InputTypes randomInput = inputPool[Random.Range(0, inputPool.Length)];
             slots.Add(new ComboSlot(randomInput));
         }
 
-        // 디버그 로그
-        string inputSequence = string.Join(" → ",
-            slots.ConvertAll(s => s.assignedInput.ToString()));
-
-        Debug.Log($"[소켓] '{socketName}' 생성 (완전 랜덤)");
-        Debug.Log($"[소켓] 입력키 배치: {inputSequence}");
+        string inputSequence = string.Join(" → ", slots.ConvertAll(s => s.assignedInput.ToString()));
+        Debug.Log($"[소켓] '{socketName}' 생성 완료: {inputSequence}");
     }
 
-    // ========================================
-    // 스킬 장착
-    // ========================================
+    // [수정] 스킬 장착 (ID 기반)
+public void EquipSkill(int index, PlayerSkillData skill)
+{
+    // 매개변수 index를 사용하도록 수정
+    if (index < 0 || index >= slots.Count) return;
 
-    /// <summary>
-    /// 특정 슬롯에 스킬 장착
-    /// </summary>
-    public void EquipSkill(int slotIndex, AttackSkillData skill)
+    // skill에서 ID를 가져와서 저장 (skillID가 아니라 skill.id 혹은 skill.skill_ID 등 정의된 이름 확인)
+    slots[index].equippedSkillID = skill.player_Skill_ID; 
+    
+    Debug.Log($"[소켓] {socketName} 슬롯{index + 1}에 {skill.skill_Name} 장착");
+}
+
+    // [수정] 입력키로 슬롯 찾아 스킬 장착 (ID 기반으로 변경)
+public void EquipSkillByInput(InputTypes input, PlayerSkillData skill)
+{
+    if (skill == null) return;
+
+    for (int i = 0; i < slots.Count; i++)
     {
-        if (slotIndex < 0 || slotIndex >= slots.Count)
+        if (slots[i].assignedInput == input)
         {
-            Debug.LogWarning($"[소켓] 잘못된 슬롯 인덱스: {slotIndex}");
+            // 이제 EquipSkill은 PlayerSkillData를 받으므로 객체를 그대로 넘깁니다.
+            EquipSkill(i, skill); 
             return;
         }
-
-        slots[slotIndex].equippedSkill = skill;
-
-        string skillName = skill != null ? skill.skillName : "없음";
-        Debug.Log($"[소켓] '{socketName}' 슬롯{slotIndex + 1} ({slots[slotIndex].assignedInput}): [{skillName}]");
     }
+    Debug.LogWarning($"[소켓] '{input}' 입력키를 가진 슬롯이 없습니다.");
+}
 
-    /// <summary>
-    /// 입력키로 슬롯 찾아서 스킬 장착
-    /// </summary>
-    public void EquipSkillByInput(InputTypes input, AttackSkillData skill)
-    {
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (slots[i].assignedInput == input)
-            {
-                EquipSkill(i, skill);
-                return;
-            }
-        }
-
-        Debug.LogWarning($"[소켓] '{input}' 입력키를 가진 슬롯 없음!");
-    }
-
-    // ========================================
-    // 슬롯 체크
-    // ========================================
-
-    /// <summary>
-    /// 모든 슬롯이 스킬로 채워져 있는가?
-    /// </summary>
     public bool IsFullyEquipped()
     {
         foreach (ComboSlot slot in slots)
         {
-            if (!slot.HasSkill())
-            {
-                return false;
-            }
+            if (!slot.HasSkill()) return false;
         }
         return true;
     }
 
-    /// <summary>
-    /// 비어있는 슬롯 개수
-    /// </summary>
     public int GetEmptySlotCount()
     {
         int count = 0;
         foreach (ComboSlot slot in slots)
         {
-            if (!slot.HasSkill())
-                count++;
+            if (!slot.HasSkill()) count++;
         }
         return count;
     }
 
-    // ========================================
-    // 콤보 진행
-    // ========================================
-
-    /// <summary>
-    /// 콤보 시작
-    /// </summary>
+    // [수정] 콤보 시작 시 로그 출력 방식 변경
     public bool StartCombo(InputTypes input)
     {
-        // 모든 슬롯 채워져 있는지 체크
         if (!IsFullyEquipped())
         {
-            int emptyCount = GetEmptySlotCount();
-            Debug.Log($"[소켓] 콤보 사용 불가! (빈 슬롯: {emptyCount}개)");
+            Debug.Log($"[소켓] 콤보 사용 불가 (빈 슬롯 존재)");
             return false;
         }
 
-        // 첫 번째 슬롯 확인
-        if (slots[0].assignedInput != input)
-        {
-            Debug.Log($"[소켓] 틀린 입력! [필요: {slots[0].assignedInput}] [입력: {input}]");
-            return false;
-        }
+        if (slots[0].assignedInput != input) return false;
 
         currentSlotIndex = 0;
-        Debug.Log($"[소켓] '{socketName}' 콤보 시작! [{slots[0].equippedSkill.skillName}]");
+        
+        // 데이터 로더에서 이름을 가져와서 로그 출력
+        var skillData = GetCurrentSkill();
+        string skillName = (skillData != null) ? skillData.skill_Name : slots[0].equippedSkillID;
+        Debug.Log($"[소켓] '{socketName}' 시작! 첫 스킬: {skillName}");
+        
         return true;
     }
 
-    /// <summary>
-    /// 콤보 이어가기
-    /// </summary>
     public bool ProcessNext(InputTypes input)
     {
-        int nextIndex = currentSlotIndex + 1;
+        if (Time.time - lastProcessTime < 0.1f) return false;
+        if (currentSlotIndex + 1 >= slots.Count) return false;
 
-        // 마지막 슬롯 체크
-        if (nextIndex >= slots.Count)
+        var nextSlot = slots[currentSlotIndex + 1];
+
+        if (nextSlot.assignedInput == input)
         {
-            Debug.Log($"[소켓] 마지막 슬롯!");
-            return false;
+            currentSlotIndex++;
+            lastProcessTime = Time.time;
+            Debug.Log($"[콤보 성공] {currentSlotIndex + 1}단계 진행");
+            return true;
         }
-
-        // 입력키 확인
-        if (slots[nextIndex].assignedInput != input)
-        {
-            Debug.Log($"[소켓] 틀린 입력! [필요: {slots[nextIndex].assignedInput}] [입력: {input}]");
-            return false;
-        }
-
-        currentSlotIndex = nextIndex;
-        Debug.Log($"[소켓] '{socketName}' 콤보 {currentSlotIndex + 1}타! [{slots[nextIndex].equippedSkill.skillName}]");
-        return true;
+        return false;
     }
 
-    /// <summary>
-    /// 콤보 리셋
-    /// </summary>
-    public void ResetCombo()
+    public void ResetCombo() => currentSlotIndex = -1;
+
+    public PlayerSkillData GetCurrentSkill()
     {
-        currentSlotIndex = -1;
+        if (currentSlotIndex < 0 || currentSlotIndex >= slots.Count) return null;
+        return PlayerSkillLoader.GetSkill(slots[currentSlotIndex].equippedSkillID);
     }
 
-    // ========================================
-    // 정보 조회
-    // ========================================
-
-    /// <summary>
-    /// 현재 슬롯의 스킬
-    /// </summary>
-    public AttackSkillData GetCurrentSkill()
-    {
-        if (currentSlotIndex < 0 || currentSlotIndex >= slots.Count)
-            return null;
-
-        return slots[currentSlotIndex].equippedSkill;
-    }
-
-    /// <summary>
-    /// 현재 슬롯의 입력키
-    /// </summary>
     public InputTypes GetCurrentInput()
     {
-        if (currentSlotIndex < 0 || currentSlotIndex >= slots.Count)
-            return InputTypes.None;
-
+        if (currentSlotIndex < 0 || currentSlotIndex >= slots.Count) return InputTypes.None;
         return slots[currentSlotIndex].assignedInput;
     }
 
-    /// <summary>
-    /// 콤보 완료 여부 (마지막 슬롯까지 실행)
-    /// </summary>
     public bool IsComboComplete()
     {
-        if (currentSlotIndex < 0)
-            return false;
-
-        Debug.Log($"콤보 값 : {currentSlotIndex + 1} =========================================");
+        if (currentSlotIndex < 0) return false;
         return currentSlotIndex + 1 >= slots.Count;
     }
 
-    /// <summary>
-    /// 현재 단계 (1부터 시작)
-    /// </summary>
-    public int GetCurrentStep()
+    public int GetCurrentStep() => currentSlotIndex + 1;
+    public ComboSlot GetSlot(int index) => (index >= 0 && index < slots.Count) ? slots[index] : null;
+    public int GetSlotCount() => slots.Count;
+
+    public List<PlayerSkillData> GetComboHistory()
     {
-        return currentSlotIndex + 1;
-    }
-
-    /// <summary>
-    /// 특정 슬롯 가져오기
-    /// </summary>
-    public ComboSlot GetSlot(int index)
-    {
-        if (index < 0 || index >= slots.Count)
-            return null;
-
-        return slots[index];
-    }
-
-    /// <summary>
-    /// 슬롯 개수
-    /// </summary>
-    public int GetSlotCount()
-    {
-        return slots.Count;
-    }
-
-    /// <summary>
-    /// 현재까지 사용한 스킬 히스토리
-    /// </summary>
-    public List<AttackSkillData> GetComboHistory()
-    {
-        List<AttackSkillData> history = new List<AttackSkillData>();
-
+        List<PlayerSkillData> history = new List<PlayerSkillData>();
         for (int i = 0; i <= currentSlotIndex; i++)
         {
             if (i < slots.Count && slots[i].HasSkill())
             {
-                history.Add(slots[i].equippedSkill);
+                history.Add(PlayerSkillLoader.GetSkill(slots[i].equippedSkillID));
             }
         }
-
         return history;
+    }
+
+    // ========================================
+    // UI 지원을 위한 추가 함수들
+    // ========================================
+
+    /// <summary>
+    /// UI에서 슬롯 리스트를 가져가기 위한 함수
+    /// </summary>
+    public List<ComboSlot> GetSlots()
+    {
+        return slots;
+    }
+
+    /// <summary>
+    /// 특정 인덱스의 스킬 데이터를 가져옴
+    /// </summary>
+    public PlayerSkillData GetSkillAt(int index)
+    {
+        if (index < 0 || index >= slots.Count) return null;
+        if (string.IsNullOrEmpty(slots[index].equippedSkillID)) return null;
+        
+        // 유저님의 프로젝트 구조에 맞게 PlayerSkillLoader를 사용합니다.
+        return PlayerSkillLoader.GetSkill(slots[index].equippedSkillID);
     }
 }

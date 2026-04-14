@@ -32,6 +32,10 @@ public class GameData : MonoBehaviour
     private List<BossJsonData> bossDefs = new List<BossJsonData>();
     private List<BossUpgradeJsonData> bossUpgrades = new List<BossUpgradeJsonData>();
 
+    [Header("Magic Data")]
+    private List<MagicData> magicDataList = new List<MagicData>();
+
+
     private void Awake()
     {
         if (Instance == null)
@@ -72,7 +76,7 @@ public class GameData : MonoBehaviour
         {
             clearedStages.Add(selected);
             selectedStages[index] = null;
-            Debug.Log($"[GameData] '{selected.stageName}' 묘지로 이동");
+            Debug.Log($"[GameData] '{selected.stage_Name}' 묘지로 이동");
         }
         else
         {
@@ -112,7 +116,7 @@ public class GameData : MonoBehaviour
             return null;
         }
 
-        var result = allStageData.Find(s => s != null && s.stageID == floor);
+        var result = allStageData.Find(s => s != null && s.stage_ID == floor);
 
         if (result == null)
             Debug.LogWarning($"[GameData] stageID {floor}를 찾을 수 없습니다!");
@@ -150,7 +154,7 @@ public class GameData : MonoBehaviour
             return null;
         }
 
-        return bossDefs.Find(b => b != null && b.bossId == bossId);
+        return bossDefs.Find(b => b != null && b.boss_ID == bossId);
     }
 
     /// <summary>bossId로 해당 보스에 적용 가능한 강화 목록 가져오기</summary>
@@ -167,7 +171,22 @@ public class GameData : MonoBehaviour
 
         // targetBossId가 비어있으면 공용 강화로 취급
         return bossUpgrades.FindAll(u =>
-            u != null && (string.IsNullOrEmpty(u.bossId) || u.bossId == bossId)
+            u != null && (string.IsNullOrEmpty(u.boss_ID) || u.boss_ID == bossId)
         );
     }
+
+    #region 마법
+
+    // 마법 데이터 저장 (로더에서 호출)
+    public void SetMagicDataList(List<MagicData> list)
+    {
+        magicDataList = list;
+    }
+
+    public List<MagicData> GetMagicDataList()
+    {
+        return magicDataList;
+    }
+
+    #endregion
 }

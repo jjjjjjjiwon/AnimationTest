@@ -17,7 +17,6 @@ public class BossUpgradeLoader : MonoBehaviour
             Debug.LogError($"[BossUpgradeLoader] JSON not found: Resources/{jsonPath}.json");
             return;
         }
-
         BossUpgradeJsonList list = JsonUtility.FromJson<BossUpgradeJsonList>(json.text);
         if (list == null || list.upgrades == null)
         {

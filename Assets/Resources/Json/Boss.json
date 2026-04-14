@@ -1,15 +1,23 @@
 {
   "boss": [
     {
-      "bossId": "flame_titan",
-      "bossName": "Flame Titan",
-      "prefabPath": "Boss/FlameTitan",
-      "baseHp": 5000,
-      "baseDamage": 35,
-      "baseMoveSpeed": 3.5,
-      "baseArmor": 10,
-      "abilityKeys": ["teleport"],
-      "patternKeys": ["slam"]
+      "boss_ID": "flame_titan",
+      "boss_Name": "Flame_Titan",
+
+      "prefab_Path": "Prefab/Boss/Flame_Titan",
+
+      "base_Health": 5000,
+      "base_Damage": 35,
+      "base_Speed": 2,
+      "base_Defense": 10,
+
+      "enemy_Idle_State_ID": "STAND_ID",
+      "enemy_Chase_State_ID": "Base_Chase_ID",
+      "enemy_Dash_State_ID": "",
+      "enemy_Teleport_State_ID": "Base_Teleport_ID",
+      "enemy_Combo_ID": ["Base_Combo_ID"],
+      "enemy_Stun_State_ID": "Base_Stun_ID",
+      "enemy_Death_State_ID": "Base_Death_ID"
     }
   ]
 }
