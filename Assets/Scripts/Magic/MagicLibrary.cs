@@ -6,201 +6,266 @@ public static class MagicLibrary
     // 마법의 오브젝트를 List로 기억
     private static List<MagicBase> activeMagics = new List<MagicBase>();
 
+    private static readonly Dictionary<string, Dictionary<string, float>> _wordStats = new Dictionary<string, Dictionary<string, float>>
+    {
+        { "Summon",      new Dictionary<string, float> { { "Dist", 5.0f } } },
+        { "Expansion",   new Dictionary<string, float> { { "GrowthRate", 0.8f }, { "MaxSize", 4.0f } } },
+        { "MoveForward", new Dictionary<string, float> { { "Speed", 10.0f } } },
+        { "Spiral",      new Dictionary<string, float> { { "Weight", 40.0f } } }, // 키: Weight
+        { "Split",       new Dictionary<string, float> { { "ScaleMult", 0.5f }, { "SpeedMult", 1.2f } } }
+    };
+
     public static void Execute(string magicName, Transform caster)
     {
+        // 로그에 SummonElement라고 뜨므로 이름을 맞춰줍니다.
         if (magicName == "SummonElement")
         {
             ClearAll();
-            var newMagic = SummonElement("SummonElement", caster);
-            if (newMagic != null) activeMagics.Add(newMagic);
+            var m = SummonElement(caster);
+            if (m != null) activeMagics.Add(m);
+        }
+        else if (magicName == "Gigantism")
+        {
+            foreach (var m in activeMagics) Gigantism(m);
         }
         else if (magicName == "MoveForward")
         {
             foreach (var m in activeMagics) MoveForward(m);
         }
+        else if (magicName == "Spiral")
+        {
+            foreach (var m in activeMagics) Spiral(m);
+        }
         else if (magicName == "Split")
         {
-            if (activeMagics.Count == 0) return;
-
-            List<MagicBase> parents = new List<MagicBase>(activeMagics);
-            List<MagicBase> nextGeneration = new List<MagicBase>();
-
-            foreach (var p in parents)
-            {
-                if (p == null) continue;
-                // 3. 분열된 자식들을 생성하고 리스트로 받아옴
-                List<MagicBase> children = Split(p);
-                nextGeneration.AddRange(children);
-
-                // 4. 부모는 임무를 마쳤으므로 삭제
-                Object.Destroy(p.gameObject);
-            }
-
-            // 5. 전체 명단을 다음 세대로 교체!
-            activeMagics = nextGeneration;
+            SplitAll();
         }
     }
 
-    private static readonly Dictionary<string, Dictionary<string, float>> _wordStats = new Dictionary<string, Dictionary<string, float>>
-    {
-        { "Summon",      new Dictionary<string, float> { { "Dist",  5.0f }} },
-        { "MoveForward", new Dictionary<string, float> { { "Speed", 10.0f } } },
-        { "Split",       new Dictionary<string, float> { { "ScaleMult", 0.5f }, { "SpeedMult", 1.2f } } }
-    };
-
-        private static void ClearAll()
+    private static void ClearAll()
     {
         foreach (var m in activeMagics)
             if (m != null) Object.Destroy(m.gameObject);
         activeMagics.Clear();
     }
 
-#region 소환
-    public static MagicBase SummonElement(string prefabName, Transform caster)
+    private static void SplitAll()
     {
-        GameObject prefab = Resources.Load<GameObject>($"Prefab/Magic/{prefabName}");
-        if (prefab == null) return null;
+        if (activeMagics.Count == 0) return;
 
-        // 💡 소환 위치 자체를 플레이어의 머리 높이 정도로 오프셋을 줍니다.
+        // 현재 리스트를 복사해서 반복문을 돌립니다 (리스트 변조 방지)
+        List<MagicBase> parents = new List<MagicBase>(activeMagics);
+        List<MagicBase> nextGeneration = new List<MagicBase>();
+
+        foreach (var p in parents)
+        {
+            if (p == null) continue;
+
+            // 💡 자식들을 생성하고 리스트에 추가
+            var children = Split(p);
+            nextGeneration.AddRange(children);
+
+            // 💡 부모는 소멸
+            Object.Destroy(p.gameObject);
+        }
+
+        // 💡 전체 마법 리스트를 자식 세대로 교체
+        activeMagics = nextGeneration;
+    }
+
+    #region 소환
+    public static MagicBase SummonElement(Transform caster)
+    {
+        // 💡 경로 확인: Resources/Prefab/Magic/SummonElement 인지 Element 인지 꼭 확인하세요!
+        GameObject prefab = Resources.Load<GameObject>("Prefab/Magic/SummonElement");
+
+        if (prefab == null)
+        {
+            Debug.LogError("마법 프리팹을 찾을 수 없습니다! 경로를 확인하세요.");
+            return null;
+        }
+
         Vector3 spawnPos = caster.position + (Vector3.up * 1.5f);
         GameObject obj = Object.Instantiate(prefab, spawnPos, caster.rotation);
 
         MagicBase mb = obj.GetComponent<MagicBase>();
 
+        // 💡 중요: Init을 해야 OnLogic에 '따라다니기' 대본이 들어갑니다.
+        mb.Init(caster);
+
         if (_wordStats.TryGetValue("Summon", out var stats))
             mb.followDistance = stats["Dist"];
 
-        mb.Init(caster);
         return mb;
     }
-#endregion
+    #endregion
 
-#region 나아가다
-    public static void MoveForward(MagicBase target)
+    #region 거대화
+    public static void Gigantism(MagicBase target)
     {
         if (target == null) return;
+        target.Launch();
 
-        if (_wordStats.TryGetValue("MoveForward", out var stats))
+        if (_wordStats.TryGetValue("Expansion", out var stats))
         {
-            target.Launch();
-            target.moveSpeed += stats["Speed"];
-
-            Vector3 shootDir = target.transform.forward;
-            shootDir.y = 0;
-            shootDir.Normalize();
+            float rate = stats["GrowthRate"];
+            float limit = stats["MaxSize"];
 
             target.AddLogic(() =>
             {
                 if (target == null) return;
-                target.transform.position += shootDir * target.moveSpeed * Time.deltaTime;
+
+                // 속도가 빠를수록 더 빨리 커지게 설정 (거리 기반 느낌)
+                // 속도가 0이면 아주 천천히, 속도가 있으면 그에 비례해 커집니다.
+                float currentSpeedFactor = Mathf.Max(1.0f, target.moveSpeed);
+                float growth = rate * currentSpeedFactor * Time.deltaTime;
+
+                Vector3 nextScale = target.transform.localScale + Vector3.one * growth;
+
+                // 최대 크기 제한
+                if (nextScale.x < limit)
+                {
+                    target.transform.localScale = nextScale;
+                }
+                else
+                {
+                    target.transform.localScale = Vector3.one * limit;
+                }
             });
         }
     }
-#endregion
 
-#region 분열
+    #endregion
+
+    #region 나아가다
+    public static void MoveForward(MagicBase target)
+    {
+        if (target == null) return;
+        target.Launch();
+
+        if (_wordStats.TryGetValue("MoveForward", out var stats))
+        {
+            float speedAmount = stats["Speed"];
+            target.moveSpeed += speedAmount; // 데이터 누적
+
+            // 💡 기존처럼 로직을 계속 추가 (누를수록 이 코드가 여러번 실행되어 빨라짐)
+            target.AddLogic(() =>
+            {
+                if (target == null) return;
+                // rotationWeight가 0이면 직선, 값이 있으면 나선 중 가속
+                if (target.rotationWeight == 0)
+                {
+                    // 직선 이동 (기존 방식)
+                    target.transform.position += target.transform.forward * speedAmount * Time.deltaTime;
+                }
+            });
+        }
+    }
+    #endregion
+
+    #region 나선
+    public static void Spiral(MagicBase target)
+    {
+        if (target == null) return;
+        target.Launch();
+
+        if (_wordStats.TryGetValue("Spiral", out var stats))
+        {
+            target.rotationWeight = stats["Weight"];
+
+            // 1. 발사 시점의 정보 고정
+            Vector3 startPos = target.transform.position;
+            Vector3 forwardX = target.transform.forward; // 진행 방향 (X축 역할)
+
+            // 2. 진행 방향에 수직인 바닥 쪽 방향 (Z축 역할)
+            Vector3 rightZ = Vector3.Cross(Vector3.up, forwardX).normalized;
+
+            float elapsedTime = 0f;
+
+            target.AddLogic(() =>
+            {
+                if (target == null) return;
+                elapsedTime += Time.deltaTime;
+
+                // [사용자님의 그림 2번: Y축 변화 없이 X, Z로만 그리는 나선]
+
+                // A. X축 전진 (중심선 이동)
+                float xDist = target.moveSpeed * elapsedTime;
+                Vector3 xPoint = startPos + (forwardX * xDist);
+
+                // B. 나선 반경 (속도에 비례해 넓어짐)
+                float radius = elapsedTime * (target.moveSpeed * 0.15f);
+
+                // C. 가변 각도 로직 (속도가 빠를수록 30도 -> 80도처럼 완만하게)
+                float frequency = 12.0f / (1.0f + target.moveSpeed * 0.1f);
+                float angle = elapsedTime * target.rotationWeight * frequency;
+                float rad = angle * Mathf.Deg2Rad;
+
+                // D. 위치 계산: 전진(X) + 좌우(Z)
+                // Y값은 startPos.y를 그대로 유지하거나, 아주 미세한 보정만 들어갑니다.
+                Vector3 zOffset = rightZ * Mathf.Sin(rad) * radius;
+
+                // X축 이동 성분에도 Cos을 주어 자연스러운 나선 곡선을 만듭니다.
+                Vector3 xOffset = forwardX * Mathf.Cos(rad) * radius;
+
+                target.transform.position = xPoint + xOffset + zOffset;
+
+                // 고개는 진행 축을 바라보게 정렬
+                target.transform.forward = forwardX;
+            });
+        }
+    }
+    #endregion
+
+    #region 분열
     public static List<MagicBase> Split(MagicBase target)
     {
         List<MagicBase> children = new List<MagicBase>();
         if (!_wordStats.TryGetValue("Split", out var stats)) return children;
 
         int splitCount = 3;
-        float scaleMult = stats["ScaleMult"];
-        float speedMult = stats["SpeedMult"];
-
         for (int i = 0; i < splitCount; i++)
         {
-            // 💡 1. 소환 위치에 약간의 오프셋(간격)을 줍니다. 
-            // 겹쳐 있지 않게 좌우/앞뒤로 살짝 벌려줍니다.
-            Vector3 spreadOffset = Quaternion.Euler(0, i * (360f / splitCount), 0) * Vector3.forward * 0.5f;
-            Vector3 spawnPos = target.transform.position + spreadOffset;
+            // 1. 계산: 이번 자식이 바라볼 각도 (360도를 등분)
+            float angle = i * (360f / splitCount);
+            Quaternion rot = Quaternion.Euler(0, angle, 0);
 
-            GameObject childObj = Object.Instantiate(target.gameObject, spawnPos, target.transform.rotation);
+            // 2. 객체 생성 (위치와 회전을 계산된 값으로 설정)
+            // rot * Vector3.forward를 통해 각기 다른 방향으로 0.5f만큼 떨어진 곳에 생성
+            GameObject childObj = Object.Instantiate(target.gameObject,
+                                                   target.transform.position + (rot * Vector3.forward * 0.5f),
+                                                   rot); // 💡 여기서 각 자식의 앞방향이 결정됩니다.
+
             MagicBase child = childObj.GetComponent<MagicBase>();
 
-            // 💡 2. 스케일 설정: 부모의 현재 스케일에 배율을 곱함
-            child.transform.localScale = target.transform.localScale * scaleMult;
-            child.moveSpeed = target.moveSpeed * speedMult;
+            // 3. 데이터 및 로직 상속
+            child.transform.localScale = target.transform.localScale * stats["ScaleMult"];
+            child.moveSpeed = target.moveSpeed * stats["SpeedMult"];
+            child.isLaunched = true;
+            child.caster = target.caster;
 
-            // 3. 상태 상속 로직
-            if (target.isLaunched)
+            // 💡 중요: 자식들에게 각자의 정면(forward)으로 나아가라는 명령 주입
+            float currentSpeed = child.moveSpeed;
+            child.AddLogic(() =>
             {
-                child.Launch();
-                // 각자 다른 방향으로 퍼져나가게 설정
-                Vector3 shootDir = (spawnPos - target.transform.position).normalized;
-                if (shootDir == Vector3.zero) shootDir = target.transform.forward;
-
-                child.AddLogic(() =>
-                {
-                    if (child == null) return;
-                    child.transform.position += shootDir * child.moveSpeed * Time.deltaTime;
-                });
-            }
-            else
-            {
-                child.Init(target.caster);
-            }
+                if (child == null) return;
+                // 이제 각 자식은 Instantiate 때 설정된 '자신의 정면'으로 날아갑니다.
+                child.transform.position += child.transform.forward * currentSpeed * Time.deltaTime;
+            });
 
             children.Add(child);
         }
-
-        Debug.Log($"{splitCount}개로 분열 완료!");
         return children;
     }
-#endregion
 
-#region 역행
-    private static void Rewind(MagicBase target)
-    {
-        
-    }
+
+
     #endregion
 
 
-#region 나선
-    public static void Spiral(MagicBase target, bool isClockwise = true)
-    {
-        if (target == null) return;
 
-        target.Launch();
-        // 데이터 시트에서 속도와 회전 반경 등을 가져온다고 가정
-        float speed = 5.0f;
-        float spiralRadius = 2.0f; // 원의 크기
-        float spiralSpeed = 10.0f; // 회전 속도
 
-        Vector3 forwardDir = target.transform.forward;
-        Vector3 rightDir = target.transform.right;
-        Vector3 upDir = target.transform.up;
 
-        float elapsedTime = 0f;
-        int direction = isClockwise ? 1 : -1;
-
-        target.AddLogic(() =>
-        {
-            if (target == null) return;
-            elapsedTime += Time.deltaTime;
-
-            // 1. 기준점 이동 (중심축이 앞으로 나아감)
-            Vector3 centerPos = forwardDir * speed * Time.deltaTime;
-
-            // 2. 나선 회전 계산 (Sin, Cos)
-            // 시간에 따라 Right와 Up 방향으로 위치를 변형
-            float x = Mathf.Cos(elapsedTime * spiralSpeed) * spiralRadius;
-            float y = Mathf.Sin(elapsedTime * spiralSpeed) * spiralRadius * direction;
-
-            // 새로운 위치 = 현재 위치 + 전진량 + (회전 보정치)
-            // 다만 단순히 더하면 축이 꼬이므로, '중심축'을 기준으로 오프셋을 계산하는 게 깔끔합니다.
-            Vector3 offset = (rightDir * x) + (upDir * y);
-
-            // 실제 이동: 축 방향 전진 + 회전 오프셋 적용
-            // (이 방식은 물체가 나선을 그리며 '진행 방향'을 바라보게 하려면 추가 회전이 필요합니다)
-            target.transform.position += centerPos + (offset * 0.1f); // 0.1f는 부드러운 전이를 위한 계수
-
-            // 3. 방향 정렬 (나선 궤적의 접선 방향을 바라보게 함)
-            target.transform.forward = forwardDir; // 일단은 중심축 유지
-        });
-    }
-#endregion
 
 
 }

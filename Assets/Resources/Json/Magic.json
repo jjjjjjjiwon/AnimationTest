@@ -15,6 +15,16 @@
         "magic_Name" : "Split",
         "type" : "Word",
         "Icon_Path" : "Image/Magic_Icon/Magic_2"
+    },
+    {
+        "magic_Name" : "Spiral",
+        "type" : "Word",
+        "Icon_Path" : "Image/Magic_Icon/Spiral"
+    },
+    {
+        "magic_Name" : "Gigantism",
+        "type" : "Word",
+        "Icon_Path" : "Image/Magic_Icon/Gigantism"
     }
     
     ]

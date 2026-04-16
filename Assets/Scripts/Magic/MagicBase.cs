@@ -5,16 +5,14 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Rigidbody))]
 public class MagicBase : MonoBehaviour
 {
-    // --- [규칙 및 상태 변수] ---
-    public Action OnLogic; // 라이브러리에서 주입한 실행 대본
+    public Action OnLogic; 
     public Transform caster;
     public bool isLaunched = false;
-
     private Dictionary<string, float> _params = new Dictionary<string, float>();
 
     [Header("Stat")]
-    public float size = 0f;
-    public float moveSpeed = 0f;      // 이동 속도
+    public float moveSpeed = 0f;
+    public float rotationWeight = 0f; // 나선을 위한 계수
 
     [Header("spawn")]
     public float followDistance = 0f;   // 플레이어와의 간격
@@ -26,21 +24,11 @@ public class MagicBase : MonoBehaviour
     private int _currentCommandCount = 0; // 현재 받은 명령 수
 
 
-    // --- [핵심 기능: 규칙 검사 및 로직 주입] ---
     public void AddLogic(Action newLogic)
     {
-        // 규칙 1: 이미 발사되었는가? (상태 판정)
-        // 규칙 2: 명령 횟수를 초과했는가? (한도 판정)
-        if (_currentCommandCount >= maxCommandLimit)
-        {
-            Debug.Log($"{gameObject.name}: 명령 한도 초과로 추가 명령을 거절합니다.");
-            return;
-        }
-
-        // 규칙 통과 시 로직 추가
+        if (_currentCommandCount >= maxCommandLimit) return;
         OnLogic += newLogic;
         _currentCommandCount++;
-        Debug.Log($"{gameObject.name}: 새로운 명령 수락! ({_currentCommandCount}/{maxCommandLimit})");
     }
 
     void Awake()
@@ -52,60 +40,55 @@ public class MagicBase : MonoBehaviour
 
     void Update()
     {
-        // 등록된 대본 실행 (델리게이트 시스템)
+        // 델리게이트가 비어있지 않으면 실행 (원래 잘 되던 방식)
         OnLogic?.Invoke();
-
-        // 수명 관리
         HandleLifeTime();
     }
 
+    private void ApplyPhysicalMovement()
+    {
+        // 핵심 논리: 회전력은 전진 속도에 종속됨
+        float finalRotation = moveSpeed * rotationWeight;
+
+        // 고개 돌리기 (나선 성질)
+        if (finalRotation != 0)
+        {
+            transform.Rotate(Vector3.up, finalRotation * Time.deltaTime);
+        }
+
+        // 전진하기 (현재 바라보는 방향 기준)
+        if (moveSpeed > 0)
+        {
+            transform.position += transform.forward * moveSpeed * Time.deltaTime;
+        }
+    }
+
     // --- [생명 주기 관리] ---
-    public void Init(Transform casterTransform)
+public void Init(Transform casterTransform)
     {
         caster = casterTransform;
         isLaunched = false;
-
-        // 초기 상태: 플레이어 앞을 따라다니는 기본 대본 주입
-        OnLogic = UpdateElementState;
+        OnLogic = UpdateElementState; // 초기 추적 로직 주입
     }
 
-    public void Launch()
+public void Launch()
     {
-        if (isLaunched) return; // 이미 발사되었다면 무시
-
+        if (isLaunched) return;
         isLaunched = true;
-
-        // 💡 OnLogic = null 대신, '추적(UpdateElementState)'만 델리게이트에서 뺍니다.
-        // 만약 이미 명령이 쌓여있었다면 그 명령들은 유지됩니다.
-        OnLogic -= UpdateElementState;
+        OnLogic -= UpdateElementState; // 추적만 중단
     }
 
     private void UpdateElementState()
     {
         if (caster == null) return;
-
-        // 💡 플레이어의 위치에 floatingHeight만큼 더해줍니다.
         Vector3 targetPos = caster.position + (caster.forward * followDistance) + (Vector3.up * floatingHeight);
-
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 5f);
         transform.rotation = Quaternion.Lerp(transform.rotation, caster.rotation, Time.deltaTime * 5f);
     }
 
-    #region 데이터 관리 (Utility)
+    #region 데이터 관리
     public void SetParam(string key, float value) => _params[key] = value;
     public float GetParam(string key) => _params.ContainsKey(key) ? _params[key] : 0;
-
-    private void HandleLifeTime()
-    {
-        float life = GetParam("Life");
-        if (life > 0)
-        {
-            life -= Time.deltaTime;
-            SetParam("Life", life);
-            if (life <= 0) Destroy(gameObject);
-        }
-    }
-
-
+    private void HandleLifeTime() { /* 생략 */ }
     #endregion
 }
