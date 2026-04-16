@@ -312,11 +312,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMagicInput()
     {
-        // Q, W, E, R 입력을 받아서 해당 슬롯 번호를 실행 함수로 넘깁니다.
+        // Q,E, R 입력을 받아서 해당 슬롯 번호를 실행 함수로 넘깁니다.
         if (Input.GetKeyDown(KeyCode.Q)) ExecuteSlot(0);
         if (Input.GetKeyDown(KeyCode.E)) ExecuteSlot(1);
         if (Input.GetKeyDown(KeyCode.R)) ExecuteSlot(2);
         if (Input.GetKeyDown(KeyCode.T)) ExecuteSlot(3);
+        if (Input.GetKeyDown(KeyCode.LeftShift)) ExecuteSlot(4);
+        if (Input.GetKeyDown(KeyCode.LeftControl)) ExecuteSlot(5);
     }
 
     private void ExecuteSlot(int slotIndex)

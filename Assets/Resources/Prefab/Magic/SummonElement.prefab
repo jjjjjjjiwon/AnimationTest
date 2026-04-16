@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.576, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -121,8 +121,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   caster: {fileID: 0}
   isLaunched: 0
-  size: 0
   moveSpeed: 0
+  rotationWeight: 0
   followDistance: 0
   floatingHeight: 1.5
   maxCommandLimit: 5

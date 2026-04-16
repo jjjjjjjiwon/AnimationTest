@@ -133,7 +133,7 @@
       "stage_Description": "There are a lot of trees",
       "difficulty": 1,
 
-      "icon_Path": "Image/StageIcons/forest",
+      "icon_Path": "Image/StageIcons/Forest",
       "scene_Name": "Stage_Forest",
 
       "isBossStage": false,

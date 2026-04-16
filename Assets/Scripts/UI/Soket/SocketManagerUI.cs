@@ -309,7 +309,7 @@ private void SetMode(bool magicMode)
     magicSlots.Clear();
 
     // 2. 9개의 슬롯을 새로 생성 (Q~Space)
-    string[] keyNames = { "Q", "E", "R", "F", "Space" };
+    string[] keyNames = { "Q", "E", "R", "T", "Shift", "Ctrl" };
     for (int i = 0; i < 9; i++)
     {
         // 프리펩 생성
