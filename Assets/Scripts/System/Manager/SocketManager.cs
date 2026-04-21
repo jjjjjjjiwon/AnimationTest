@@ -336,5 +336,17 @@ public class SocketManager
         // ComboSocket에서 이미 사용 중인 PlayerSkillLoader를 그대로 활용합니다.
         return PlayerSkillLoader.GetSkill(skillID);
     }
+
+    /// <summary>
+    /// UI용 소켓 추가 함수 (성공 여부 반환)
+    /// </summary>
+    public bool AddSocket()
+    {
+        // AcquireNewSocket을 호출하여 실제 생성 시도
+        ComboSocket newSocket = AcquireNewSocket();
+        
+        // 생성에 성공했다면(null이 아니라면) true 반환
+        return newSocket != null;
+    }
     
 }

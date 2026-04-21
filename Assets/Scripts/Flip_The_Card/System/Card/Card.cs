@@ -60,7 +60,6 @@ public class Card : MonoBehaviour
             Debug.LogError("CardManager가 데이터를 안 줬어!");
             return;
         }
-        Debug.LogError("4444444444444444444444444444444444444444444");
         stageData = data;
         cardIndex = index;  // 인덱스 저장
         SetupFrontSide();

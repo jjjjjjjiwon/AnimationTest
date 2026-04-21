@@ -222,7 +222,7 @@ public void RefreshMagicWordInventoryUI()
         SkillSlotUI slotUI = slotObj.GetComponent<SkillSlotUI>();
         
         // 여기서 실제로 5번 도는지 확인
-        Debug.Log($"[MagicUI] 슬롯 생성 중: {magic.magic_Name}");
+        Debug.Log($"[MagicUI] 슬롯 생성 중: {magic.magicName}");
         
         slotUI.Initialize(magic, this);
         skillSlotUIs.Add(slotUI);
@@ -282,7 +282,7 @@ public void RefreshMagicWordInventoryUI()
 
             // 2. UI 비주얼만 즉시 갱신 (아이콘 등)
             UpdateMagicSlotsVisuals();
-            Debug.Log($"[UI] {selectedSlotIndex}번 슬롯에 마법 '{magicSkill.magic_Name}' 장착 완료!");
+            Debug.Log($"[UI] {selectedSlotIndex}번 슬롯에 마법 '{magicSkill.magicName}' 장착 완료!");
         }
     }
     // Start 함수나 초기화 시점에 한 번 실행
@@ -327,6 +327,26 @@ public void RefreshMagicSocketUI()
         magicSlots.Add(slotUI);
     }
 }
+public void OnAddSocketClick()
+    {
+        // 1. 데이터 소스(RuntimeManager -> SocketManager) 확인
+        if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null) return;
+
+        // 2. 소켓 추가 시도 및 결과 확인
+        bool isAdded = RuntimeManager.Instance.socketManager.AddSocket();
+
+        if (isAdded)
+        {
+            // 3. 성공 시 UI 리스트 갱신
+            RefreshSocketUI();
+            Debug.Log("[SocketUI] 새로운 콤보 소켓이 해금되었습니다.");
+        }
+        else
+        {
+            // 최대 개수(5개) 초과 시 알림
+            Debug.LogWarning("[SocketUI] 소켓을 더 이상 추가할 수 없습니다 (최대 5개).");
+        }
+    }
 
 
 

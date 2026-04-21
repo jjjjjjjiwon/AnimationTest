@@ -1,30 +1,34 @@
 {
     "magic" : [
     {
-        "magic_Name" : "SummonElement",
+        "magicName" : "SummonElement",
+        "Icon_Path" : "Image/Magic_Icon/Magic_1",
         "type" : "Element",
-        "Icon_Path" : "Image/Magic_Icon/Magic_1"
+        "magicCost" : 10
     },
     {
-        "magic_Name" : "MoveForward",
+        "magicName" : "MoveForward",
+        "Icon_Path" : "Image/Magic_Icon/Magic_3",
         "type" : "Word",
-        "Icon_Path" : "Image/Magic_Icon/Magic_3"
-
+        "magicCost" : 10
     },
     {
-        "magic_Name" : "Split",
+        "magicName" : "Split",
+        "Icon_Path" : "Image/Magic_Icon/Magic_2",
         "type" : "Word",
-        "Icon_Path" : "Image/Magic_Icon/Magic_2"
+        "magicCost" : 10
     },
     {
-        "magic_Name" : "Spiral",
+        "magicName" : "Spiral",
+        "Icon_Path" : "Image/Magic_Icon/Spiral",
         "type" : "Word",
-        "Icon_Path" : "Image/Magic_Icon/Spiral"
+        "magicCost" : 10
     },
     {
-        "magic_Name" : "Gigantism",
+        "magicName" : "Gigantism",
+        "Icon_Path" : "Image/Magic_Icon/Gigantism",
         "type" : "Word",
-        "Icon_Path" : "Image/Magic_Icon/Gigantism"
+        "magicCost" : 10
     }
     
     ]

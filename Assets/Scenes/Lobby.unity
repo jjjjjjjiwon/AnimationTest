@@ -9754,7 +9754,7 @@ MonoBehaviour:
   uiPanel: {fileID: 1989116463}
   socketContainer: {fileID: 1345881337}
   skillContainer: {fileID: 1152903816}
-  addSocketButton: {fileID: 0}
+  addSocketButton: {fileID: 1419187751}
   socketSlotPrefab: {fileID: 5049900535300199267, guid: bd2eca9acb13c244db578ca3ad78793a, type: 3}
   skillSlotPrefab: {fileID: 7770823466025672636, guid: 5de87a57b0ff56e43b7caadd4cf1cff1, type: 3}
   magicSlotPrefab: {fileID: 3608750731565890721, guid: 2bb1b1d359dc50f4e9f86aba7b5c1226, type: 3}

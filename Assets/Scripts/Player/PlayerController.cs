@@ -334,12 +334,12 @@ public class PlayerController : MonoBehaviour
         // UI에서 세팅한 데이터가 여기로 들어오는지 체크하는 로그를 넣습니다.
         if (RuntimeManager.Instance.EquipedMagics.TryGetValue(slotIndex, out MagicData data))
         {
-            if (data != null && !string.IsNullOrEmpty(data.magic_Name))
+            if (data != null && !string.IsNullOrEmpty(data.magicName))
             {
-                Debug.Log($"[Magic] {slotIndex}번 슬롯 실행: {data.magic_Name}");
+                Debug.Log($"[Magic] {slotIndex}번 슬롯 실행: {data.magicName}");
 
                 // 3. [핵심] 라이브러리에 이름 전달
-                MagicLibrary.Execute(data.magic_Name, transform);
+                MagicLibrary.Execute(data.magicName, transform);
             }
             else
             {

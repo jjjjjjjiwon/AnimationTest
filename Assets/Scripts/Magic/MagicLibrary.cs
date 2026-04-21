@@ -15,7 +15,7 @@ public static class MagicLibrary
         { "Split",       new Dictionary<string, float> { { "ScaleMult", 0.5f }, { "SpeedMult", 1.2f } } }
     };
 
-    public static void Execute(string magicName, Transform caster)
+public static void Execute(string magicName, Transform caster)
     {
         // 로그에 SummonElement라고 뜨므로 이름을 맞춰줍니다.
         if (magicName == "SummonElement")

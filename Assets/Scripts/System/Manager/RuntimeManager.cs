@@ -137,7 +137,7 @@ public class RuntimeManager : MonoBehaviour
         else
             EquipedMagics.Add(index, data);
             
-        Debug.Log($"[RuntimeManager] {index}번 슬롯에 {data.magic_Name} 저장됨");
+        Debug.Log($"[RuntimeManager] {index}번 슬롯에 {data.magicName} 저장됨");
     }
 
 #endregion

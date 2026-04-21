@@ -13,9 +13,10 @@ public enum magic_Type
 [Serializable]
 public class MagicData
 {
-    public string magic_Name;
-    public magic_Type type;
+    public string magicName;
     public string Icon_Path;   
+    public magic_Type type;
+    public float magicCost;
 }
 
 [Serializable]
