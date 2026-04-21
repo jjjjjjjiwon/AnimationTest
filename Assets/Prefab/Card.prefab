@@ -175,7 +175,7 @@ MonoBehaviour:
   normalMaterial: {fileID: 2100000, guid: 7cb3148d93dc09f439033e8bfa583351, type: 2}
   highlightMaterial: {fileID: 2100000, guid: 69d76bb51edc37f46b12b57c6b374ff9, type: 2}
   flipDuration: 0.5
-  forntName: {fileID: 3407895843698753082}
+  temporaryName: {fileID: 3407895843698753082}
 --- !u!65 &7613489601247275422
 BoxCollider:
   m_ObjectHideFlags: 0

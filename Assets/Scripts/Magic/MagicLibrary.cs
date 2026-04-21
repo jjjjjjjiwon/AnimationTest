@@ -9,7 +9,7 @@ public static class MagicLibrary
     private static readonly Dictionary<string, Dictionary<string, float>> _wordStats = new Dictionary<string, Dictionary<string, float>>
     {
         { "Summon",      new Dictionary<string, float> { { "Dist", 5.0f } } },
-        { "Expansion",   new Dictionary<string, float> { { "GrowthRate", 0.8f }, { "MaxSize", 4.0f } } },
+        { "Gigantism",   new Dictionary<string, float> { { "GrowthRate", 0.05f }, { "MaxSize", 30.0f } } },
         { "MoveForward", new Dictionary<string, float> { { "Speed", 10.0f } } },
         { "Spiral",      new Dictionary<string, float> { { "Weight", 40.0f } } }, // 키: Weight
         { "Split",       new Dictionary<string, float> { { "ScaleMult", 0.5f }, { "SpeedMult", 1.2f } } }
@@ -104,34 +104,35 @@ public static class MagicLibrary
     public static void Gigantism(MagicBase target)
     {
         if (target == null) return;
-        target.Launch();
 
-        if (_wordStats.TryGetValue("Expansion", out var stats))
+        if (_wordStats.TryGetValue("Gigantism", out var stats))
         {
             float rate = stats["GrowthRate"];
             float limit = stats["MaxSize"];
+
+            // 중요: Launch 직전의 위치를 확실히 잡습니다.
+            Vector3 spawnPos = target.transform.position;
+            float initialScale = target.transform.localScale.x;
 
             target.AddLogic(() =>
             {
                 if (target == null) return;
 
-                // 속도가 빠를수록 더 빨리 커지게 설정 (거리 기반 느낌)
-                // 속도가 0이면 아주 천천히, 속도가 있으면 그에 비례해 커집니다.
-                float currentSpeedFactor = Mathf.Max(1.0f, target.moveSpeed);
-                float growth = rate * currentSpeedFactor * Time.deltaTime;
+                // 1. 현재 이동한 거리 계산
+                float dist = Vector3.Distance(spawnPos, target.transform.position);
 
-                Vector3 nextScale = target.transform.localScale + Vector3.one * growth;
+                // 2. 목표 크기 계산 (기본 크기 + 거리 비율)
+                float targetScale = initialScale + (dist * rate);
+                targetScale = Mathf.Min(targetScale, limit);
 
-                // 최대 크기 제한
-                if (nextScale.x < limit)
-                {
-                    target.transform.localScale = nextScale;
-                }
-                else
-                {
-                    target.transform.localScale = Vector3.one * limit;
-                }
+                // 3. [핵심] 갑자기 커지지 않게 Lerp로 부드럽게 보간
+                // 현재 크기에서 목표 크기로 매 프레임 조금씩 접근
+                float smoothScale = Mathf.Lerp(target.transform.localScale.x, targetScale, Time.deltaTime * 5f);
+
+                target.transform.localScale = Vector3.one * smoothScale;
             });
+
+            target.Launch();
         }
     }
 

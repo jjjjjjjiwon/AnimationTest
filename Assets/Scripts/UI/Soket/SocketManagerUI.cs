@@ -202,26 +202,32 @@ private void SetMode(bool magicMode)
         }
     }
 
-    public void RefreshMagicWordInventoryUI()
+public void RefreshMagicWordInventoryUI()
+{
+    ClearSkillSlots(); // 기존 UI 삭제
+    
+    // GameData에서 리스트를 가져옴
+    List<MagicData> allMagicWords = GameData.Instance.GetMagicDataList();
+
+    // 🔍 5개가 들어오는지 콘솔창에서 꼭 확인하세요!
+    Debug.Log($"[MagicUI] 불러온 마법 데이터 총 개수: {(allMagicWords != null ? allMagicWords.Count : 0)}");
+
+    if (allMagicWords == null || allMagicWords.Count == 0) return;
+
+    foreach (var magic in allMagicWords)
     {
-        ClearSkillSlots();
-        List<MagicData> allMagicWords = GameData.Instance.GetMagicDataList();
+        if (magic == null) continue;
 
-        // 🔍 여기서 로그를 확인하세요!
-        Debug.Log($"[UI] 인벤토리에 그릴 마법 개수: {(allMagicWords != null ? allMagicWords.Count : 0)}");
-
-        if (allMagicWords == null || allMagicWords.Count == 0) return;
-
-        foreach (var magic in allMagicWords)
-        {
-            GameObject slotObj = Instantiate(skillSlotPrefab, skillContainer);
-            SkillSlotUI slotUI = slotObj.GetComponent<SkillSlotUI>();
-
-            // 🔍 Initialize 내부에서 아이콘 로드가 되는지 확인
-            slotUI.Initialize(magic, this);
-            skillSlotUIs.Add(slotUI);
-        }
+        GameObject slotObj = Instantiate(skillSlotPrefab, skillContainer);
+        SkillSlotUI slotUI = slotObj.GetComponent<SkillSlotUI>();
+        
+        // 여기서 실제로 5번 도는지 확인
+        Debug.Log($"[MagicUI] 슬롯 생성 중: {magic.magic_Name}");
+        
+        slotUI.Initialize(magic, this);
+        skillSlotUIs.Add(slotUI);
     }
+}
 
     // 인벤토리 슬롯들을 삭제하는 공용 함수
     private void ClearSkillSlots()
@@ -298,28 +304,26 @@ private void SetMode(bool magicMode)
         return (index >= 0 && index < keys.Length) ? keys[index] : "";
     }
 
-    public void RefreshMagicSocketUI()
+public void RefreshMagicSocketUI()
 {
-    // 1. 기존에 생성된 마법 슬롯들 삭제 (무기 소켓 방식과 동일)
-    // 기존에 magicSlots에 담아둔 게 있다면 다 지워줍니다.
     foreach (Transform child in magicSlotContainer.transform) 
     {
         Destroy(child.gameObject);
     }
     magicSlots.Clear();
 
-    // 2. 9개의 슬롯을 새로 생성 (Q~Space)
-    string[] keyNames = { "Q", "E", "R", "T", "Shift", "Ctrl" };
+    // 9개 슬롯에 대응하는 키 이름 (9개를 맞춰주세요)
+    string[] keyNames = { "Q", "E", "R", "T", "Shift", "Ctrl", "Z", "X", "C" };
+    
     for (int i = 0; i < 9; i++)
     {
-        // 프리펩 생성
         GameObject slotObj = Instantiate(magicSlotPrefab, magicSlotContainer.transform);
         MagicSlotUI slotUI = slotObj.GetComponent<MagicSlotUI>();
         
-        // 초기화 (인덱스, 매니저, 키 이름)
-        slotUI.Initialize(i, this, keyNames[i]);
+        // keyNames 배열 범위를 벗어나지 않도록 방어 코드 추가
+        string kName = (i < keyNames.Length) ? keyNames[i] : "";
+        slotUI.Initialize(i, this, kName);
         
-        // 리스트에 보관
         magicSlots.Add(slotUI);
     }
 }

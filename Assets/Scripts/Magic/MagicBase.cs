@@ -10,8 +10,7 @@ public class MagicBase : MonoBehaviour
     public bool isLaunched = false;
     private Dictionary<string, float> _params = new Dictionary<string, float>();
 
-    [Header("Stat")]
-    public float moveSpeed = 0f;
+    [Header("Stat")]     public float moveSpeed = 0f;
     public float rotationWeight = 0f; // 나선을 위한 계수
 
     [Header("spawn")]
@@ -42,6 +41,12 @@ public class MagicBase : MonoBehaviour
     {
         // 델리게이트가 비어있지 않으면 실행 (원래 잘 되던 방식)
         OnLogic?.Invoke();
+
+        if (isLaunched)
+    {
+        ApplyPhysicalMovement();
+    }
+
         HandleLifeTime();
     }
 
@@ -72,11 +77,16 @@ public void Init(Transform casterTransform)
     }
 
 public void Launch()
-    {
-        if (isLaunched) return;
-        isLaunched = true;
-        OnLogic -= UpdateElementState; // 추적만 중단
-    }
+{
+    if (isLaunched) return;
+    isLaunched = true;
+
+    // 델리게이트에서 "추적(UpdateElementState)"만 정교하게 뺍니다. 
+    // += 로 추가된 다른 로직(Gigantism 등)은 그대로 남습니다.
+    OnLogic -= UpdateElementState; 
+    
+    Debug.Log("[Magic] 발사됨! 이동 및 특수 로직 시작");
+}
 
     private void UpdateElementState()
     {

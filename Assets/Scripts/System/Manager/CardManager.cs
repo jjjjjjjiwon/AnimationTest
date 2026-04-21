@@ -24,20 +24,18 @@ public class CardManager : MonoBehaviour
     /// </summary>
     IEnumerator WaitAndSpawn()
     {
-        // GameData가 없으면 대기
-        while (GameData.Instance == null)
-        {
-            yield return null;
-        }
-        
-        // allStageData가 로드될 때까지 대기
-        while (GameData.Instance.allStageData.Count == 0)
-        {
-            yield return null;
-        }
-        
-        Debug.Log("[CardManager] JSON 로드 완료 확인 - 카드 생성 시작");
-        SpawnCards();
+Debug.Log("[CardManager] 코루틴 시작");
+    while (GameData.Instance == null) yield return null;
+    
+    Debug.Log($"[CardManager] 데이터 개수 체크: {GameData.Instance.allStageData.Count}");
+    while (GameData.Instance.allStageData.Count == 0)
+    {
+        // 만약 여기서 로그가 무한 반복된다면 JSON 로더가 일을 안 하는 겁니다.
+        // Debug.Log("데이터 기다리는 중..."); 
+        yield return null;
+    }
+    
+    SpawnCards();
     }
     
     void SpawnCards()

@@ -32,7 +32,7 @@ public class Card : MonoBehaviour
     private bool isFlipped = false;      // 카드가 뒤집혔는지 여부
     private bool canInteract = true;     // 상호작용 가능 여부 (다른 카드 선택 시 false)
 
-    [SerializeField] private TextMeshPro forntName;
+    [SerializeField] private TextMeshPro temporaryName;
 
     void Awake()
     {
@@ -55,6 +55,12 @@ public class Card : MonoBehaviour
     /// <param name="index">이 카드의 인덱스 (GameData.selectedStages의 몇 번째)</param>
     public void Initialize(StageData data, int index)
     {
+        if (data == null)
+        {
+            Debug.LogError("CardManager가 데이터를 안 줬어!");
+            return;
+        }
+        Debug.LogError("4444444444444444444444444444444444444444444");
         stageData = data;
         cardIndex = index;  // 인덱스 저장
         SetupFrontSide();
@@ -82,44 +88,54 @@ public class Card : MonoBehaviour
     /// <summary>
     /// StageData 정보를 앞면 UI에 세팅
     /// </summary>
-void SetupFrontSide()
-{
-    Debug.Log("[Card] SetupFrontSide 진입");
-
-    if (stageData == null) 
+    void SetupFrontSide()
     {
-        Debug.LogError("[Card] stageData가 Null입니다! 초기화 실패.");
-        return;
-    }
 
-    // 1. 텍스트 설정
-    if (nameText != null)
-    {
-        nameText.text = stageData.stage_Name;
-        nameText.color = Color.white; // 검은색 방지
-        Debug.Log($"[Card] 이름 설정 완료: {stageData.stage_Name}");
-    }
+        if (stageData == null)
+        {
+            Debug.LogError("[Card] stageData가 Null입니다! 초기화 실패.");
+            return;
+        }
 
-    // 2. 이미지(Sprite) 설정
-    if (cardImageRenderer != null && stageData.stage_Icon != null)
-    {
-        // Sprite의 원본 Texture2D 추출
-        Texture2D texture = stageData.stage_Icon.texture;
-        
-        // Material의 인스턴스를 직접 참조하여 텍스처 변경
-        // URP라면 "_BaseMap", 빌트인이라면 "_MainTex"를 주로 사용합니다.
-        cardImageRenderer.material.mainTexture = texture;
-        
-        // 만약 안 나온다면 아래 주석을 해제해서 시도해보세요 (URP 대응)
-        // cardImageRenderer.material.SetTexture("_BaseMap", texture);
+        // 스테이지 이름
+        if (nameText != null)
+        {
+            nameText.text = stageData.stage_Name;
+            nameText.gameObject.SetActive(true);
+        }
 
-        Debug.Log($"[Card] 이미지 설정 완료: {stageData.stage_Icon.name} (Size: {texture.width}x{texture.height})");
+        // 임시 이름
+        if (temporaryName != null)
+        {
+            temporaryName.text = stageData.stage_Name;
+            temporaryName.color = Color.white; // 색상 확인
+            temporaryName.gameObject.SetActive(true); // 활성화 확인
+        }
+
+        // 스테이지 설명
+        if (descText != null)
+        {
+            descText.text = stageData.stage_Description;
+            descText.gameObject.SetActive(true);
+        }
+
+        // 스테이지 아이콘
+        if (cardImageRenderer != null)
+        {
+            if (stageData.stage_Icon != null)
+            {
+                cardImageRenderer.material.mainTexture = stageData.stage_Icon.texture;
+            }
+            else
+            {
+                // 여기서 return을 하거나 로그만 찍고 넘어가야 함
+                Debug.LogWarning("아이콘은 없지만 이름은 이미 설정됨");
+            }
+        }
+
+
+
     }
-    else
-    {
-        Debug.LogWarning($"[Card] 이미지 컴포넌트나 아이콘 데이터가 누락되었습니다. Renderer: {cardImageRenderer != null}, Icon: {stageData.stage_Icon != null}");
-    }
-}
 
     /// <summary>
     /// 앞면 표시
