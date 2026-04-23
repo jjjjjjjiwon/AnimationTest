@@ -67,7 +67,18 @@ public class SocketManagerUI : MonoBehaviour
     void Update()
     {
         if (PlayerInfoUI.IsUIOpen) return;
-        if (Input.GetKeyDown(KeyCode.F)) ToggleUI();
+
+        // "UI를 여는 키가 눌렸는가?" 지도에 물어봄
+        if (InputManager.GetUIOpenInput())
+        {
+            ToggleUI();
+        }
+
+        // UI가 열려있을 때 닫기 키 체크
+        if (IsUIOpen && InputManager.GetExitInput())
+        {
+            CloseUI();
+        }
     }
 
     #region 기본 UI 제어 (열기/닫기)
@@ -114,24 +125,24 @@ public class SocketManagerUI : MonoBehaviour
     public void OnMagicTabClick() => SetMode(true);
 
     // 탭 전환 시 호출되는 핵심 함수
-private void SetMode(bool magicMode)
-{
-    isMagicMode = magicMode;
-
-    if (socketContainer != null) socketContainer.gameObject.SetActive(!isMagicMode);
-    if (magicSlotContainer != null) magicSlotContainer.SetActive(isMagicMode);
-
-    RefreshInventory();
-
-    if (isMagicMode)
+    private void SetMode(bool magicMode)
     {
-        RefreshMagicSocketUI(); // 👈 여기서 새로 생성!
+        isMagicMode = magicMode;
+
+        if (socketContainer != null) socketContainer.gameObject.SetActive(!isMagicMode);
+        if (magicSlotContainer != null) magicSlotContainer.SetActive(isMagicMode);
+
+        RefreshInventory();
+
+        if (isMagicMode)
+        {
+            RefreshMagicSocketUI(); // 👈 여기서 새로 생성!
+        }
+        else
+        {
+            RefreshSocketUI();
+        }
     }
-    else
-    {
-        RefreshSocketUI();
-    }
-}
 
     public void UpdateTabVisuals()
     {
@@ -202,32 +213,32 @@ private void SetMode(bool magicMode)
         }
     }
 
-public void RefreshMagicWordInventoryUI()
-{
-    ClearSkillSlots(); // 기존 UI 삭제
-    
-    // GameData에서 리스트를 가져옴
-    List<MagicData> allMagicWords = GameData.Instance.GetMagicDataList();
-
-    // 🔍 5개가 들어오는지 콘솔창에서 꼭 확인하세요!
-    Debug.Log($"[MagicUI] 불러온 마법 데이터 총 개수: {(allMagicWords != null ? allMagicWords.Count : 0)}");
-
-    if (allMagicWords == null || allMagicWords.Count == 0) return;
-
-    foreach (var magic in allMagicWords)
+    public void RefreshMagicWordInventoryUI()
     {
-        if (magic == null) continue;
+        ClearSkillSlots(); // 기존 UI 삭제
 
-        GameObject slotObj = Instantiate(skillSlotPrefab, skillContainer);
-        SkillSlotUI slotUI = slotObj.GetComponent<SkillSlotUI>();
-        
-        // 여기서 실제로 5번 도는지 확인
-        Debug.Log($"[MagicUI] 슬롯 생성 중: {magic.magicName}");
-        
-        slotUI.Initialize(magic, this);
-        skillSlotUIs.Add(slotUI);
+        // GameData에서 리스트를 가져옴
+        List<MagicData> allMagicWords = GameData.Instance.GetMagicDataList();
+
+        // 🔍 5개가 들어오는지 콘솔창에서 꼭 확인하세요!
+        Debug.Log($"[MagicUI] 불러온 마법 데이터 총 개수: {(allMagicWords != null ? allMagicWords.Count : 0)}");
+
+        if (allMagicWords == null || allMagicWords.Count == 0) return;
+
+        foreach (var magic in allMagicWords)
+        {
+            if (magic == null) continue;
+
+            GameObject slotObj = Instantiate(skillSlotPrefab, skillContainer);
+            SkillSlotUI slotUI = slotObj.GetComponent<SkillSlotUI>();
+
+            // 여기서 실제로 5번 도는지 확인
+            Debug.Log($"[MagicUI] 슬롯 생성 중: {magic.magicName}");
+
+            slotUI.Initialize(magic, this);
+            skillSlotUIs.Add(slotUI);
+        }
     }
-}
 
     // 인벤토리 슬롯들을 삭제하는 공용 함수
     private void ClearSkillSlots()
@@ -266,7 +277,7 @@ public void RefreshMagicWordInventoryUI()
         }
     }
 
-// 마법 장착 (Overload)
+    // 마법 장착 (Overload)
     public void EquipSkillToSelectedSocket(MagicData magicSkill)
     {
         if (!isMagicMode) return;
@@ -304,30 +315,30 @@ public void RefreshMagicWordInventoryUI()
         return (index >= 0 && index < keys.Length) ? keys[index] : "";
     }
 
-public void RefreshMagicSocketUI()
-{
-    foreach (Transform child in magicSlotContainer.transform) 
+    public void RefreshMagicSocketUI()
     {
-        Destroy(child.gameObject);
-    }
-    magicSlots.Clear();
+        foreach (Transform child in magicSlotContainer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        magicSlots.Clear();
 
-    // 9개 슬롯에 대응하는 키 이름 (9개를 맞춰주세요)
-    string[] keyNames = { "Q", "E", "R", "T", "Shift", "Ctrl", "Z", "X", "C" };
-    
-    for (int i = 0; i < 9; i++)
-    {
-        GameObject slotObj = Instantiate(magicSlotPrefab, magicSlotContainer.transform);
-        MagicSlotUI slotUI = slotObj.GetComponent<MagicSlotUI>();
-        
-        // keyNames 배열 범위를 벗어나지 않도록 방어 코드 추가
-        string kName = (i < keyNames.Length) ? keyNames[i] : "";
-        slotUI.Initialize(i, this, kName);
-        
-        magicSlots.Add(slotUI);
+        // 9개 슬롯에 대응하는 키 이름 (9개를 맞춰주세요)
+        string[] keyNames = { "Q", "E", "R", "T", "Shift", "Ctrl", "Z", "X", "C" };
+
+        for (int i = 0; i < 9; i++)
+        {
+            GameObject slotObj = Instantiate(magicSlotPrefab, magicSlotContainer.transform);
+            MagicSlotUI slotUI = slotObj.GetComponent<MagicSlotUI>();
+
+            // keyNames 배열 범위를 벗어나지 않도록 방어 코드 추가
+            string kName = (i < keyNames.Length) ? keyNames[i] : "";
+            slotUI.Initialize(i, this, kName);
+
+            magicSlots.Add(slotUI);
+        }
     }
-}
-public void OnAddSocketClick()
+    public void OnAddSocketClick()
     {
         // 1. 데이터 소스(RuntimeManager -> SocketManager) 확인
         if (RuntimeManager.Instance == null || RuntimeManager.Instance.socketManager == null) return;

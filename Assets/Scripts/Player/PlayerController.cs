@@ -123,26 +123,38 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // UI가 열려있을 때는 로직 중단
+        // 1. 시스템 입력은 여기서 체크하거나 SocketManagerUI에서 체크 (지도에서 가져옴)
+        // if (InputManager.GetUIOpenInput()) socketManagerUI.ToggleUI();
+
         if (SocketManagerUI.IsUIOpen) return;
 
-        // 모드 전환 체크 (탭 키)
-        if (Input.GetKeyDown(KeyCode.Tab))
+        // 2. 모드 전환: "탭 키"가 아닌 "모드 전환 함수"를 사용
+        if (InputManager.GetModeToggleInput())
         {
             ToggleMode();
         }
 
-        // 모드에 따른 입력 처리 분리
+        // 3. 전투 모드에 따른 입력 처리
         if (currentMode == PlayerMode.Magic)
         {
-            HandleMagicInput(); // 마법 모드 입력
+            // "지금 눌린 마법 슬롯 번호가 뭐야?"라고 지도에 물어봄
+            int slot = InputManager.GetMagicSlotInput();
+            if (slot != -1) ExecuteSlot(slot);
         }
         else
         {
-            HandleInput();      // 근접 모드 입력 (기존 로직)
+            HandleInput();
         }
+    }
 
-        
+    private void HandleInput()
+    {
+        // 회피 체크
+        if (InputManager.GetDodgeInput()) { TryDodge(); return; }
+
+        // 물리 공격 체크
+        InputTypes inputType = InputManager.GetMeleeInputType();
+        if (inputType != InputTypes.None) TryAttack(inputType);
     }
 
     void FixedUpdate() => stateMachine?.Update();
@@ -152,28 +164,6 @@ public class PlayerController : MonoBehaviour
         if (stateMachine == null) return false;
         PlayerState currentState = stateMachine.CurrentState;
         return currentState == IdleState || currentState == MoveState;
-    }
-
-    #endregion
-
-    #region 입력 관리 (Input Handling)
-
-    private void HandleInput()
-    {
-        if (Input.GetKeyDown(KeyCode.Space)) { TryDodge(); return; }
-
-        InputTypes inputType = GetInputType();
-        if (inputType != InputTypes.None) TryAttack(inputType);
-    }
-
-    private InputTypes GetInputType()
-    {
-        if (Input.GetMouseButtonDown(0)) return InputTypes.LeftClick;
-        if (Input.GetMouseButtonDown(1)) return InputTypes.RightClick;
-        if (Input.GetKeyDown(KeyCode.Q)) return InputTypes.QKey;
-        if (Input.GetKeyDown(KeyCode.E)) return InputTypes.EKey;
-        if (Input.GetKeyDown(KeyCode.R)) return InputTypes.RKey;
-        return InputTypes.None;
     }
 
     #endregion
@@ -310,18 +300,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log($"현재 모드: {currentMode}");
     }
 
-    private void HandleMagicInput()
-    {
-        // Q,E, R 입력을 받아서 해당 슬롯 번호를 실행 함수로 넘깁니다.
-        if (Input.GetKeyDown(KeyCode.Q)) ExecuteSlot(0);
-        if (Input.GetKeyDown(KeyCode.E)) ExecuteSlot(1);
-        if (Input.GetKeyDown(KeyCode.R)) ExecuteSlot(2);
-        if (Input.GetKeyDown(KeyCode.T)) ExecuteSlot(3);
-        if (Input.GetKeyDown(KeyCode.LeftShift)) ExecuteSlot(4);
-        if (Input.GetKeyDown(KeyCode.LeftControl)) ExecuteSlot(5);
-    }
-
-    private void ExecuteSlot(int slotIndex)
+    public void ExecuteSlot(int slotIndex)
     {
         // 1. RuntimeManager가 있는지 확인
         if (RuntimeManager.Instance == null)
