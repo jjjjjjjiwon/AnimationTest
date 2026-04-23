@@ -29,8 +29,7 @@ public class TestInputHandler : MonoBehaviour
         if (runtimeManager == null)
             return;
 
-        // C 키: 스탯 출력 테스트
-        if (Input.GetKeyDown(KeyCode.C))
+        if (InputManager.StatOutput())
         {
             if (runtimeManager.playerStats != null)
             {
@@ -38,15 +37,14 @@ public class TestInputHandler : MonoBehaviour
             }
         }
 
-        // G 키: 골드 추가 테스트
-        if (Input.GetKeyDown(KeyCode.G))
+
+        if (InputManager.GetDebugAddGold())
         {
             runtimeManager.gold += 100;
             Debug.Log($"[골드] +100 → 총 {runtimeManager.gold}G");
         }
 
-        // L 키: 적 스턴
-        if (Input.GetKeyDown(KeyCode.L))
+        if (InputManager.EnemyStun())
         {
             // 1. 씬에 있는 모든 TestEnemyController를 배열로 가져옵니다.
             TestEnemyController[] allEnemies = GameObject.FindObjectsByType<TestEnemyController>(FindObjectsSortMode.None);
@@ -70,9 +68,7 @@ public class TestInputHandler : MonoBehaviour
             }
         }
 
-
-        // Y키: 플레이어 데미지
-        if (Input.GetKeyDown(KeyCode.Y))
+        if (InputManager.PlayerDamage())
         {
             if (playerController == null)
                 playerController = FindObjectOfType<PlayerController>();
@@ -83,20 +79,9 @@ public class TestInputHandler : MonoBehaviour
             }
         }
 
-        // X키: 플레이어 스탯
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            if (playerData == null)
-                playerData = FindObjectOfType<PlayerData>();
 
-            if (playerData != null && playerData.stats != null)
-            {
-                playerData.stats.PrintStats();
-            }
-        }
 
-        // Z키: 플레이어 추가 스탯
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (InputManager.PlayerAddStat())
         {
             if (playerController == null)
                 playerController = FindObjectOfType<PlayerController>();

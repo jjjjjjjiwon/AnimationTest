@@ -48,12 +48,12 @@ public class TestEnemyController : MonoBehaviour, IEnemy
         animator = GetComponent<Animator>();
         stateMachine = new StateMachine();
         renderers = GetComponentsInChildren<SkinnedMeshRenderer>();
-originalColors = new Color[renderers.Length];
+        originalColors = new Color[renderers.Length];
 
-    for (int i = 0; i < renderers.Length; i++) 
-    {
-    originalColors[i] = renderers[i].material.color; // 원래 색 저장
-    }
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            originalColors[i] = renderers[i].material.color; // 원래 색 저장
+        }
     }
 
     public virtual void Setup(EnemyDataPackage package)
@@ -198,19 +198,20 @@ originalColors = new Color[renderers.Length];
         StartCoroutine(HitFlashRoutine());
     }
 
-    private IEnumerator HitFlashRoutine() 
+    private IEnumerator HitFlashRoutine()
     {
-    // 1. 하얗게 만들기
-    foreach (var r in renderers) r.material.color = Color.white;
-    Debug.Log("Take Damage Take DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake Damage");
-    
-    // 2. 아주 짧게 대기 (역경직 시간과 비슷하게!)
-    yield return new WaitForSeconds(0.1f);
-    
-    // 3. 원래 색으로 복구
-    for (int i = 0; i < renderers.Length; i++) {
-        renderers[i].material.color = originalColors[i];
-    }
+        // 1. 하얗게 만들기
+        foreach (var r in renderers) r.material.color = Color.white;
+        Debug.Log("Take Damage Take DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake DamageTake Damage");
+
+        // 2. 아주 짧게 대기 (역경직 시간과 비슷하게!)
+        yield return new WaitForSeconds(0.1f);
+
+        // 3. 원래 색으로 복구
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            renderers[i].material.color = originalColors[i];
+        }
     }
 
     protected virtual void Death()

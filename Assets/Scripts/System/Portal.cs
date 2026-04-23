@@ -11,7 +11,6 @@ public class Portal : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private GameObject portalEffect;
-    [SerializeField] private KeyCode interactKey = KeyCode.F;
 
     [Header("UI")]
     [SerializeField] private GameObject interactUI;
@@ -99,7 +98,7 @@ public class Portal : MonoBehaviour
         if (!isActive || !playerInRange)
             return;
 
-        if (Input.GetKeyDown(interactKey))
+        if (InputManager.UsePortal())
         {
             UsePortal();
         }

@@ -77,6 +77,7 @@ public class SocketManagerUI : MonoBehaviour
         // UI가 열려있을 때 닫기 키 체크
         if (IsUIOpen && InputManager.GetExitInput())
         {
+            Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             CloseUI();
         }
     }

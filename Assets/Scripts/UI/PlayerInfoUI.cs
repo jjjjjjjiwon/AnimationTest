@@ -87,7 +87,7 @@ public class PlayerInfoUI : MonoBehaviour
     {
 
         // I 키로 정보창 열기/닫기
-        if (Input.GetKeyDown(KeyCode.I))
+        if (InputManager.PlayerInfoUI())
         {
             ToggleUI();
         }

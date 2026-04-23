@@ -66,7 +66,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         // ESC 키로 마우스 잠금 해제/다시 잠금
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (InputManager.CameraController())
         {
             ToggleCursorLock();
         }

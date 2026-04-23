@@ -29,7 +29,7 @@ public class ConboPreview : MonoBehaviour
         if (PlayerInfoUI.IsUIOpen)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (InputManager.ComboPreview())
         {
             Debug.Log("Tab ______________________________________________________________________");
             ToggleUI();
