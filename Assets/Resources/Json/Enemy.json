@@ -3,6 +3,7 @@
     "Enemy" : [
 
         {
+            "vision_Angle": "120f",
             "enemy_ID": "ZOMBIE_01",
             "enemy_Name": "Zombie",
 
@@ -12,6 +13,7 @@
             "base_Damage": 10.0,
             "base_Speed": 2,
             "base_Defense": 5.0,
+            "detect_Range": 120,
 
             "enemy_Idle_State_ID": "STAND_ID",
             "enemy_Chase_State_ID": "Base_Chase_ID",

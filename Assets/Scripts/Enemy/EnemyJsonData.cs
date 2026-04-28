@@ -16,14 +16,19 @@ public enum Enemystate
 [Serializable]
 public class EnemyJsonData : IEnemyData
 {
+    public float vision_Angle;  // 아직 안함
+
     // [1. 데이터용 변수] - JSON의 키값과 토씨 하나 안 틀리게!
     public string enemy_ID;      // JSON: "enemy_ID"
     public string enemy_Name;    // JSON: "enemy_Name"
     public string prefab_Path;   // JSON: "prefab_Path"
+
     public float base_Health;
     public float base_Damage;
     public float base_Speed;
     public float base_Defense;
+    public float detect_Range;
+
     public string enemy_Idle_State_ID;
     public string enemy_Chase_State_ID;
     public string enemy_Dash_State_ID;

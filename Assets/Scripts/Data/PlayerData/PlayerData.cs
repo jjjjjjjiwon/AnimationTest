@@ -34,7 +34,7 @@ public class PlayerData : ScriptableObject
     public int base_Intelligence_Level = 1;
     public int base_Luck_Level = 3;
 
-    public float base_Move_Speed = 5f;
+    public float base_Move_Speed = 20f;
 
     [Tooltip("회전 속도")]
     public float rotationSpeed = 10f;
