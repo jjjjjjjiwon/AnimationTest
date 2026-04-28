@@ -10,8 +10,13 @@ public class MagicBase : MonoBehaviour
     public bool isLaunched = false;
     private Dictionary<string, float> _params = new Dictionary<string, float>();
 
-    [Header("Stat")]     public float moveSpeed = 0f;
-    public float rotationWeight = 0f; // 나선을 위한 계수
+    [Header("Stat")]     
+    public float magicDamage = 10f;
+    public float moveSpeed = 0f;
+    public float rotationWeight = 5f;   // 나선을 위한 계수
+    public float magicLifeTime = 5f;    // 마법 유지 시간
+
+    
 
     [Header("spawn")]
     public float followDistance = 0f;   // 플레이어와의 간격

@@ -51,17 +51,9 @@ public static Vector3 GetAssassinMove(Transform me, Transform player, float view
 {
     speedMultiplier = 1.0f;
     
-    // 🔍 디버그: 전달받은 값들이 정상인가?
-    if (viewAngle <= 0 || viewDist <= 0) {
-        Debug.LogError($"[AI 경고] 시야 설정값이 0입니다! Angle: {viewAngle}, Dist: {viewDist}");
-    }
 
     bool canSee = IsPlayerInVision(me, player, viewAngle, viewDist);
     bool isThreatDetected = DetectThreat(me, 10f);
-    
-    // 🔍 디버그: 왜 안 들어가는지 범인 검거
-    if (!canSee) Debug.Log("못 보고 있음 (시야 밖)");
-    if (!isThreatDetected) Debug.Log("위협 감지 안됨 (레이어/거리 문제)");
 
     Vector3 finalDir = (player.position - me.position).normalized;
 
@@ -74,9 +66,9 @@ if (canSee && isThreatDetected)
     finalDir = (finalDir * 0.1f + sideDir * 0.9f).normalized; 
     
     // 속도 배율을 out으로 넘겨줍니다 (이게 핵심!)
-    speedMultiplier = 4.0f; 
+    speedMultiplier = 10.0f; 
     
-    Debug.Log("<color=cyan>[AI]</color> 회피 가속 중!");
+    //Debug.Log("<color=cyan>[AI]</color> 회피 가속 중!");
 }
 
     return finalDir;

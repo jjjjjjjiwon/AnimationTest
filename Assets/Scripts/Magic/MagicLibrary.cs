@@ -220,44 +220,53 @@ public static void Execute(string magicName, Transform caster)
 
     #region 분열
     public static List<MagicBase> Split(MagicBase target)
+{
+    List<MagicBase> children = new List<MagicBase>();
+    if (!_wordStats.TryGetValue("Split", out var stats)) return children;
+
+    int splitCount = 3;
+    // 원본의 레이어를 미리 기억해둡니다.
+    int originalLayer = target.gameObject.layer;
+
+    for (int i = 0; i < splitCount; i++)
     {
-        List<MagicBase> children = new List<MagicBase>();
-        if (!_wordStats.TryGetValue("Split", out var stats)) return children;
+        float angle = i * (360f / splitCount);
+        Quaternion rot = Quaternion.Euler(0, angle, 0);
 
-        int splitCount = 3;
-        for (int i = 0; i < splitCount; i++)
+        GameObject childObj = Object.Instantiate(target.gameObject,
+                             target.transform.position + (rot * Vector3.forward * 0.5f),
+                             rot);
+
+        // --- [중요 1: 레이어 강제 재설정] ---
+        childObj.layer = originalLayer; 
+
+        MagicBase child = childObj.GetComponent<MagicBase>();
+        
+        // --- [중요 2: MagicObject 컴포넌트 초기화] ---
+        // 만약 MagicObject 스크립트가 붙어있다면, 새로운 시작을 위해 리스트를 비워줍니다.
+        if (childObj.TryGetComponent(out MagicObject mo))
         {
-            // 1. 계산: 이번 자식이 바라볼 각도 (360도를 등분)
-            float angle = i * (360f / splitCount);
-            Quaternion rot = Quaternion.Euler(0, angle, 0);
-
-            // 2. 객체 생성 (위치와 회전을 계산된 값으로 설정)
-            // rot * Vector3.forward를 통해 각기 다른 방향으로 0.5f만큼 떨어진 곳에 생성
-            GameObject childObj = Object.Instantiate(target.gameObject,
-                                                   target.transform.position + (rot * Vector3.forward * 0.5f),
-                                                   rot); // 💡 여기서 각 자식의 앞방향이 결정됩니다.
-
-            MagicBase child = childObj.GetComponent<MagicBase>();
-
-            // 3. 데이터 및 로직 상속
-            child.transform.localScale = target.transform.localScale * stats["ScaleMult"];
-            child.moveSpeed = target.moveSpeed * stats["SpeedMult"];
-            child.isLaunched = true;
-            child.caster = target.caster;
-
-            // 💡 중요: 자식들에게 각자의 정면(forward)으로 나아가라는 명령 주입
-            float currentSpeed = child.moveSpeed;
-            child.AddLogic(() =>
-            {
-                if (child == null) return;
-                // 이제 각 자식은 Instantiate 때 설정된 '자신의 정면'으로 날아갑니다.
-                child.transform.position += child.transform.forward * currentSpeed * Time.deltaTime;
-            });
-
-            children.Add(child);
+            // mo.ResetHitTargets(); // MagicObject에 이 함수를 만들어야 합니다.
+            mo.targetLayers = (1 << 14) | (1 << LayerMask.NameToLayer("Player")); // 레이어 재확인
         }
-        return children;
+
+        // 3. 데이터 상속
+        child.transform.localScale = target.transform.localScale * stats["ScaleMult"];
+        child.moveSpeed = target.moveSpeed * stats["SpeedMult"];
+        child.isLaunched = true;
+        child.caster = target.caster;
+
+        float currentSpeed = child.moveSpeed;
+        child.AddLogic(() =>
+        {
+            if (child == null) return;
+            child.transform.position += child.transform.forward * currentSpeed * Time.deltaTime;
+        });
+
+        children.Add(child);
     }
+    return children;
+}
 
 
 
