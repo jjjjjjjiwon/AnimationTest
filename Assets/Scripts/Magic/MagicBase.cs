@@ -7,25 +7,26 @@ public class MagicBase : MonoBehaviour
 {
     public Action OnLogic; 
     public Transform caster;
-    public bool isLaunched = false;
     private Dictionary<string, float> _params = new Dictionary<string, float>();
+    
+    public bool isLaunched = false;
+    public bool isTargetingPlayer = false;  // 마법의 대상이 true 플레이어, false 원소인지
 
     [Header("Stat")]     
     public float magicDamage = 10f;
     public float moveSpeed = 0f;
-    public float rotationWeight = 5f;   // 나선을 위한 계수
-    public float magicLifeTime = 5f;    // 마법 유지 시간
+    public float rotationWeight = 5f;       // 나선을 위한 계수
+    public float magicLifeTime = 10f;       // 마법 유지 시간
 
-    
 
     [Header("spawn")]
-    public float followDistance = 0f;   // 플레이어와의 간격
-    public float floatingHeight = 1.5f; // 바닥에서 1.5m 
+    public float followDistance = 0f;       // 플레이어와의 간격
+    public float floatingHeight = 1.5f;     // 바닥에서 1.5m 
 
 
     [Header("Rules")]
-    public int maxCommandLimit = 5;    // 최대 받을 수 있는 단어 명령 수
-    private int _currentCommandCount = 0; // 현재 받은 명령 수
+    public int maxCommandLimit = 5;         // 최대 받을 수 있는 단어 명령 수
+    private int _currentCommandCount = 0;   // 현재 받은 명령 수
 
 
     public void AddLogic(Action newLogic)
@@ -46,6 +47,7 @@ public class MagicBase : MonoBehaviour
     {
         // 델리게이트가 비어있지 않으면 실행 (원래 잘 되던 방식)
         OnLogic?.Invoke();
+
 
         if (isLaunched)
     {

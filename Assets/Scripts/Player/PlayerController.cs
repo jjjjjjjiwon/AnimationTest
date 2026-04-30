@@ -3,6 +3,7 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
+    public Vector3 LastMoveDirection { get; set; } // 마법 관련 
     // ========================================
     // Components & Data
     // ========================================
@@ -48,6 +49,8 @@ public class PlayerController : MonoBehaviour
     public Rigidbody Rigidbody => rb;
     public Transform CameraTransform => cameraTransform;
     public Transform Transform => transform;
+
+    
 
     public Vector3 MoveInput => new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 
@@ -235,9 +238,9 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float damage)
     {
         PlayerStats stats = RuntimeManager.Instance.playerStats;
-        stats.current_Health -= damage;
-        hPBar?.SetHP(stats.current_Health, stats.max_Health);
-        if (stats.current_Health <= 0) Die();
+        stats.currentHealth -= damage;
+        hPBar?.SetHP(stats.currentHealth, stats.max_Health);
+        if (stats.currentHealth <= 0) Die();
         else StateMachine.ChangeState(HitState);
     }
 
@@ -331,6 +334,12 @@ public class PlayerController : MonoBehaviour
             Debug.Log($"{slotIndex}번 슬롯에 장착된 마법 데이터가 없습니다. (현재 딕셔너리 개수: {RuntimeManager.Instance.EquipedMagics.Count})");
         }
     }
+
+// 1. 마지막 이동 입력을 반환 (MoveInput 프로퍼티 활용)
+public Vector3 GetLastMoveInput() => MoveInput;
+
+// 2. 회전 변화량 반환 (분신이 본체와 같은 방향을 보게 함)
+public Quaternion GetRotationDelta() => transform.rotation;
 
     #endregion
 

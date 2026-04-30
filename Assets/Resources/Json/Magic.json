@@ -2,7 +2,13 @@
     "magic" : [
     {
         "magicName" : "SummonElement",
-        "Icon_Path" : "Image/Magic_Icon/Magic_1",
+        "Icon_Path" : "Image/Magic_Icon/SummonElement",
+        "type" : "Element",
+        "magicCost" : 10
+    },
+    {
+        "magicName" : "SetPlayerAsTarget",
+        "Icon_Path" : "Image/Magic_Icon/SetPlayerAsTarget",
         "type" : "Element",
         "magicCost" : 10
     },

@@ -14,6 +14,7 @@ public class PlayerStats
     /// 스탯 레벨 (런타임 변경 가능)
     /// </summary>
     public int level;
+    public float currentHp; // [추가] 실시간 체력 변수
 
     public int health_Level;
     public int defense_Level;
@@ -28,7 +29,7 @@ public class PlayerStats
     // ========================================    
     
     public float speed;
-    public float current_Health;
+    public float currentHealth;
     public int availablePoints = 0;
 
     // ========================================
@@ -46,8 +47,8 @@ public class PlayerStats
         intelligence_Level = data.base_Intelligence_Level;
         luck_Level = data.base_Luck_Level;
 
-        speed = data.base_Move_Speed;
-        current_Health = max_Health;
+        speed = data.playerMoveSpeed;
+        currentHealth = max_Health;
 
         Debug.Log($"[PlayerStats] 초기화 완료 - HP: {max_Health}");
     }
@@ -130,6 +131,11 @@ public class PlayerStats
         availablePoints -= amount;
         return true;
     }
+    public void TakeDamage(float amount)
+    {
+        currentHp -= amount;
+        if (currentHp < 0) currentHp = 0;
+    }
 
     // ========================================
     // 디버그
@@ -142,7 +148,7 @@ public class PlayerStats
 사용 가능 포인트: {availablePoints}
 
 [투자 스탯]
-체력: {health_Level} → HP: {max_Health:F0} (현재: {current_Health:F0})
+체력: {health_Level} → HP: {max_Health:F0} (현재: {currentHealth:F0})
 방어: {defense_Level} → 방어력: {defense:F0}
 물리: {strength_Level} → 공격력: {physicalDamage:F0}
 기량: {dexterity_Level} → 보너스: {(dexterityBonus * 100):F1}%

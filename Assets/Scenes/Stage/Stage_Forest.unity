@@ -257,6 +257,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9720377, y: 0.03, z: 0.34657627}
   m_Center: {x: 0.01771152, y: -0.1, z: 0.021714624}
+--- !u!114 &75892096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75892086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c903a86193b00ba4dba6968431482e29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  caster: {fileID: 0}
+  isLaunched: 0
+  isTargetingPlayer: 0
+  magicDamage: 10
+  moveSpeed: 0
+  rotationWeight: 5
+  magicLifeTime: 10
+  followDistance: 0
+  floatingHeight: 1.5
+  maxCommandLimit: 5
 --- !u!1 &119871028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1171,7 +1193,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   portalEffect: {fileID: 0}
-  interactKey: 286
   interactUI: {fileID: 0}
   locationGuide: {fileID: 1752236522}
 --- !u!4 &976394033
@@ -1895,6 +1916,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6393974813386716368, guid: 459f79a004eb51144840e79b6950c697, type: 3}
       insertIndex: -1
       addedObject: {fileID: 75892092}
+    - targetCorrespondingSourceObject: {fileID: 6393974813386716368, guid: 459f79a004eb51144840e79b6950c697, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 75892096}
     - targetCorrespondingSourceObject: {fileID: 3868543288187839086, guid: 459f79a004eb51144840e79b6950c697, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1768389496}

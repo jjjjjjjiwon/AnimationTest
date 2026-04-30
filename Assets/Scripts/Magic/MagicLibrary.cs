@@ -15,7 +15,7 @@ public static class MagicLibrary
         { "Split",       new Dictionary<string, float> { { "ScaleMult", 0.5f }, { "SpeedMult", 1.2f } } }
     };
 
-public static void Execute(string magicName, Transform caster)
+    public static void Execute(string magicName, Transform caster)
     {
         // 로그에 SummonElement라고 뜨므로 이름을 맞춰줍니다.
         if (magicName == "SummonElement")
@@ -24,6 +24,20 @@ public static void Execute(string magicName, Transform caster)
             var m = SummonElement(caster);
             if (m != null) activeMagics.Add(m);
         }
+    else if (magicName == "SetPlayerAsTarget")
+    {
+        // 1. 기존 리스트 비우기 (플레이어 한 명에게 집중하기 위해)
+        ClearAll();
+
+        // 2. 플레이어 본체(caster)에서 MagicBase를 가져와 설정
+        if (caster.TryGetComponent(out MagicBase mb))
+        {
+            // 2단계에서 만든 설정 함수 호출
+            SetPlayerAsTarget(mb); 
+            activeMagics.Add(mb);
+            Debug.Log("플레이어가 마법의 타겟으로 설정되었습니다.");
+        }
+    }
         else if (magicName == "Gigantism")
         {
             foreach (var m in activeMagics) Gigantism(m);
@@ -73,12 +87,27 @@ public static void Execute(string magicName, Transform caster)
         activeMagics = nextGeneration;
     }
 
-    #region 소환
+    private static void CopyAnimatorParameters(Animator source, Animator target)
+    {
+        foreach (AnimatorControllerParameter param in source.parameters)
+        {
+            if (param.type == AnimatorControllerParameterType.Float)
+                target.SetFloat(param.name, source.GetFloat(param.name));
+            else if (param.type == AnimatorControllerParameterType.Int)
+                target.SetInteger(param.name, source.GetInteger(param.name));
+            else if (param.type == AnimatorControllerParameterType.Bool)
+                target.SetBool(param.name, source.GetBool(param.name));
+            else if (param.type == AnimatorControllerParameterType.Trigger && source.GetBool(param.name))
+                target.SetTrigger(param.name);
+        }
+    }
+
+    #region 원소 타겟
     public static MagicBase SummonElement(Transform caster)
     {
         // 💡 경로 확인: Resources/Prefab/Magic/SummonElement 인지 Element 인지 꼭 확인하세요!
         GameObject prefab = Resources.Load<GameObject>("Prefab/Magic/SummonElement");
-
+        
         if (prefab == null)
         {
             Debug.LogError("마법 프리팹을 찾을 수 없습니다! 경로를 확인하세요.");
@@ -91,12 +120,28 @@ public static void Execute(string magicName, Transform caster)
         MagicBase mb = obj.GetComponent<MagicBase>();
 
         // 💡 중요: Init을 해야 OnLogic에 '따라다니기' 대본이 들어갑니다.
+        mb.isTargetingPlayer = false; // 소환된 원소이므로 false
         mb.Init(caster);
 
         if (_wordStats.TryGetValue("Summon", out var stats))
             mb.followDistance = stats["Dist"];
 
+        Debug.Log($"{mb.isTargetingPlayer} 타겟");
+
+
         return mb;
+    }
+    #endregion
+
+    #region 플레이어 타겟
+    public static void SetPlayerAsTarget(MagicBase playerMb)
+    {
+        if (playerMb == null) return;
+
+        // 1. 이 MagicBase는 이제 플레이어를 제어 대상으로 함
+        playerMb.isTargetingPlayer = true;
+        Debug.Log($"{playerMb.isTargetingPlayer} 타겟");
+
     }
     #endregion
 
@@ -220,55 +265,88 @@ public static void Execute(string magicName, Transform caster)
 
     #region 분열
     public static List<MagicBase> Split(MagicBase target)
-{
-    List<MagicBase> children = new List<MagicBase>();
-    if (!_wordStats.TryGetValue("Split", out var stats)) return children;
-
-    int splitCount = 3;
-    // 원본의 레이어를 미리 기억해둡니다.
-    int originalLayer = target.gameObject.layer;
-
-    for (int i = 0; i < splitCount; i++)
     {
-        float angle = i * (360f / splitCount);
-        Quaternion rot = Quaternion.Euler(0, angle, 0);
-
-        GameObject childObj = Object.Instantiate(target.gameObject,
-                             target.transform.position + (rot * Vector3.forward * 0.5f),
-                             rot);
-
-        // --- [중요 1: 레이어 강제 재설정] ---
-        childObj.layer = originalLayer; 
-
-        MagicBase child = childObj.GetComponent<MagicBase>();
-        
-        // --- [중요 2: MagicObject 컴포넌트 초기화] ---
-        // 만약 MagicObject 스크립트가 붙어있다면, 새로운 시작을 위해 리스트를 비워줍니다.
-        if (childObj.TryGetComponent(out MagicObject mo))
+        List<MagicBase> children = new List<MagicBase>();
+        if (target.isTargetingPlayer)
         {
-            // mo.ResetHitTargets(); // MagicObject에 이 함수를 만들어야 합니다.
-            mo.targetLayers = (1 << 14) | (1 << LayerMask.NameToLayer("Player")); // 레이어 재확인
+    // --- [6단계: 플레이어 분신 생성 로직] ---
+        int splitCount = 3; 
+        // 본체의 PlayerController를 미리 참조
+        PlayerController originalCtrl = target.GetComponent<PlayerController>();
+
+        for (int i = 0; i < splitCount; i++)
+        {
+            float angle = i * (360f / splitCount);
+            Quaternion rot = Quaternion.Euler(0, angle, 0);
+            Vector3 spawnPos = target.transform.position + (rot * Vector3.forward * 1.5f);
+
+            // 1. 본체(플레이어) 복제
+            GameObject dummyObj = Object.Instantiate(target.gameObject, spawnPos, rot);
+            
+            // 2. 복제본의 기존 PlayerController는 삭제 (입력 충돌 방지)
+            if (dummyObj.TryGetComponent(out PlayerController oldCtrl)) 
+                Object.Destroy(oldCtrl);
+
+            // 3. PlayerDummyController 추가 및 본체 연결
+            PlayerDummyController dummyCtrl = dummyObj.AddComponent<PlayerDummyController>();
+            dummyCtrl.Setup(originalCtrl);
+
+            // 4. 리스트에 추가 (지시 관리를 위해)
+            MagicBase dummyBase = dummyObj.GetComponent<MagicBase>();
+            dummyBase.isTargetingPlayer = true;
+            dummyBase.isLaunched = true;
+            children.Add(dummyBase);
+        }
+        }
+        else
+        {
+            if (!_wordStats.TryGetValue("Split", out var stats)) return children;
+
+            int splitCount = 3;
+            // 원본의 레이어를 미리 기억해둡니다.
+            int originalLayer = target.gameObject.layer;
+
+            for (int i = 0; i < splitCount; i++)
+            {
+                float angle = i * (360f / splitCount);
+                Quaternion rot = Quaternion.Euler(0, angle, 0);
+
+                GameObject childObj = Object.Instantiate(target.gameObject,
+                                     target.transform.position + (rot * Vector3.forward * 0.5f),
+                                     rot);
+
+                // --- [중요 1: 레이어 강제 재설정] ---
+                childObj.layer = originalLayer;
+
+                MagicBase child = childObj.GetComponent<MagicBase>();
+
+                // --- [중요 2: MagicObject 컴포넌트 초기화] ---
+                // 만약 MagicObject 스크립트가 붙어있다면, 새로운 시작을 위해 리스트를 비워줍니다.
+                if (childObj.TryGetComponent(out MagicObject mo))
+                {
+                    // mo.ResetHitTargets(); // MagicObject에 이 함수를 만들어야 합니다.
+                    mo.targetLayers = (1 << 14) | (1 << LayerMask.NameToLayer("Player")); // 레이어 재확인
+                }
+
+                // 3. 데이터 상속
+                child.transform.localScale = target.transform.localScale * stats["ScaleMult"];
+                child.moveSpeed = target.moveSpeed * stats["SpeedMult"];
+                child.isLaunched = true;
+                child.caster = target.caster;
+
+                float currentSpeed = child.moveSpeed;
+                child.AddLogic(() =>
+                {
+                    if (child == null) return;
+                    child.transform.position += child.transform.forward * currentSpeed * Time.deltaTime;
+                });
+
+                children.Add(child);
+            }
         }
 
-        // 3. 데이터 상속
-        child.transform.localScale = target.transform.localScale * stats["ScaleMult"];
-        child.moveSpeed = target.moveSpeed * stats["SpeedMult"];
-        child.isLaunched = true;
-        child.caster = target.caster;
-
-        float currentSpeed = child.moveSpeed;
-        child.AddLogic(() =>
-        {
-            if (child == null) return;
-            child.transform.position += child.transform.forward * currentSpeed * Time.deltaTime;
-        });
-
-        children.Add(child);
+        return children;
     }
-    return children;
-}
-
-
 
     #endregion
 

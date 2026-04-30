@@ -15,6 +15,9 @@ public class SocketSlotData
 [CreateAssetMenu(fileName = "PlayerData", menuName = "Data/PlayerData")]
 public class PlayerData : ScriptableObject
 {
+    public float maxHp;
+    public float currentHp; // 실시간 체력
+    
     // ========================================
     // 기본 정보
     // ========================================
@@ -34,7 +37,7 @@ public class PlayerData : ScriptableObject
     public int base_Intelligence_Level = 1;
     public int base_Luck_Level = 3;
 
-    public float base_Move_Speed = 20f;
+    public float playerMoveSpeed = 20f;
 
     [Tooltip("회전 속도")]
     public float rotationSpeed = 10f;
@@ -96,6 +99,12 @@ public class PlayerData : ScriptableObject
             }
             return _runtimeStats;
         }
+    }
+
+        public void TakeDamage(float amount)
+    {
+        currentHp -= amount;
+        if (currentHp < 0) currentHp = 0;
     }
 
 }

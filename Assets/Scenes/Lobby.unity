@@ -6870,6 +6870,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerStats:
     level: 0
+    currentHp: 0
     health_Level: 0
     defense_Level: 0
     strength_Level: 0
@@ -6878,7 +6879,7 @@ MonoBehaviour:
     intelligence_Level: 0
     luck_Level: 0
     speed: 0
-    current_Health: 0
+    currentHealth: 0
     availablePoints: 0
   playerData: {fileID: 11400000, guid: bad8a758f18c2504ca72889a139f87d5, type: 2}
   currentBossId: flame_titan
