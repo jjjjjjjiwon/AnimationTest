@@ -42,6 +42,11 @@ public class TestEnemyController : MonoBehaviour, IEnemy
     private SkinnedMeshRenderer[] renderers; // 적의 몸뚱아리들
     private Color[] originalColors;         // 원래 색상들을 저장할 배열
 
+
+    [Header("UI Settings")]
+    [SerializeField] private UnityEngine.UI.Image hpFillImage;
+    [SerializeField] private GameObject hpCanvas;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -79,6 +84,8 @@ public class TestEnemyController : MonoBehaviour, IEnemy
             teleportCooldownTimer = package.teleportData.cooldown;
 
         if (idleState != null) stateMachine.ChangeState(idleState);
+
+        UpdateHpBar(); // 초기 체력바 설정
     }
 
     void Update()
@@ -183,7 +190,15 @@ public class TestEnemyController : MonoBehaviour, IEnemy
         if (isDead) return;
         currentHP -= damage;
 
-        if (currentHP <= 0) { currentHP = 0; Death(); return; }
+        UpdateHpBar(); //ui
+
+        if (currentHP <= 0)
+        {
+            currentHP = 0;
+            if (hpCanvas != null) hpCanvas.SetActive(false); // 죽으면 체력바 숨기기
+            Death();
+            return;
+        }
 
         if (stunTimer > 0)
         {
@@ -225,5 +240,20 @@ public class TestEnemyController : MonoBehaviour, IEnemy
         if (col != null) col.enabled = false;
         stateMachine.ChangeState(new DeathState(this));
     }
+    #endregion
+
+    #region ui
+
+    private void UpdateHpBar()
+{
+    if (hpFillImage != null)
+    {
+        // currentHP / 최대체력(runtimeData.base_Health)
+        float hpRatio = currentHP / runtimePackage.baseData.base_Health;
+        hpFillImage.fillAmount = Mathf.Clamp01(hpRatio);
+    }
+}
+
+
     #endregion
 }
