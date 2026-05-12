@@ -11,7 +11,11 @@ public class MagicBase : MonoBehaviour
 
     public bool isLaunched = false;
     public bool isTargetingPlayer = false;  // 마법의 대상이 true 플레이어, false 원소인지
+
     private Vector3 _launchDirection; // 발사 시점의 방향을 기억할 변수
+    public Vector3 InitialFireDirection { get; private set; } // 초기 발사 방향 저장
+    // 이동에 사용할 고정된 화살표 (내부 관리용)
+    private Vector3 _moveDirection;
 
     [Header("Stat")]
     public float magicDamage = 10f;
@@ -58,23 +62,32 @@ public class MagicBase : MonoBehaviour
         HandleLifeTime();
     }
 
-private void ApplyPhysicalMovement()
-{
-// 1. 회전 처리 (rotationWeight가 있을 때만 고개를 돌림)
-    float finalRotation = moveSpeed * rotationWeight;
-    if (finalRotation != 0)
+    private void ApplyPhysicalMovement()
     {
-        transform.Rotate(Vector3.up, finalRotation * Time.deltaTime);
-    }
+        // 1. 회전 처리 (rotationWeight가 있을 때만 고개를 돌림)
+        float finalRotation = moveSpeed * rotationWeight;
+        if (finalRotation != 0)
+        {
+            transform.Rotate(Vector3.up, finalRotation * Time.deltaTime);
+        }
 
-    // 2. 이동 처리 (고쳐야 할 부분!)
-    if (moveSpeed > 0)
-    {
-        // transform.forward(가변) 대신 _launchDirection(고정)을 사용합니다.
-        // 이렇게 하면 고개가 돌아가더라도 이동 방향은 직선을 유지합니다.
-        transform.position += _launchDirection * moveSpeed * Time.deltaTime;
+        // 2. 이동 처리 (고쳐야 할 부분!)
+        if (moveSpeed > 0)
+        {
+            if (isTargetingPlayer && caster != null)
+            {
+                // 1. 플레이어 대상 마법: 실시간으로 플레이어의 '코(forward)' 방향으로 전진
+                // 조작에 따라 궤적이 휘어야 하므로 실시간 forward를 씁니다.
+                transform.position += caster.forward * moveSpeed * Time.deltaTime;
+            }
+            else
+            {
+                // 2. 원소 마법: 발사 시점에 저장한 '고정 화살표' 방향으로만 전진
+                // 모델이 아무리 돌아가도 절대 휘지 않습니다.
+                transform.position += _moveDirection * moveSpeed * Time.deltaTime;
+            }
+        }
     }
-}
 
     // --- [생명 주기 관리] ---
     public void Init(Transform casterTransform)
@@ -86,18 +99,15 @@ private void ApplyPhysicalMovement()
 
     public void Launch()
     {
-        if (isLaunched)
-        {
-            // 이미 발사 중인데 또 호출됐다면? -> 시간만 연장해줌
-            magicLifeTime = 10f;
-            return;
-        }
+        if (isLaunched) return;
         isLaunched = true;
-        magicLifeTime = 10f;
-        OnLogic -= UpdateElementState;
 
-        // [핵심 고칠 부분] 발사되는 그 순간의 앞방향을 딱 한 번만 저장합니다.
-        _launchDirection = transform.forward;
+        // 1. 발사 시점의 방향을 '박제'합니다.
+        _moveDirection = transform.forward;
+        InitialFireDirection = transform.forward;
+
+        // 2. 추적 로직 중단
+        OnLogic -= UpdateElementState;
 
         Debug.Log("[Magic] 발사됨! 이동 및 특수 로직 시작");
     }

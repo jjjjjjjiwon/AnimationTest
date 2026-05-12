@@ -17,23 +17,19 @@ public static class MagicLibrary
 
     public static void Execute(string magicName, Transform caster)
     {
-        // 로그에 SummonElement라고 뜨므로 이름을 맞춰줍니다.
         if (magicName == "SummonElement")
         {
-RemoveOnlyElements(); 
+            RemoveOnlyElements();
 
-        var m = SummonElement(caster);
-        if (m != null) activeMagics.Add(m);
+            var m = SummonElement(caster);
+            if (m != null) activeMagics.Add(m);
         }
         else if (magicName == "SetPlayerAsTarget")
         {
-            // 1. 기존 리스트 비우기 (플레이어 한 명에게 집중하기 위해)
             ClearAll();
 
-            // 2. 플레이어 본체(caster)에서 MagicBase를 가져와 설정
             if (caster.TryGetComponent(out MagicBase mb))
             {
-                // 2단계에서 만든 설정 함수 호출
                 SetPlayerAsTarget(mb);
                 activeMagics.Add(mb);
                 Debug.Log("플레이어가 마법의 타겟으로 설정되었습니다.");
@@ -58,101 +54,93 @@ RemoveOnlyElements();
     }
 
     private static void ClearAll()
-{
-    foreach (var m in activeMagics)
     {
-        if (m == null) continue;
-
-        // --- [핵심 수정] 플레이어는 절대 파괴하지 않습니다 ---
-        if (m.isTargetingPlayer)
+        foreach (var m in activeMagics)
         {
-            m.ResetToNormalState();
-            continue; 
-        }
-        
-        Object.Destroy(m.gameObject);
-    }
-    activeMagics.Clear();
-}
+            if (m == null) continue;
 
-// 플레이어를 제외한 나머지 마법만 지우는 함수 추가
-private static void RemoveOnlyElements()
-{
-    for (int i = activeMagics.Count - 1; i >= 0; i--)
-    {
-        var m = activeMagics[i];
-        if (m != null && !m.isTargetingPlayer)
-        {
-            Object.Destroy(m.gameObject);
-            activeMagics.RemoveAt(i);
-        }
-    }
-}
-
-    public static void CleanUpOrUpdateMagics()
-{
-    List<MagicBase> nextMagics = new List<MagicBase>();
-
-    foreach (var m in activeMagics)
-    {
-        if (m == null) continue;
-
-        // 마법 시간이 끝났는지 체크
-        if (m.magicLifeTime <= 0) 
-        {
             if (m.isTargetingPlayer)
             {
-                // [문제 1 해결] 플레이어는 지우지 않고 상태만 초기화
-                m.ResetToNormalState(); // 조작권 복구 및 속도 초기화 함수
-                nextMagics.Add(m); // 리스트에는 유지
+                m.ResetToNormalState();
+                continue;
+            }
+
+            Object.Destroy(m.gameObject);
+        }
+        activeMagics.Clear();
+    }
+
+    private static void RemoveOnlyElements()
+    {
+        for (int i = activeMagics.Count - 1; i >= 0; i--)
+        {
+            var m = activeMagics[i];
+            if (m != null && !m.isTargetingPlayer)
+            {
+                Object.Destroy(m.gameObject);
+                activeMagics.RemoveAt(i);
+            }
+        }
+    }
+
+    public static void CleanUpOrUpdateMagics()
+    {
+        List<MagicBase> nextMagics = new List<MagicBase>();
+
+        foreach (var m in activeMagics)
+        {
+            if (m == null) continue;
+
+            if (m.magicLifeTime <= 0)
+            {
+                if (m.isTargetingPlayer)
+                {
+                    m.ResetToNormalState();
+                    nextMagics.Add(m);
+                }
+                else
+                {
+                    Object.Destroy(m.gameObject);
+                }
+                continue;
+            }
+
+            if (m.isTargetingPlayer)
+            {
+                nextMagics.Add(m);
+            }
+        }
+        activeMagics = nextMagics;
+    }
+
+    public static void SplitAll()
+    {
+        List<MagicBase> nextMagics = new List<MagicBase>();
+
+        foreach (var m in activeMagics)
+        {
+            if (m == null) continue;
+
+            if (m.isTargetingPlayer)
+            {
+                // --- [핵심: 플레이어 보호] ---
+                // 플레이어는 분열을 해도 원본이 사라지면 안 되므로 리스트에 유지합니다.
+                nextMagics.Add(m);
+
+                // 그리고 분신들을 생성해서 추가합니다.
+                List<MagicBase> clones = Split(m); // 여기서 MagicLibrary.Split 호출
+                if (clones != null) nextMagics.AddRange(clones);
             }
             else
             {
-                // 일반 원소 마법은 파괴
+                // 일반 원소(화구 등)는 분열 후 원본을 파괴합니다.
+                List<MagicBase> clones = Split(m);
+                if (clones != null) nextMagics.AddRange(clones);
                 Object.Destroy(m.gameObject);
             }
-            continue;
         }
-
-        // [문제 2 해결] 새로운 마법이 덮어씌워질 때의 로직
-        // 만약 새로운 마법이 들어와서 기존 마법을 리스트에서 뺀다면?
-        // 아래와 같이 '플레이어' 속성을 가진 객체는 무조건 보존해야 합니다.
-        if (m.isTargetingPlayer)
-        {
-            nextMagics.Add(m);
-        }
+        activeMagics = nextMagics;
     }
-    activeMagics = nextMagics;
-}
-
-public static void SplitAll()
-{
-    List<MagicBase> nextMagics = new List<MagicBase>();
-
-    foreach (var m in activeMagics)
-    {
-        if (m == null) continue;
-
-        if (m.isTargetingPlayer)
-        {
-            // --- [핵심: 플레이어 보호] ---
-            // 플레이어는 분열을 해도 원본이 사라지면 안 되므로 리스트에 유지합니다.
-            nextMagics.Add(m); 
-
-            // 그리고 분신들을 생성해서 추가합니다.
-            List<MagicBase> clones = Split(m); // 여기서 MagicLibrary.Split 호출
-            if (clones != null) nextMagics.AddRange(clones);
-        }
-        else
-        {
-            // 일반 원소(화구 등)는 분열 후 원본을 파괴합니다.
-            List<MagicBase> clones = Split(m);
-            if (clones != null) nextMagics.AddRange(clones);
-            Object.Destroy(m.gameObject);
-        }
-    }
-    activeMagics = nextMagics;
-}
 
     private static void CopyAnimatorParameters(Animator source, Animator target)
     {
@@ -174,7 +162,7 @@ public static void SplitAll()
     {
         // 💡 경로 확인: Resources/Prefab/Magic/SummonElement 인지 Element 인지 꼭 확인하세요!
         GameObject prefab = Resources.Load<GameObject>("Prefab/Magic/SummonElement");
-        
+
         if (prefab == null)
         {
             Debug.LogError("마법 프리팹을 찾을 수 없습니다! 경로를 확인하세요.");
@@ -251,22 +239,20 @@ public static void SplitAll()
     #endregion
 
     #region 나아가다
-public static void MoveForward(MagicBase target)
-{
-    if (target == null) return;
-    target.Launch();
-
-    if (_wordStats.TryGetValue("MoveForward", out var stats))
+    public static void MoveForward(MagicBase target)
     {
-        float speedAmount = stats["Speed"];
-        
-        // Base의 결과값에 기여함
-        target.moveSpeed += speedAmount;
+        if (target == null) return;
 
-        // [삭제] target.AddLogic(() => { transform.position += ... }); 
-        // 직접 이동시키는 로직은 삭제합니다. Base가 알아서 할 거니까요.
+        // 1. 발사 전이라면 발사 처리 (여기서 _moveDirection이 결정됨)
+        if (!target.isLaunched) target.Launch();
+
+        if (_wordStats.TryGetValue("MoveForward", out var stats))
+        {
+            // 2. 속도만 올려주면, 나머지는 Base의 ApplyPhysicalMovement가 
+            // 고정된 방향으로 전진시키는 것을 책임집니다.
+            target.moveSpeed += stats["Speed"];
+        }
     }
-}
     #endregion
 
     #region 나선
@@ -325,84 +311,90 @@ public static void MoveForward(MagicBase target)
 
     #region 분열
     public static List<MagicBase> Split(MagicBase target)
-    {
-List<MagicBase> children = new List<MagicBase>();
+{
+    List<MagicBase> children = new List<MagicBase>();
+
+    // 1. [공통] 기준 방향 결정
+    Quaternion baseRotation;
+    if (target.isTargetingPlayer && target.caster != null)
+        baseRotation = target.caster.rotation; // 플레이어 시선 기준
+    else
+        baseRotation = Quaternion.LookRotation(target.InitialFireDirection != Vector3.zero 
+                       ? target.InitialFireDirection : target.transform.forward);
+
+    int splitCount = 3;
+
+    // --- CASE A: 플레이어가 마법인 경우 (분신 생성) ---
     if (target.isTargetingPlayer)
     {
-        int splitCount = 3; 
         PlayerController originalCtrl = target.GetComponent<PlayerController>();
-
+        
         for (int i = 0; i < splitCount; i++)
         {
             float angle = i * (360f / splitCount);
-            Quaternion rot = Quaternion.Euler(0, angle, 0);
+            Quaternion rot = baseRotation * Quaternion.Euler(0, angle, 0);
+            // 분신은 겹치지 않게 약간 떨어진 위치에 소환
             Vector3 spawnPos = target.transform.position + (rot * Vector3.forward * 1.5f);
 
             GameObject dummyObj = Object.Instantiate(target.gameObject, spawnPos, rot);
-            
+
+            // 중요: 플레이어 조작 스크립트는 삭제하고 더미 컨트롤러 주입
             if (dummyObj.TryGetComponent(out PlayerController oldCtrl)) 
                 Object.Destroy(oldCtrl);
-
+            
             PlayerDummyController dummyCtrl = dummyObj.AddComponent<PlayerDummyController>();
             dummyCtrl.Setup(originalCtrl);
 
             MagicBase dummyBase = dummyObj.GetComponent<MagicBase>();
-            // [수정] 분신은 '플레이어 타겟' 상태를 false로 두어, 
-            // 나중에 전체 리스트 정리 때 분신만 골라 삭제하기 편하게 합니다.
-            dummyBase.isTargetingPlayer = false; 
-            dummyBase.isLaunched = true;
+            dummyBase.isTargetingPlayer = false; // 분신은 조작 대상이 아님
+            dummyBase.isLaunched = true;        // 상태만 발사로 변경
+            
             children.Add(dummyBase);
         }
     }
-        else
-        {
-            if (!_wordStats.TryGetValue("Split", out var stats)) return children;
+    // --- CASE B: 일반 원소 마법인 경우 (투사체 분열) ---
+// --- CASE B: 일반 원소 마법인 경우 ---
+else
+{
+    if (!_wordStats.TryGetValue("Split", out var stats)) return children;
 
-            int splitCount = 3;
-            // 원본의 레이어를 미리 기억해둡니다.
-            int originalLayer = target.gameObject.layer;
+    float speed = target.moveSpeed; 
 
-            for (int i = 0; i < splitCount; i++)
-            {
-                float angle = i * (360f / splitCount);
-                Quaternion rot = Quaternion.Euler(0, angle, 0);
+    for (int i = 0; i < splitCount; i++)
+    {
+        float angle = i * (360f / splitCount);
+        Quaternion spawnRot = baseRotation * Quaternion.Euler(0, angle, 0);
 
-                GameObject childObj = Object.Instantiate(target.gameObject,
-                                     target.transform.position + (rot * Vector3.forward * 0.5f),
-                                     rot);
+        GameObject childObj = Object.Instantiate(target.gameObject, target.transform.position, spawnRot);
+        MagicBase child = childObj.GetComponent<MagicBase>();
 
-                // --- [중요 1: 레이어 강제 재설정] ---
-                childObj.layer = originalLayer;
+        // 1. [초기화] 복제된 부모의 대본을 비웁니다. 
+        child.OnLogic = null; 
 
-                MagicBase child = childObj.GetComponent<MagicBase>();
+        // 2. [데이터] 속도 설정
+        child.moveSpeed = speed * stats["SpeedMult"];
+        child.caster = target.caster;
 
-                // --- [중요 2: MagicObject 컴포넌트 초기화] ---
-                // 만약 MagicObject 스크립트가 붙어있다면, 새로운 시작을 위해 리스트를 비워줍니다.
-                if (childObj.TryGetComponent(out MagicObject mo))
-                {
-                    // mo.ResetHitTargets(); // MagicObject에 이 함수를 만들어야 합니다.
-                    mo.targetLayers = (1 << 14) | (1 << LayerMask.NameToLayer("Player")); // 레이어 재확인
-                }
+        // 3. [핵심: AddLogic] 자식에게 "직선 전진"이라는 새로운 대본을 써줍니다.
+        // 이것이 사용자님이 원하시는 "하나씩 추가하는" 방식입니다.
+        Vector3 moveDir = child.transform.forward; 
+        float moveSpeed = child.moveSpeed;
 
-                // 3. 데이터 상속
-                child.transform.localScale = target.transform.localScale * stats["ScaleMult"];
-                child.moveSpeed = target.moveSpeed * stats["SpeedMult"];
-                child.isLaunched = true;
-                child.caster = target.caster;
+        child.AddLogic(() => {
+            if (child == null) return;
+            // 베이스가 아니라 이 로직이 직접 이동을 담당합니다.
+            child.transform.position += moveDir * moveSpeed * Time.deltaTime;
+        });
 
-                float currentSpeed = child.moveSpeed;
-                child.AddLogic(() =>
-                {
-                    if (child == null) return;
-                    child.transform.position += child.transform.forward * currentSpeed * Time.deltaTime;
-                });
+        // 4. [보조] 베이스 엔진도 일단 켜둡니다. (혹시 모를 다른 기능을 위해)
+        child.isLaunched = true;
 
-                children.Add(child);
-            }
-        }
-
-        return children;
+        children.Add(child);
     }
+}
+
+    return children;
+}
 
     #endregion
 
